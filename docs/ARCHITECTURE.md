@@ -18,6 +18,7 @@ tools/
   cdp.mjs           the connection to the gamemaster session, and the one-key audio unlock
   live-proof.mjs    the module, proven inside a running world without installing it
   quench-run.mjs    runs the Quench batches in the live world and prints the results
+  player-proof.mjs  ducking measured in a PLAYER's browser: a second, isolated session joins as the test seat
   check-manifest.mjs  the manifest rules of `npm run check`
   build-release.mjs   dist/module.json + dist/module.zip for one tag, addresses pinned to it
 .github/workflows/
@@ -46,6 +47,7 @@ future Foundry release cannot silently turn every toggle into a one-shot.
 | unit | `node --test` | `npm run check` | every rule in the core, with the real world's playlist names as fixtures |
 | manifest | `tools/check-manifest.mjs` | `npm run check` | id; a version without a label and newer than the last tag; a changelog heading for it; compatibility; every file the manifest names exists; every language has the same keys |
 | live | `tools/live-proof.mjs` | by hand, world quiet | the window, the buttons, the scene fix, walked in the real world - 15 checks |
+| player side | `tools/player-proof.mjs` | by hand, world quiet | what a player's browser does: the bed ducked 10 dB under a GM's event, and back |
 | Foundry's behaviour | Quench batch `sounds-deck.foundry-facts` (`test/quench/`) | `node tools/quench-run.mjs`, or Quench's own window | the facts the design relies on - polyphony, loop toggle, fade on stop, player rights, window size - 8 tests, red if a Foundry release changes one |
 
 ## Definition of done

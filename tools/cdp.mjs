@@ -21,11 +21,18 @@ const getJson = (p) =>
       .on('error', rej),
   );
 
-/** @returns {Promise<{ send: Function, ev: (expr: string) => Promise<any>, close: () => void }>} */
-export async function connect() {
-  const page = (await getJson('/json/list')).find((t) => t.type === 'page' && t.url.includes('foundryvtt'));
-  if (!page) throw new Error('no Foundry page on the debugger');
-  const ws = new WebSocket(page.webSocketDebuggerUrl, { perMessageDeflate: false, maxPayload: 64 * 1024 * 1024 });
+/**
+ * @param {string} [wsUrl]  a specific page's debugger address; by default, the gamemaster's Foundry page
+ * @returns {Promise<{ send: Function, ev: (expr: string) => Promise<any>, close: () => void }>}
+ */
+export async function connect(wsUrl) {
+  let url = wsUrl;
+  if (!url) {
+    const page = (await getJson('/json/list')).find((t) => t.type === 'page' && t.url.includes('foundryvtt'));
+    if (!page) throw new Error('no Foundry page on the debugger');
+    url = page.webSocketDebuggerUrl;
+  }
+  const ws = new WebSocket(url, { perMessageDeflate: false, maxPayload: 64 * 1024 * 1024 });
   let seq = 0;
   const pending = new Map();
   ws.on('message', (d) => {
