@@ -60,6 +60,7 @@ export function registerDeck(quench) {
           geometry: game.settings.get(ID, 'geometry'),
           density: game.settings.get(ID, 'density'),
           journal: game.settings.get(ID, 'journal'),
+          hideSources: game.settings.get(ID, 'hideSources'),
           journalEntries: game.settings.get(ID, 'journalEntries'),
         };
         const folder = game.folders.find((f) => f.type === 'Playlist' && f.name === 'GE-Foundry');
@@ -103,6 +104,7 @@ export function registerDeck(quench) {
         await game.settings.set(ID, 'geometry', S.seat.geometry);
         await game.settings.set(ID, 'density', S.seat.density);
         await game.settings.set(ID, 'journal', S.seat.journal);
+        await game.settings.set(ID, 'hideSources', S.seat.hideSources);
         await game.settings.set(ID, 'journalEntries', S.seat.journalEntries);
         if (S.activeBefore && !S.activeBefore.active) await S.activeBefore.activate();
       });
@@ -223,13 +225,21 @@ export function registerDeck(quench) {
           assert.lengthOf(getComputedStyle(beds).gridTemplateColumns.split(' '), 1);
         });
 
-        it('a pad shows where its sound comes from on hover (the sound description)', async () => {
+        it('sources stay in the native panel: "(…)" and the description hidden on the deck, shown when the option is off', async () => {
           const { shots } = S.sandbox;
-          await shots.sounds.contents[0].update({ description: 'Se7en (1995) — Howard Shore' });
-          await until(() => bank(shots).querySelector('.sd-pad')?.dataset.tooltip?.includes('Se7en'));
-          const pad = bank(shots).querySelector('.sd-pad');
-          assert.include(pad.dataset.tooltip, 'Se7en (1995) — Howard Shore'); // the name, then the source
-          assert.strictEqual(pad.getAttribute('aria-description'), 'Se7en (1995) — Howard Shore');
+          const snd = shots.sounds.contents[0];
+          await snd.update({ name: 'Gunfire (Se7en)', description: 'Se7en (1995) — Howard Shore' });
+          const pad = () => bank(shots).querySelector('.sd-pad');
+          await game.settings.set(ID, 'hideSources', true);
+          await until(() => pad()?.textContent.trim() === 'Gunfire');
+          assert.strictEqual(pad().textContent.trim(), 'Gunfire');
+          assert.notInclude(pad().dataset.tooltip, 'Howard Shore');
+          assert.strictEqual(pad().closest('.sd-pad-cell').dataset.padName, 'Gunfire (Se7en)'); // the filter's full name
+          await game.settings.set(ID, 'hideSources', false);
+          await until(() => pad()?.textContent.trim() === 'Gunfire (Se7en)');
+          assert.include(pad().dataset.tooltip, 'Se7en (1995) — Howard Shore');
+          assert.strictEqual(pad().getAttribute('aria-description'), 'Se7en (1995) — Howard Shore');
+          await game.settings.set(ID, 'hideSources', true);
         });
 
         it('room loops toggle one by one: two on, one off, the other keeps playing', async () => {

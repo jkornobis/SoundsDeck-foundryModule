@@ -10,6 +10,7 @@ import { bedCards, bedsToStop } from '../core/beds.mjs';
 import { bedVolume, clock, nowPlaying, shouldDuck, transportChanges, transportCues } from '../core/cues.mjs';
 import { matches } from '../core/filter.mjs';
 import { appendEntry, summarise } from '../core/journal.mjs';
+import { deckName } from '../core/names.mjs';
 import { arm, armedList, disarm, disarmAll, isArmed } from './random.mjs';
 import { snapshot } from './snapshot.mjs';
 
@@ -83,16 +84,28 @@ export class SoundsDeckApp extends HandlebarsApplicationMixin(ApplicationV2) {
   async _prepareContext(options) {
     const context = await super._prepareContext(options);
     const snaps = snapshot(game.playlists.contents);
-    context.beds = bedCards(snaps);
+    // What the deck shows: with "hide sources" on, no trailing "(…)" and no description - those stay in the sidebar.
+    const hide = game.settings.get(MODULE_ID, 'hideSources');
+    const shown = (n) => deckName(n, hide);
+    context.beds = bedCards(snaps).map((b) => ({
+      ...b,
+      nowPlaying: b.nowPlaying && shown(b.nowPlaying),
+      nowPlayingFrom: hide ? null : b.nowPlayingFrom,
+    }));
     context.banks = bankViews(snaps).map((b) => ({
       ...b,
-      pads: b.pads.map((p) => ({ ...p, armed: p.randomizable && isArmed(b.id, p.id) })),
+      pads: b.pads.map((p) => ({
+        ...p,
+        label: shown(p.name), // what the pad shows; the filter still searches the full name (data-pad-name)
+        description: hide ? null : p.description,
+        armed: p.randomizable && isArmed(b.id, p.id),
+      })),
     }));
     context.armed = armedList()
       .map(({ playlistId, soundId }) => {
         const pl = game.playlists.get(playlistId);
         const sound = pl?.sounds.get(soundId);
-        return sound ? { playlistId, soundId, name: sound.name, from: pl.name } : null;
+        return sound ? { playlistId, soundId, name: shown(sound.name), from: pl.name } : null;
       })
       .filter(Boolean);
     const cues = transportCues(snaps);
@@ -101,6 +114,7 @@ export class SoundsDeckApp extends HandlebarsApplicationMixin(ApplicationV2) {
     const { volumeToInput } = foundry.audio.AudioHelper;
     context.now = nowPlaying(snaps).map((n) => ({
       ...n,
+      name: shown(n.name),
       isCue: n.kind === 'cue',
       isPlaying: n.state === 'playing',
       volumeInput: volumeToInput(n.volume),

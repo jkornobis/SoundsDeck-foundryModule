@@ -21,6 +21,19 @@ export function onInit() {
     type: String,
     default: 'comfortable',
   });
+  // Sources stay in Foundry's own playlist panel: a trailing "(…)" in a sound's name, and its description, are not
+  // shown on the deck. A table decision, so world scope; on by default (the Composer, 2026-09-24).
+  game.settings.register(MODULE_ID, 'hideSources', {
+    scope: 'world',
+    config: true,
+    type: Boolean,
+    default: true,
+    name: 'SOUNDS_DECK.HideSources.Name',
+    hint: 'SOUNDS_DECK.HideSources.Hint',
+    onChange: () => {
+      for (const app of foundry.applications.instances.values()) if (app.id === MODULE_ID) app.render();
+    },
+  });
   // The press log: OFF by default, this seat only, switched on in the module settings (v0.4 note 12).
   game.settings.register(MODULE_ID, 'journal', {
     scope: 'client',

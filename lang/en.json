@@ -52,6 +52,10 @@
     "RandomOn": "Firing at random moments - click to stop",
     "RandomOff": "Fire this at random moments (every 10–45 s)",
     "RandomArmed": "at random",
-    "Disarm": "Stop firing at random"
+    "Disarm": "Stop firing at random",
+    "HideSources": {
+      "Name": "Hide sources on the deck",
+      "Hint": "A sound's source written in parentheses at the end of its name - \"At Risk (Gone Girl)\" - and its description stay in Foundry's playlist sidebar; the deck shows \"At Risk\". The filter still searches the full name."
+    }
   }
 }
