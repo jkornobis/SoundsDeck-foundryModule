@@ -1,0 +1,15 @@
+<section class="sounds-deck-board" aria-label="{{localize 'SOUNDS_DECK.Board'}}">
+  {{#each banks}}
+  <fieldset class="sd-bank sd-press-{{press}}" data-playlist-id="{{id}}" {{#unless press}}disabled{{/unless}}>
+    <legend>{{name}}</legend>
+    <div class="sd-pads">
+      {{#each pads}}
+      <button type="button" class="sd-pad{{#if playing}} is-playing{{/if}}" data-action="pad" data-sound-id="{{id}}" {{#if pressed}}aria-pressed="{{pressed}}"{{/if}}>{{name}}</button>
+      {{/each}}
+    </div>
+    {{#unless press}}<p class="sd-hint">{{localize "SOUNDS_DECK.NoPress"}}</p>{{/unless}}
+  </fieldset>
+  {{else}}
+  <p class="sd-empty">{{localize "SOUNDS_DECK.NoBanks"}}</p>
+  {{/each}}
+</section>
