@@ -1,5 +1,12 @@
 {
   "SOUNDS_DECK": {
-    "Title": "Sounds Deck"
+    "Title": "Sounds Deck",
+    "Open": "Sounds Deck",
+    "Beds": "Ambiances",
+    "Play": "Lancer cette ambiance",
+    "Skip": "Piste suivante",
+    "Stop": "Arrêter",
+    "Tracks": "{count} pistes",
+    "NoBeds": "Aucune ambiance. Une playlist dont le nom commence par un nombre et un point (1 · …) apparaît ici."
   }
 }

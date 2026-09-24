@@ -8,8 +8,14 @@ src/
                     CONST, Hooks, ui and canvas in this folder, and the build fails if one appears.
     classify.mjs    name + mode -> bed | bank (+ what a press does) | not on the deck
     scene-bed.mjs   bed of the scene left + bed of the scene entered -> none | keep | start | stop | switch
-  sounds-deck.mjs   THE SHELL's entry point. Reads Foundry, calls the core, acts on the verdict.
-  foundry/          (v0.1) the rest of the shell: hooks, the window, settings
+    beds.mjs        playlist snapshots -> the bed cards to draw, and which beds a start must stop
+  sounds-deck.mjs   THE SHELL's entry point: wiring only
+  foundry/          the rest of the shell
+    setup.mjs       what happens at init and ready, as functions the live proof can call too
+    deck-app.mjs    the window (ApplicationV2 + HandlebarsApplicationMixin)
+    scene-bed-fix.mjs  replaces Foundry's scene -> playlist handover while Foundry's defect is present
+tools/
+  live-proof.mjs    the module, proven inside a running world without installing it
 test/
   core/             node:test - runs anywhere, in milliseconds, on every change
   quench/           (note 4) tests that need a live Foundry, run inside it with Quench
@@ -32,4 +38,5 @@ future Foundry release cannot silently turn every toggle into a one-shot.
 |---|---|---|---|
 | lint + format | Biome 2.5.14, pinned | `npm run check` | style, likely bugs, and the purity of `src/core` |
 | unit | `node --test` | `npm run check` | every rule in the core, with the real world's playlist names as fixtures |
+| live | `tools/live-proof.mjs` | by hand, world quiet | the window, the buttons, the scene fix, walked in the real world - 15 checks |
 | integration | Quench, inside Foundry | (note 4) | what only a live Foundry can answer - the five open probes in the spec first |

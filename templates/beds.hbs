@@ -1,0 +1,18 @@
+<section class="sounds-deck-beds" aria-label="{{localize 'SOUNDS_DECK.Beds'}}">
+  {{#each beds}}
+  <article class="sd-bed{{#if playing}} is-playing{{/if}}" data-playlist-id="{{id}}">
+    <header class="sd-bed-name">{{name}}</header>
+    <p class="sd-bed-now">{{#if playing}}{{nowPlaying}}{{else}}{{localize "SOUNDS_DECK.Tracks" count=tracks}}{{/if}}</p>
+    <div class="sd-bed-controls">
+      {{#if playing}}
+      <button type="button" data-action="skip" aria-label="{{localize 'SOUNDS_DECK.Skip'}}" data-tooltip="{{localize 'SOUNDS_DECK.Skip'}}"><i class="fa-solid fa-forward-step" inert></i></button>
+      <button type="button" data-action="stop" aria-label="{{localize 'SOUNDS_DECK.Stop'}}" data-tooltip="{{localize 'SOUNDS_DECK.Stop'}}"><i class="fa-solid fa-stop" inert></i></button>
+      {{else}}
+      <button type="button" data-action="play" aria-label="{{localize 'SOUNDS_DECK.Play'}}" data-tooltip="{{localize 'SOUNDS_DECK.Play'}}"><i class="fa-solid fa-play" inert></i></button>
+      {{/if}}
+    </div>
+  </article>
+  {{else}}
+  <p class="sd-empty">{{localize "SOUNDS_DECK.NoBeds"}}</p>
+  {{/each}}
+</section>

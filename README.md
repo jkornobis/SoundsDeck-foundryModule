@@ -4,7 +4,10 @@ A Foundry VTT module that plays **Foundry's own playlists** as a deck: numbered 
 playlists whose name starts with an emoji become **banks of pads**. There is no second store. Every sound stays a
 core `PlaylistSound`, editable in the sidebar with the module switched off.
 
-**Status: skeleton (0.0.1).** Nothing to install yet. The design lives in the Composer's knowledge repository:
+**Status: 0.1.0 - bed cards.** Proven inside a running world (15 checks); not released, so nothing to install yet.
+
+![The deck, v0.1](docs/screenshots/v0.1-bed-cards.png)
+ The design lives in the Composer's knowledge repository:
 `FoundryVTT-KnowledgeDB/worlds/DeltaGreen/knowledge/the-playlist-is-the-bank.md`.
 
 ## The two rules
@@ -24,7 +27,13 @@ npm install        # Biome only, pinned
 npm test           # the pure core, outside Foundry
 npm run check      # what must pass before anything is merged: biome ci + tests
 npm run format     # rewrite formatting
+
+node tools/live-proof.mjs              # load src/ into the live world's GM session, drive it, measure, clean up
+node tools/live-proof.mjs --show x.png # photograph the deck; plays nothing
 ```
+
+`tools/live-proof.mjs` needs the gamemaster session driven through Chrome's debugger on port 9222 and **refuses
+if anyone else is connected or anything is playing** - it starts beds and activates scenes.
 
 Structure and the reasons for it: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md). Decisions:
 [`docs/decisions/`](docs/decisions/).
