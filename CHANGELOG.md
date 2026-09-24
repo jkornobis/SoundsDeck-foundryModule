@@ -12,6 +12,8 @@ Versions follow semver **without pre-release labels** - Foundry's `isNewerVersio
 - **The window keeps its size** across re-renders (a fixed default height; `auto` discards every resize).
 - A **Sounds Deck** button in the playlists sidebar header.
 - `tools/live-proof.mjs`: the module proven inside a running world without installing it - 15 checks.
+- `tools/probe-foundry.mjs`: the spec's five open questions answered by measurement - 6 verdicts. One-shots will play
+  through `AudioHelper` (decision 0003).
 
 ## 0.0.1
 
