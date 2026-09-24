@@ -36,7 +36,8 @@
       "Shuffle": "<b>Aléatoire</b> : rien - la banque apparaît grisée.",
       "Neither": "Un nom sans l'un ni l'autre reste hors du deck.",
       "Scenes": "Une scène qui porte une playlist lance sa musique à son ouverture. Une musique choisie à la main continue dans une scène qui n'en a pas.",
-      "Source": "Survolez un pad pour voir d'où vient son son : la description du son dans la barre des playlists."
+      "Source": "Survolez un pad pour voir d'où vient son son : la description du son dans la barre des playlists.",
+      "Moods": "Les <b>ambiances</b> (au-dessus des musiques) enregistrent ce qui joue - musique, boucles et leurs niveaux, effets au hasard - et le rappellent en un clic. Les évènements ne sont pas touchés."
     },
     "Journal": {
       "Name": "Sounds Deck : tenir un journal des appuis sur ce poste",
@@ -56,6 +57,19 @@
     "HideSources": {
       "Name": "Masquer les sources sur le deck",
       "Hint": "La source d'un son écrite entre parenthèses à la fin de son nom - « At Risk (Gone Girl) » - et sa description restent dans la barre des playlists de Foundry ; le deck affiche « At Risk ». Le filtre cherche toujours dans le nom complet."
-    }
+    },
+    "Moods": "Ambiances",
+    "MoodSave": "Enregistrer ce qui joue comme ambiance",
+    "MoodSaveShort": "Enregistrer",
+    "MoodName": "Nom de l'ambiance",
+    "MoodDefault": "Ambiance {n}",
+    "MoodRecall": "Rappeler cette ambiance",
+    "MoodDelete": "Supprimer cette ambiance",
+    "MoodDeleteConfirm": "Supprimer l'ambiance « {name} » ? Rien de ce qui joue n'est arrêté.",
+    "MoodEmpty": "Rien à enregistrer : lancez d'abord une musique, une boucle ou un effet au hasard.",
+    "MoodMissing": "{count} élément(s) de cette ambiance n'existent plus et ont été ignorés.",
+    "MoodNone": "Aucune ambiance. Réglez musique, boucles et effets au hasard, puis enregistrez-les ici.",
+    "MoodSummary": "{loops} boucle(s) · {random} au hasard",
+    "MoodNoBed": "Sans musique"
   }
 }

@@ -36,7 +36,8 @@
       "Shuffle": "<b>Shuffle</b>: nothing - the bank is shown greyed.",
       "Neither": "A name with neither stays off the deck.",
       "Scenes": "A scene that carries a playlist starts its music when it opens. Music you pick by hand keeps playing into a scene that has none.",
-      "Source": "Hover a pad to see where its sound comes from: the sound's own description in the playlist sidebar."
+      "Source": "Hover a pad to see where its sound comes from: the sound's own description in the playlist sidebar.",
+      "Moods": "<b>Moods</b> (above the music) save what plays - music, room loops and their levels, random effects - and bring it back in one click. Events are left alone."
     },
     "Journal": {
       "Name": "Sounds Deck: keep a press log on this seat",
@@ -56,6 +57,19 @@
     "HideSources": {
       "Name": "Hide sources on the deck",
       "Hint": "A sound's source written in parentheses at the end of its name - \"At Risk (Gone Girl)\" - and its description stay in Foundry's playlist sidebar; the deck shows \"At Risk\". The filter still searches the full name."
-    }
+    },
+    "Moods": "Moods",
+    "MoodSave": "Save what plays as a mood",
+    "MoodSaveShort": "Save",
+    "MoodName": "Mood name",
+    "MoodDefault": "Mood {n}",
+    "MoodRecall": "Recall this mood",
+    "MoodDelete": "Delete this mood",
+    "MoodDeleteConfirm": "Delete the mood \"{name}\"? Nothing that plays is stopped.",
+    "MoodEmpty": "Nothing to save: start a bed, a room loop or a random effect first.",
+    "MoodMissing": "{count} part(s) of this mood no longer exist and were skipped.",
+    "MoodNone": "No mood yet. Set up a bed, loops and random effects, then save them here.",
+    "MoodSummary": "{loops} loop(s) · {random} random",
+    "MoodNoBed": "No music"
   }
 }

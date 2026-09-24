@@ -10,6 +10,7 @@ import { bedCards, bedsToStop } from '../core/beds.mjs';
 import { bedVolume, clock, nowPlaying, shouldDuck, transportChanges, transportCues } from '../core/cues.mjs';
 import { matches } from '../core/filter.mjs';
 import { appendEntry, summarise } from '../core/journal.mjs';
+import { captureMood, isEmptyMood, moodIsOn, moodPlan } from '../core/moods.mjs';
 import { deckName } from '../core/names.mjs';
 import { arm, armedList, disarm, disarmAll, isArmed } from './random.mjs';
 import { snapshot } from './snapshot.mjs';
@@ -61,6 +62,9 @@ export class SoundsDeckApp extends HandlebarsApplicationMixin(ApplicationV2) {
       density: SoundsDeckApp.#onDensity,
       help: SoundsDeckApp.#onHelp,
       journalExport: SoundsDeckApp.#onJournalExport,
+      moodSave: SoundsDeckApp.#onMoodSave,
+      moodRecall: SoundsDeckApp.#onMoodRecall,
+      moodDelete: SoundsDeckApp.#onMoodDelete,
     },
   };
 
@@ -108,6 +112,13 @@ export class SoundsDeckApp extends HandlebarsApplicationMixin(ApplicationV2) {
         return sound ? { playlistId, soundId, name: shown(sound.name), from: pl.name } : null;
       })
       .filter(Boolean);
+    const armedNow = armedList();
+    context.moods = game.settings.get(MODULE_ID, 'moods').map((m) => ({
+      ...m,
+      on: moodIsOn(m, snaps, armedNow),
+      bedName: (m.bed && game.playlists.get(m.bed)?.name) || game.i18n.localize('SOUNDS_DECK.MoodNoBed'),
+      summary: game.i18n.format('SOUNDS_DECK.MoodSummary', { loops: m.loops.length, random: m.random.length }),
+    }));
     const cues = transportCues(snaps);
     this.#announce(transportChanges(this.#lastCues ?? cues, cues));
     this.#lastCues = cues;
@@ -401,6 +412,7 @@ export class SoundsDeckApp extends HandlebarsApplicationMixin(ApplicationV2) {
         </li>
         <li>${t('Neither')}</li>
       </ul>
+      <p>${t('Moods')}</p>
       <p>${t('Scenes')}</p>
       <p>${t('Source')}</p>`;
     return foundry.applications.api.DialogV2.prompt({
@@ -410,6 +422,72 @@ export class SoundsDeckApp extends HandlebarsApplicationMixin(ApplicationV2) {
       ok: { label: 'SOUNDS_DECK.Help.Ok' },
       rejectClose: false,
     });
+  }
+
+  /** Save what plays now - bed, room loops and their levels, armed random effects - as a mood of the table's. */
+  static async #onMoodSave() {
+    const moods = game.settings.get(MODULE_ID, 'moods');
+    const mood = captureMood(snapshot(game.playlists.contents), armedList(), {
+      id: foundry.utils.randomID(),
+      name: '',
+    });
+    if (isEmptyMood(mood)) return ui.notifications.warn('SOUNDS_DECK.MoodEmpty', { localize: true });
+    const fallback = game.i18n.format('SOUNDS_DECK.MoodDefault', { n: moods.length + 1 });
+    const name = await foundry.applications.api.DialogV2.prompt({
+      window: { title: 'SOUNDS_DECK.MoodSave', icon: 'fa-solid fa-floppy-disk' },
+      content: `<label>${game.i18n.localize('SOUNDS_DECK.MoodName')} <input type="text" name="name" value="${foundry.utils.escapeHTML(fallback)}" autofocus></label>`,
+      ok: { label: 'SOUNDS_DECK.MoodSaveShort', callback: (_e, button) => button.form.elements.name.value },
+      rejectClose: false,
+    });
+    if (name === null || name === undefined) return undefined;
+    await game.settings.set(MODULE_ID, 'moods', [...moods, { ...mood, name: name.trim() || fallback }]);
+    await SoundsDeckApp.#log('mood-save', name.trim() || fallback);
+  }
+
+  /**
+   * Recall a mood: the plan (core/moods.mjs) names every change; this carries it out with the same calls the deck's
+   * own buttons make. A bed that already plays is kept, never restarted; events are never touched.
+   */
+  static async #onMoodRecall(_event, target) {
+    const mood = game.settings
+      .get(MODULE_ID, 'moods')
+      .find((m) => m.id === target.closest('[data-mood-id]')?.dataset.moodId);
+    if (!mood) return;
+    const plan = moodPlan(mood, snapshot(game.playlists.contents), armedList());
+    const soundOf = ({ playlistId, soundId }) => game.playlists.get(playlistId)?.sounds.get(soundId);
+    for (const r of plan.disarm) disarm(r.playlistId, r.soundId);
+    for (const id of plan.stopBeds) await game.playlists.get(id)?.stopAll();
+    for (const r of plan.stopLoops) {
+      const s = soundOf(r);
+      if (s) await s.parent.stopSound(s);
+    }
+    for (const r of plan.setVolumes) await soundOf(r)?.update({ volume: r.volume });
+    for (const r of plan.startLoops) {
+      const s = soundOf(r);
+      if (s) await s.update({ volume: r.volume, playing: true });
+    }
+    if (plan.startBed) await game.playlists.get(plan.startBed)?.playAll();
+    for (const r of plan.arm) arm(r.playlistId, r.soundId);
+    if (plan.missing) ui.notifications.warn(game.i18n.format('SOUNDS_DECK.MoodMissing', { count: plan.missing }));
+    await SoundsDeckApp.#log('mood', mood.name);
+  }
+
+  static async #onMoodDelete(_event, target) {
+    const id = target.closest('[data-mood-id]')?.dataset.moodId;
+    const moods = game.settings.get(MODULE_ID, 'moods');
+    const mood = moods.find((m) => m.id === id);
+    if (!mood) return;
+    const yes = await foundry.applications.api.DialogV2.confirm({
+      window: { title: 'SOUNDS_DECK.MoodDelete', icon: 'fa-solid fa-trash' },
+      content: `<p>${game.i18n.format('SOUNDS_DECK.MoodDeleteConfirm', { name: foundry.utils.escapeHTML(mood.name) })}</p>`,
+      rejectClose: false,
+    });
+    if (yes)
+      await game.settings.set(
+        MODULE_ID,
+        'moods',
+        moods.filter((m) => m.id !== id),
+      );
   }
 
   static async #onDensity() {

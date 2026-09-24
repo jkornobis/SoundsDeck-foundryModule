@@ -63,6 +63,7 @@ export function registerDeck(quench) {
           journal: game.settings.get(ID, 'journal'),
           hideSources: game.settings.get(ID, 'hideSources'),
           journalEntries: game.settings.get(ID, 'journalEntries'),
+          moods: game.settings.get(ID, 'moods'),
         };
         const folder = game.folders.find((f) => f.type === 'Playlist' && f.name === 'GE-Foundry');
         const fx = game.playlists.contents
@@ -107,6 +108,7 @@ export function registerDeck(quench) {
         await game.settings.set(ID, 'journal', S.seat.journal);
         await game.settings.set(ID, 'hideSources', S.seat.hideSources);
         await game.settings.set(ID, 'journalEntries', S.seat.journalEntries);
+        await game.settings.set(ID, 'moods', S.seat.moods);
         if (S.activeBefore && !S.activeBefore.active) await S.activeBefore.activate();
       });
 
@@ -484,6 +486,91 @@ export function registerDeck(quench) {
           );
           await S.board.stopAll();
           await wait(800);
+        });
+      });
+
+      describe('moods', function () {
+        this.timeout(30000);
+        const dialog = async (cls) => {
+          let d = null;
+          await until(() => {
+            d = [...foundry.applications.instances.values()].find(
+              (a) =>
+                a instanceof foundry.applications.api.DialogV2 &&
+                a.rendered &&
+                a !== S.app &&
+                (!cls || a.element.querySelector(cls)),
+            );
+            return d;
+          });
+          return d;
+        };
+        const moodCard = () => S.app.element.querySelector('.sd-mood');
+        const shot = () => S.sandbox.shots.sounds.contents[2];
+        const [l0, l1] = [0, 1].map((i) => () => S.sandbox.loops.sounds.contents[i]);
+
+        it('save: a bed, a loop at its level and an armed one-shot become a mood of the table, lit', async () => {
+          await game.settings.set(ID, 'moods', []);
+          await shot().update({ 'flags.sounds-deck.random': { min: 600, max: 600 } }); // armed, but never fires here
+          click('8 · The Board', 'play');
+          await until(() => S.board.playing);
+          await l0().update({ volume: 0.3, playing: true });
+          bank(S.sandbox.shots).querySelectorAll('.sd-random')[2].click();
+          await until(() => S.app.element.querySelector('.sd-now-row.sd-kind-random'));
+          S.app.element.querySelector('[data-action=moodSave]').click();
+          const d = await dialog('input[name=name]');
+          d.element.querySelector('input[name=name]').value = '__sd mood';
+          d.element.querySelector('[data-action=ok]').click();
+          await until(() => moodCard()?.classList.contains('is-playing'));
+          const [m] = game.settings.get(ID, 'moods');
+          assert.strictEqual(m.name, '__sd mood');
+          assert.strictEqual(m.bed, S.board.id);
+          assert.deepEqual(
+            m.loops.map((l) => [l.soundId, l.volume]),
+            [[l0().id, 0.3]],
+          );
+          assert.deepEqual(
+            m.random.map((r) => r.soundId),
+            [shot().id],
+          );
+          assert.isTrue(moodCard().classList.contains('is-playing'), 'the mood just saved is not lit');
+        });
+
+        it('recall: from another bed, another loop and nothing armed, one click brings the mood back', async () => {
+          click('5 · Wrong', 'play');
+          await until(() => S.wrong.playing && !S.board.playing);
+          await l0().update({ playing: false, volume: 0.9 });
+          await l1().update({ playing: true });
+          S.app.element.querySelector('.sd-now-row.sd-kind-random [data-action=disarm]').click();
+          await until(() => !moodCard()?.classList.contains('is-playing'));
+          assert.isFalse(moodCard().classList.contains('is-playing'), 'lit while the mix is different');
+          moodCard().querySelector('[data-action=moodRecall]').click();
+          await until(() => S.board.playing && !S.wrong.playing && l0().playing && !l1().playing);
+          assert.isTrue(S.board.playing, 'the mood bed did not start');
+          assert.isFalse(S.wrong.playing, 'the other bed kept playing');
+          assert.isTrue(l0().playing && !l1().playing, 'the loops are not the mood');
+          assert.closeTo(l0().volume, 0.3, 0.001);
+          await until(() => S.app.element.querySelector(`.sd-now-row.sd-kind-random[data-sound-id="${shot().id}"]`));
+          await until(() => moodCard()?.classList.contains('is-playing'));
+          assert.isTrue(moodCard().classList.contains('is-playing'), 'recalled, but not lit');
+        });
+
+        it('recall keeps the bed that already plays: same track, not restarted', async () => {
+          const track = S.board.sounds.find((s) => s.playing)?.id;
+          moodCard().querySelector('[data-action=moodRecall]').click();
+          await wait(1000);
+          assert.strictEqual(S.board.sounds.find((s) => s.playing)?.id, track);
+        });
+
+        it('delete asks first, then removes the mood and stops nothing', async () => {
+          moodCard().querySelector('[data-action=moodDelete]').click();
+          const d = await dialog('[data-action=yes]');
+          d.element.querySelector('[data-action=yes]').click();
+          await until(() => !moodCard());
+          assert.lengthOf(game.settings.get(ID, 'moods'), 0);
+          assert.isTrue(S.board.playing, 'deleting a mood stopped the music');
+          S.app.element.querySelector('[data-action=stopAll]').click();
+          await until(() => !game.playlists.some((p) => p.playing));
         });
       });
 

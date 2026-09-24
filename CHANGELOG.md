@@ -3,8 +3,15 @@
 Versions follow semver **without pre-release labels** - Foundry's `isNewerVersion` does not understand them
 ([Package Best Practices Checklist](https://foundryvtt.wiki/en/development/guides/package-best-practices)).
 
-## 0.5.3 - unreleased
+## 0.6.0 - unreleased
 
+**The Auditorium on 0.5.2** (2026-09-24) ranked five Musts from a study of six tabletop audio tools
+(`docs/field-study.md`). This version carries them.
+
+- **Moods**: save what plays (the bed, the room loops with their levels, the one-shots armed at random) under a
+  name, and recall it in one click. A recall keeps a bed that is already playing on the same track, and never touches
+  an event. Moods are world data (setting `moods`), so every gamemaster seat has them. A mood whose sounds were
+  deleted recalls what remains and says how much was skipped.
 - `docs/field-study.md`: what six tabletop audio tools offer that the deck does not.
 
 ## 0.5.2 - 2026-09-24
