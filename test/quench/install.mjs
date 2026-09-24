@@ -37,6 +37,7 @@ export function registerInstall(quench) {
           assert.exists(mod.api?.ducking, 'ducking not installed');
           assert.exists(mod.api?.silentFix, 'silent-start fix not attempted');
           assert.isFunction(mod.api?.preview?.toggle, 'preview not published');
+          assert.isTrue(mod.api?.crossfade?.installed, mod.api?.crossfade?.reason ?? 'crossfade not installed');
           if (game.user.isGM) assert.exists(mod.api?.sceneFix, 'scene fix not attempted');
         });
 

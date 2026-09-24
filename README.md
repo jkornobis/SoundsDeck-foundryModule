@@ -64,6 +64,8 @@ deck**, on by default; turn it off to see both on the pads. The filter searches 
   Music you picked by hand keeps playing into a scene that has none of its own.
 - **Ducking.** While an event plays, the music drops about 10 dB and comes back by itself - in every player's browser.
   The small speaker on an event's pad turns this off for that event.
+- **One crossfade between beds.** Switching beds starts the new one first and fades the old one out once the new one
+  is heard, over the *Crossfade between beds* setting (4 s by default; 0 cuts straight across).
 - **Preview in your ear.** The 🎧 on a pad plays it in your browser only, at the level the table would hear, before
   you play it for everyone. Another pad replaces it, the same one again stops it, and it stops by itself after 20 s.
 - **Random triggering.** The 🎲 on a one-shot's pad fires it at random moments (every 10–45 s) until you switch it off.

@@ -58,6 +58,10 @@
     "PreviewOff": "L'écouter pour vous seul - la table n'entend rien",
     "PreviewStarted": "Pour vous seul : {name}",
     "Disarm": "Arrêter le déclenchement au hasard",
+    "Crossfade": {
+      "Name": "Fondu enchaîné entre deux musiques (secondes)",
+      "Hint": "Quand la musique passe d'une ambiance à une autre - depuis sa carte, ou par une ambiance enregistrée qui en apporte une autre - la nouvelle démarre d'abord et l'ancienne s'éteint une fois la nouvelle entendue. Les deux fondent sur cette durée, dans chaque navigateur. 0 coupe net."
+    },
     "HideSources": {
       "Name": "Masquer les sources sur le deck",
       "Hint": "La source d'un son écrite entre parenthèses à la fin de son nom - « At Risk (Gone Girl) » - et sa description restent dans la barre des playlists de Foundry ; le deck affiche « At Risk ». Le filtre cherche toujours dans le nom complet."

@@ -3,7 +3,9 @@
  * them to hooks, and the live proof (tools/live-proof.mjs) can call the same functions in a running world.
  */
 import { MODES } from '../core/classify.mjs';
+import { CROSSFADE_DEFAULT_S } from '../core/crossfade.mjs';
 import { LEVELS_DEFAULT } from '../core/cues.mjs';
+import { installCrossfade } from './crossfade.mjs';
 import { SoundsDeckApp } from './deck-app.mjs';
 import { applyDuck, installDucking } from './ducking.mjs';
 import { previewing, previewSound, stopPreview, togglePreview } from './preview.mjs';
@@ -26,6 +28,16 @@ export function onInit() {
   });
   // Sources stay in Foundry's own playlist panel: a trailing "(…)" in a sound's name, and its description, are not
   // shown on the deck. A table decision, so world scope; on by default (the Composer, 2026-09-24).
+  // One crossfade between beds (0.6, note 4): the table's, so world scope; read by every browser when two beds overlap.
+  game.settings.register(MODULE_ID, 'crossfade', {
+    scope: 'world',
+    config: true,
+    type: Number,
+    range: { min: 0, max: 10, step: 0.5 },
+    default: CROSSFADE_DEFAULT_S,
+    name: 'SOUNDS_DECK.Crossfade.Name',
+    hint: 'SOUNDS_DECK.Crossfade.Hint',
+  });
   game.settings.register(MODULE_ID, 'hideSources', {
     scope: 'world',
     config: true,
@@ -91,9 +103,12 @@ export function onReady() {
   // Every client again: each browser starts its own copy of a sound, and can leave it silent on its own timing (#37).
   const silentFix = installSilentStartFix(foundry.documents.PlaylistSound);
   if (!silentFix.installed) console.info(`${MODULE_ID} | silent-start fix not installed: ${silentFix.reason}`);
+  // Every client: each browser fades its own copy, so each must know a switch's fade is the deck's (note 4).
+  const crossfade = installCrossfade(foundry.documents.PlaylistSound);
+  if (!crossfade.installed) console.info(`${MODULE_ID} | crossfade not installed: ${crossfade.reason}`);
   // The GM's-ear preview (note 3), reachable from a macro as well as from the pads' headphones.
   const preview = { previewing, sound: previewSound, stop: stopPreview, toggle: togglePreview };
-  return { open: openDeck, sceneFix, ducking, silentFix, preview };
+  return { open: openDeck, sceneFix, ducking, silentFix, preview, crossfade };
 }
 
 let deck = null;

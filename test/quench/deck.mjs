@@ -37,6 +37,17 @@ const quiet = (s) => {
   const { NONE, LOADED, STOPPED } = foundry.audio.Sound.STATES;
   return !s.sound || [NONE, LOADED, STOPPED].includes(s.sound._state);
 };
+const heardNow = (playlist) => playlist.sounds.some((s) => s.playing && sounding(s));
+// Was `to` heard in this browser at the moment `from` was told to stop? (note 4: the old bed stops only once the new
+// one is heard). Read at the stop itself, from the hook, so no polling interval can miss the moment.
+const watchSwitch = (from, to) => {
+  const seen = { heard: null };
+  const id = Hooks.on('updatePlaylist', (playlist, change) => {
+    if (playlist === from && change.playing === false && seen.heard === null) seen.heard = heardNow(to);
+  });
+  seen.done = () => Hooks.off('updatePlaylist', id);
+  return seen;
+};
 
 export function registerDeck(quench) {
   quench.registerBatch(
@@ -73,6 +84,7 @@ export function registerDeck(quench) {
           hideSources: game.settings.get(ID, 'hideSources'),
           journalEntries: game.settings.get(ID, 'journalEntries'),
           moods: game.settings.get(ID, 'moods'),
+          crossfade: game.settings.get(ID, 'crossfade'),
           levels: game.settings.get(ID, 'levels'),
         };
         const folder = game.folders.find((f) => f.type === 'Playlist' && f.name === 'GE-Foundry');
@@ -119,6 +131,7 @@ export function registerDeck(quench) {
         await game.settings.set(ID, 'hideSources', S.seat.hideSources);
         await game.settings.set(ID, 'journalEntries', S.seat.journalEntries);
         await game.settings.set(ID, 'moods', S.seat.moods);
+        await game.settings.set(ID, 'crossfade', S.seat.crossfade);
         await game.settings.set(ID, 'levels', S.seat.levels);
         if (S.activeBefore && !S.activeBefore.active) await S.activeBefore.activate();
       });
@@ -157,10 +170,13 @@ export function registerDeck(quench) {
           assert.strictEqual(now, expected);
         });
 
-        it('a bed is exclusive: starting Wrong stops The Board', async () => {
+        it('a bed is exclusive: starting Wrong stops The Board - once Wrong is heard, so the music never drops out', async () => {
+          const sw = watchSwitch(S.board, S.wrong);
           click('5 · Wrong', 'play');
-          await until(() => S.wrong.playing && !S.board.playing);
+          await until(() => S.wrong.playing && !S.board.playing, 20000);
+          sw.done();
           assert.isTrue(S.wrong.playing && !S.board.playing);
+          assert.isTrue(sw.heard, 'The Board stopped before Wrong was heard - a hole in the music');
         });
 
         it('skip plays a different track, stop stops', async () => {
@@ -461,7 +477,7 @@ export function registerDeck(quench) {
           await activate(BOARD_SCENES[0]);
           await until(() => S.board.playing, 8000);
           click('5 · Wrong', 'play');
-          await until(() => S.wrong.playing && !S.board.playing, 8000);
+          await until(() => S.wrong.playing && !S.board.playing, 20000);
           await activate(DOORWAY);
           assert.isTrue(S.wrong.playing, 'Wrong stopped at the doorway');
           await activate(BOARD_SCENES[0]);
@@ -662,6 +678,30 @@ export function registerDeck(quench) {
         });
       });
 
+      describe('one crossfade between beds (note 4)', function () {
+        this.timeout(40000);
+        const bedSound = (playlist) => playlist.sounds.find((s) => s.playing);
+
+        it("while two beds overlap, both fade over the deck's crossfade; alone, a track keeps its own fade", async () => {
+          await game.settings.set(ID, 'crossfade', 2);
+          await S.board.playAll();
+          await until(() => heardNow(S.board), 20000);
+          const board = bedSound(S.board);
+          const own = board.fadeDuration;
+          assert.notStrictEqual(own, 2000, 'a bed playing alone already answers the crossfade');
+          await S.wrong.playAll(); // not through the deck, so The Board keeps playing: the overlap of a switch
+          await until(() => bedSound(S.wrong), 5000);
+          assert.strictEqual(board.fadeDuration, 2000, 'the old bed would not fade out over the crossfade');
+          assert.strictEqual(bedSound(S.wrong).fadeDuration, 2000, 'the new bed would not fade in over the crossfade');
+          await S.wrong.stopAll();
+          await until(() => !S.wrong.playing);
+          assert.strictEqual(board.fadeDuration, own, 'alone again, the bed did not get its own fade back');
+          await S.board.stopAll();
+          await game.settings.set(ID, 'crossfade', S.seat.crossfade);
+          await wait(1000);
+        });
+      });
+
       describe('moods', function () {
         this.timeout(30000);
         const dialog = async (cls) => {
@@ -711,15 +751,18 @@ export function registerDeck(quench) {
 
         it('recall: from another bed, another loop and nothing armed, one click brings the mood back', async () => {
           click('5 · Wrong', 'play');
-          await until(() => S.wrong.playing && !S.board.playing);
+          await until(() => S.wrong.playing && !S.board.playing, 20000);
           await l0().update({ playing: false, volume: 0.9 });
           await l1().update({ playing: true });
           S.app.element.querySelector('.sd-now-row.sd-kind-random [data-action=disarm]').click();
           await until(() => !moodCard()?.classList.contains('is-playing'));
           assert.isFalse(moodCard().classList.contains('is-playing'), 'lit while the mix is different');
+          const sw = watchSwitch(S.wrong, S.board);
           moodCard().querySelector('[data-action=moodRecall]').click();
-          await until(() => S.board.playing && !S.wrong.playing && l0().playing && !l1().playing);
+          await until(() => S.board.playing && !S.wrong.playing && l0().playing && !l1().playing, 20000);
+          sw.done();
           assert.isTrue(S.board.playing, 'the mood bed did not start');
+          assert.isTrue(sw.heard, 'Wrong stopped before the mood bed was heard - a hole in the music');
           assert.isFalse(S.wrong.playing, 'the other bed kept playing');
           assert.isTrue(l0().playing && !l1().playing, 'the loops are not the mood');
           assert.closeTo(l0().volume, 0.3, 0.001);
