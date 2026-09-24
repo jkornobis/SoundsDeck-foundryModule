@@ -5,6 +5,9 @@ Versions follow semver **without pre-release labels** - Foundry's `isNewerVersio
 
 ## 0.5.2 - unreleased
 
+- **Bigger pads, more room between them, and columns that stop growing**: a pad column is at most 13rem wide, so a
+  wide window shows more pads per row instead of stretching each one; pads and bed cards are taller, and banks and
+  cards sit further apart. Compact keeps the small size.
 - The deck test compares a bed card's playing track with what the deck shows (the name without its source), not the
   full name - it failed against 0.5.1 once the world's names carried their sources.
 
