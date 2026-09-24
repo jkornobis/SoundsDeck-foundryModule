@@ -3,6 +3,10 @@
 Versions follow semver **without pre-release labels** - Foundry's `isNewerVersion` does not understand them
 ([Package Best Practices Checklist](https://foundryvtt.wiki/en/development/guides/package-best-practices)).
 
+## 0.5.3 - unreleased
+
+- `docs/field-study.md`: what six tabletop audio tools offer that the deck does not.
+
 ## 0.5.2 - 2026-09-24
 
 - **Bigger pads, more room between them, and columns that stop growing**: a pad column is at most 13rem wide, so a
