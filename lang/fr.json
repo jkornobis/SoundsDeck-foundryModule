@@ -52,6 +52,10 @@
     "RandomOn": "Se déclenche au hasard - cliquer pour arrêter",
     "RandomOff": "Déclencher au hasard (toutes les 10 à 45 s)",
     "RandomArmed": "au hasard",
-    "Disarm": "Arrêter le déclenchement au hasard"
+    "Disarm": "Arrêter le déclenchement au hasard",
+    "HideSources": {
+      "Name": "Masquer les sources sur le deck",
+      "Hint": "La source d'un son écrite entre parenthèses à la fin de son nom - « At Risk (Gone Girl) » - et sa description restent dans la barre des playlists de Foundry ; le deck affiche « At Risk ». Le filtre cherche toujours dans le nom complet."
+    }
   }
 }

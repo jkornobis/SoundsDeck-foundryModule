@@ -10,7 +10,7 @@
     <div class="sd-pads">
       {{#each pads}}
       <div class="sd-pad-cell sd-card{{#if playing}} is-playing{{/if}}" data-pad-name="{{name}}">
-        <button type="button" class="sd-pad" data-action="pad" data-sound-id="{{id}}" {{#if pressed}}aria-pressed="{{pressed}}"{{/if}} aria-label="{{name}}" data-tooltip="{{name}}{{#if description}}<br>{{description}}{{/if}}" {{#if description}}aria-description="{{description}}"{{/if}}><span class="sd-clamp">{{name}}</span></button>
+        <button type="button" class="sd-pad" data-action="pad" data-sound-id="{{id}}" {{#if pressed}}aria-pressed="{{pressed}}"{{/if}} aria-label="{{label}}" data-tooltip="{{label}}{{#if description}}<br>{{description}}{{/if}}" {{#if description}}aria-description="{{description}}"{{/if}}><span class="sd-clamp">{{label}}</span></button>
         {{#if randomizable}}
         <div class="sd-card-actions">
           <button type="button" class="sd-random{{#if armed}} is-armed{{/if}}" data-action="randomToggle" data-sound-id="{{id}}" aria-pressed="{{#if armed}}true{{else}}false{{/if}}" aria-label="{{localize 'SOUNDS_DECK.Random' name=name}}" data-tooltip="{{#if armed}}{{localize 'SOUNDS_DECK.RandomOn'}}{{else}}{{localize 'SOUNDS_DECK.RandomOff'}}{{/if}}"><i class="fa-solid fa-dice" inert></i></button>

@@ -46,6 +46,11 @@ in your world, then open the deck from the **Sounds Deck** button at the top of 
 
 A music card plays its playlist in whatever order the playlist is set to; **Shuffle** is the natural choice.
 
+**A sound's source** - the film, series or game it comes from - can go in parentheses at the end of its name:
+`At Risk (Gone Girl)`. Foundry's playlist sidebar shows the whole name; the deck shows `At Risk`, so the table sees the
+moment and not the reference. The same goes for a sound's *description*. It is a world setting, **Hide sources on the
+deck**, on by default; turn it off to see both on the pads. The filter searches the whole name either way.
+
 ## What the deck does
 
 - **Now playing**, at the top: everything sounding, each with its volume and a stop; events keep pause and position;
@@ -57,7 +62,8 @@ A music card plays its playlist in whatever order the playlist is set to; **Shuf
   The small speaker on an event's pad turns this off for that event.
 - **Random triggering.** The 🎲 on a one-shot's pad fires it at random moments (every 10–45 s) until you switch it off.
   Set your own interval per sound with the flag `flags["sounds-deck"].random = { min, max }` (seconds).
-- **Where a sound comes from.** Hover a pad: it shows the sound's own *description* from the playlist sidebar.
+- **Where a sound comes from** stays in the playlist sidebar by default (see above); with *Hide sources on the deck*
+  off, hovering a pad shows the sound's description.
 - **Filter** the pads by typing part of a name; **beside or below** layout, **comfortable or compact** pads, and a
   **"?"** that explains all of this - from the window's menu.
 - **Press log** (off by default, per browser, in the module settings): records what you pressed during a session, to

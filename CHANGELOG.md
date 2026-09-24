@@ -5,6 +5,9 @@ Versions follow semver **without pre-release labels** - Foundry's `isNewerVersio
 
 ## 0.5.1 - unreleased
 
+- **Sources stay in Foundry's playlist panel** (world setting, on by default): a sound's source written in parentheses
+  at the end of its name - `At Risk (Gone Girl)` - and its description are not shown on the deck, which shows
+  `At Risk`. The filter still searches the whole name.
 - **The README is written for any world**, not the one the deck was built in: install, the two conventions with neutral
   examples, what the deck does. The "?" help uses the same neutral examples.
 - `module.json` declares `verified: 14.368`, where every release so far was tested.
