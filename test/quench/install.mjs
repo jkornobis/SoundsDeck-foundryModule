@@ -45,11 +45,28 @@ export function registerInstall(quench) {
           }
         });
 
-        it('the stylesheet is linked into the page', () => {
-          const linked = [...document.styleSheets].some((s) =>
-            s.href?.includes(`modules/${ID}/styles/sounds-deck.css`),
-          );
-          assert.isTrue(linked);
+        it("the stylesheet is loaded, in Foundry's modules layer", () => {
+          // MEASURED on the first real install (0.4.0, 14.368): Foundry does not add a <link>. It @imports each
+          // module's stylesheet inside a <style> element, into the cascade layer "modules". The first version of this
+          // check looked for a <link> and failed on a module whose styles were in fact loaded.
+          const imports = [];
+          const walk = (sheet, depth = 0) => {
+            let rules;
+            try {
+              rules = sheet.cssRules;
+            } catch {
+              return;
+            }
+            for (const r of rules) {
+              if (r.styleSheet) {
+                if (r.href?.includes(`modules/${ID}/styles/sounds-deck.css`)) imports.push(r);
+                if (depth < 4) walk(r.styleSheet, depth + 1);
+              }
+            }
+          };
+          for (const sheet of document.styleSheets) walk(sheet);
+          assert.lengthOf(imports, 1);
+          assert.strictEqual(imports[0].layerName, 'modules');
         });
 
         it("the table's language has every string the deck uses", () => {

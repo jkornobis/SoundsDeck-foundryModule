@@ -1,5 +1,6 @@
 /* Sounds Deck. Colours come from Foundry's own theme variables, so the deck follows light and dark themes.
-   How module styles sit in Foundry's CSS cascade layers (v13+) is still to be measured on 14.368. */
+   MEASURED on the first real install (14.368): Foundry @imports this file into the cascade layer "modules", so these
+   rules sit above core's own layers without needing to out-specify them. */
 .sounds-deck .sounds-deck-beds {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr));

@@ -14,7 +14,8 @@ Versions follow semver **without pre-release labels** - Foundry's `isNewerVersio
 - **Accessibility**: a visible focus ring on every button; a screen reader hears an event start, pause and stop.
 - **A filter box on the board**: type part of a pad's or a bank's name; case and accents do not matter.
 - **The scene fix fails safe**: if it ever throws, Foundry's own method handles that scene change.
-- Tests: an install check that runs once the module is really installed; ducking measured in a player's browser.
+- Tests: an install check that runs once the module is really installed (its stylesheet check corrected on the first
+  real install: Foundry 14 @imports module styles into the `modules` layer, it adds no <link>); ducking measured in a player's browser.
 
 ## 0.4.0 - 2026-09-24 - first release
 
