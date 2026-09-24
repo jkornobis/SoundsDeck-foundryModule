@@ -405,6 +405,24 @@ export function registerDeck(quench) {
         });
       });
 
+      describe('the help', () => {
+        it('the "?" in the window menu explains both rules, in the table language', async () => {
+          S.app.options.actions.help.call(S.app);
+          let dialog = null;
+          await until(() => {
+            dialog = [...foundry.applications.instances.values()].find((a) =>
+              a.options.classes?.includes('sounds-deck-help'),
+            );
+            return dialog?.rendered;
+          });
+          const text = dialog.element.textContent;
+          await dialog.close();
+          assert.include(text, game.i18n.localize('SOUNDS_DECK.Help.Title'));
+          assert.include(text, '5 · Wrong');
+          assert.include(text, '💥 Ponctuels');
+        });
+      });
+
       describe('the sidebar', () => {
         it('the playlists sidebar carries a Sounds Deck button', async () => {
           await ui.playlists.render({ force: true });
