@@ -20,6 +20,9 @@
     "DucksOn": "La musique baisse sous cet évènement - cliquer pour la garder à plein",
     "DucksOff": "La musique reste à plein sous cet évènement - cliquer pour la baisser",
     "Filter": "Filtrer les pads - glass, heartbeat, ponctuels… (noms en anglais)",
-    "Density": "Taille des pads : confortable ou compacte"
+    "Density": "Taille des pads : confortable ou compacte",
+    "EventStarted": "Évènement lancé : {name}",
+    "EventPaused": "Évènement en pause : {name}",
+    "EventStopped": "Évènement arrêté : {name}"
   }
 }

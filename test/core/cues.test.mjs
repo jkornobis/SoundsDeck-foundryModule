@@ -1,7 +1,15 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 import { MODES } from '../../src/core/classify.mjs';
-import { bedVolume, clock, DUCK_DB, dbToGain, shouldDuck, transportCues } from '../../src/core/cues.mjs';
+import {
+  bedVolume,
+  clock,
+  DUCK_DB,
+  dbToGain,
+  shouldDuck,
+  transportChanges,
+  transportCues,
+} from '../../src/core/cues.mjs';
 
 const pl = (id, name, mode, sounds) => ({ id, name, mode, sounds });
 const s = (id, extra = {}) => ({ id, name: id, playing: false, ...extra });
@@ -61,5 +69,22 @@ describe('clock', () => {
   it('formats minutes and seconds', () => assert.equal(clock(125.9), '2:05'));
   it('guards nonsense', () => {
     for (const v of [-3, NaN, undefined, Infinity]) assert.equal(clock(v), '0:00');
+  });
+});
+
+describe('transportChanges - what a screen reader hears (v0.4 note 10)', () => {
+  const c = (soundId, state) => ({ playlistId: 'ev', soundId, name: soundId, state });
+  it('a cue appearing and playing is announced as started', () => {
+    assert.deepEqual(transportChanges([], [c('at-risk', 'playing')]), [{ kind: 'started', name: 'at-risk' }]);
+  });
+  it('playing -> paused is announced as paused; paused -> playing as started again', () => {
+    assert.deepEqual(transportChanges([c('a', 'playing')], [c('a', 'paused')]), [{ kind: 'paused', name: 'a' }]);
+    assert.deepEqual(transportChanges([c('a', 'paused')], [c('a', 'playing')]), [{ kind: 'started', name: 'a' }]);
+  });
+  it('a cue leaving the transport is announced as stopped', () => {
+    assert.deepEqual(transportChanges([c('a', 'playing')], []), [{ kind: 'stopped', name: 'a' }]);
+  });
+  it('nothing changed, nothing said', () => {
+    assert.deepEqual(transportChanges([c('a', 'playing')], [c('a', 'playing')]), []);
   });
 });

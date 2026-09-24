@@ -63,3 +63,24 @@ export function clock(seconds) {
   const s = Number.isFinite(seconds) && seconds > 0 ? Math.floor(seconds) : 0;
   return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
 }
+
+/**
+ * What a screen reader should hear when the transport changes (Auditorium on v0.4, note 10, Accessibility Specialist):
+ * an event that started, paused or stopped. Compares the transport before and after one change.
+ * @param {ReturnType<typeof transportCues>} before
+ * @param {ReturnType<typeof transportCues>} after
+ * @returns {Array<{ kind: 'started' | 'paused' | 'stopped', name: string }>}
+ */
+export function transportChanges(before, after) {
+  const key = (c) => `${c.playlistId}/${c.soundId}`;
+  const was = new Map(before.map((c) => [key(c), c]));
+  const now = new Map(after.map((c) => [key(c), c]));
+  const out = [];
+  for (const [k, c] of now) {
+    const prev = was.get(k);
+    if (c.state === 'playing' && prev?.state !== 'playing') out.push({ kind: 'started', name: c.name });
+    else if (c.state === 'paused' && prev?.state === 'playing') out.push({ kind: 'paused', name: c.name });
+  }
+  for (const [k, c] of was) if (!now.has(k)) out.push({ kind: 'stopped', name: c.name });
+  return out;
+}

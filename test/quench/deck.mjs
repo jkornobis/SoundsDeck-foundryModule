@@ -278,12 +278,27 @@ export function registerDeck(quench) {
           assert.exists(row()?.querySelector('[data-action=cuePause]'));
         });
 
+        it('a screen reader hears the event start, and a keyboard focus ring shows on a pad', async () => {
+          const live = S.app.element.querySelector(':scope > .sd-live');
+          assert.exists(live);
+          assert.strictEqual(live.getAttribute('aria-live'), 'polite');
+          assert.include(live.textContent, cue(0).name);
+          const pad = cuePad(1);
+          pad.focus({ focusVisible: true });
+          assert.strictEqual(getComputedStyle(pad).outlineStyle, 'solid');
+          pad.blur();
+        });
+
         it('pause keeps the cue on the transport and brings the bed back up', async () => {
           row().querySelector('[data-action=cuePause]').click();
           await until(() => !cue(0).playing && row()?.querySelector('[data-action=cueResume]'));
           await wait(2600);
           assert.isTrue(row()?.classList.contains('is-paused'));
           assert.isAbove(gain() / S.full, 0.9);
+          assert.include(
+            S.app.element.querySelector(':scope > .sd-live').textContent,
+            game.i18n.format('SOUNDS_DECK.EventPaused', { name: cue(0).name }),
+          );
         });
 
         it('resume ducks again; seek jumps to the chosen position', async () => {

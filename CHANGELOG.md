@@ -8,6 +8,7 @@ Versions follow semver **without pre-release labels** - Foundry's `isNewerVersio
 - **Pad size, per seat**: comfortable or compact, from the window's menu - compact fits both real banks without scrolling.
 - **Where a sound comes from, on hover**: a pad shows its sound's description (Foundry's own field), a bed card its
   playing track's.
+- **Accessibility**: a visible focus ring on every button; a screen reader hears an event start, pause and stop.
 - **A filter box on the board**: type part of a pad's or a bank's name; case and accents do not matter.
 - **The scene fix fails safe**: if it ever throws, Foundry's own method handles that scene change.
 - Tests: an install check that runs once the module is really installed; ducking measured in a player's browser.
