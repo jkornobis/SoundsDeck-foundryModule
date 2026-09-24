@@ -8,8 +8,8 @@
  * duck its own - and until now only the gamemaster's had been measured.
  *
  * HOW: a second, ISOLATED browser session (its own cookies - Target.createBrowserContext) joins the world as the
- * test seat, a role-1 account this instance created for exactly this (FoundryVTT-KnowledgeDB, SESSION_LOG
- * 2026-09-21). Its audio is unlocked with a gesture, the module's ducking is loaded into it as blob modules, and then
+ * test seat, a role-1 account created for exactly this; its name, like its password, lives only in the local
+ * credential file. Its audio is unlocked with a gesture, the module's ducking is loaded into it as blob modules, and then
  * the GAMEMASTER session starts a bed and an event. The bed's gain is read IN THE PLAYER'S PAGE.
  *
  * The seat's password is read from ~/.config/foundry-test-player.txt (user=... / password=... lines) and typed into the
@@ -25,7 +25,6 @@ import { connect, unlockAudio } from './cdp.mjs';
 
 const require = createRequire('/usr/share/nodejs/');
 const WebSocket = require('ws');
-const HOST = '<the world address>';
 const ROOT = path.resolve(new URL('..', import.meta.url).pathname);
 const FILES = ['src/core/classify.mjs', 'src/core/cues.mjs', 'src/foundry/snapshot.mjs', 'src/foundry/ducking.mjs'];
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -98,6 +97,9 @@ if (!guard.gm || guard.others.length || guard.playing.length) {
 let contextId, player;
 try {
   // ---- a second, isolated session joins as the test seat
+  // The world's address is read from the gamemaster's own page - it is written nowhere in this repository, which is
+  // public (the Composer, 2026-09-24: "scrub it from now on").
+  const HOST = await gm.ev('location.origin');
   contextId = (await bsend('Target.createBrowserContext', { disposeOnDetach: false })).result.browserContextId;
   const { targetId } = (await bsend('Target.createTarget', { url: `${HOST}/join`, browserContextId: contextId }))
     .result;
