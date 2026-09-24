@@ -10,7 +10,7 @@ import { classify } from './classify.mjs';
 /**
  * @typedef {{ id: string, name: string, playing: boolean }} SoundSnap
  * @typedef {{ id: string, name: string, mode: number, playing: boolean, sounds: SoundSnap[] }} PlaylistSnap
- * @typedef {{ id: string, name: string, playing: boolean, nowPlaying: string | null, tracks: number }} BedCard
+ * @typedef {{ id: string, name: string, playing: boolean, nowPlaying: string | null, nowPlayingFrom: string | null, tracks: number }} BedCard
  */
 
 /**
@@ -25,6 +25,7 @@ export function bedCards(playlists) {
       name: p.name,
       playing: Boolean(p.playing),
       nowPlaying: p.sounds.find((s) => s.playing)?.name ?? null,
+      nowPlayingFrom: p.sounds.find((s) => s.playing)?.description ?? null,
       tracks: p.sounds.length,
     }))
     .sort((a, b) => leadingNumber(a.name) - leadingNumber(b.name) || a.name.localeCompare(b.name));

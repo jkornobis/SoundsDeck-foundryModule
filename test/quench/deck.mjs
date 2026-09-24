@@ -196,6 +196,15 @@ export function registerDeck(quench) {
           assert.isFalse(pad().hasAttribute('aria-pressed'));
         });
 
+        it('a pad shows where its sound comes from on hover (the sound description)', async () => {
+          const { shots } = S.sandbox;
+          await shots.sounds.contents[0].update({ description: 'Se7en (1995) — Howard Shore' });
+          await until(() => bank(shots).querySelector('.sd-pad')?.dataset.tooltip);
+          const pad = bank(shots).querySelector('.sd-pad');
+          assert.strictEqual(pad.dataset.tooltip, 'Se7en (1995) — Howard Shore');
+          assert.strictEqual(pad.getAttribute('aria-description'), 'Se7en (1995) — Howard Shore');
+        });
+
         it('room loops toggle one by one: two on, one off, the other keeps playing', async () => {
           const { loops } = S.sandbox;
           const pad = (i) => bank(loops).querySelectorAll('.sd-pad')[i];

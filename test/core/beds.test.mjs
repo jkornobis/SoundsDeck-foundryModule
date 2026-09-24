@@ -26,7 +26,14 @@ describe('bedCards', () => {
     assert.equal(cards.at(-1).name, '10 · A tenth key');
   });
   it('a playing bed names the track that is playing', () => {
-    assert.deepEqual(cards[1], { id: 'b8', name: '8 · The Board', playing: true, nowPlaying: 'Clue Two', tracks: 2 });
+    assert.deepEqual(cards[1], {
+      id: 'b8',
+      name: '8 · The Board',
+      playing: true,
+      nowPlaying: 'Clue Two',
+      nowPlayingFrom: null,
+      tracks: 2,
+    });
   });
   it('a stopped bed names nothing and counts its tracks', () => {
     assert.deepEqual(cards[0], {
@@ -34,6 +41,7 @@ describe('bedCards', () => {
       name: '1 · Bureau & Briefing',
       playing: false,
       nowPlaying: null,
+      nowPlayingFrom: null,
       tracks: 3,
     });
   });
@@ -50,4 +58,15 @@ describe('bedsToStop', () => {
   it('starting a bed that is already playing does not stop it', () =>
     assert.deepEqual(bedsToStop(cards, 'b8'), ['b5']));
   it('nothing playing, nothing to stop', () => assert.deepEqual(bedsToStop([{ id: 'x', playing: false }], 'y'), []));
+});
+
+describe('bedCards - where the playing track comes from (v0.4 note 9)', () => {
+  it('the card carries the playing sound description', () => {
+    const [card] = bedCards([
+      pl('b5', '5 · Wrong', MODES.SHUFFLE, true, [
+        { ...s('Apéritif', true), description: 'Hannibal — Brian Reitzell' },
+      ]),
+    ]);
+    assert.equal(card.nowPlayingFrom, 'Hannibal — Brian Reitzell');
+  });
 });
