@@ -19,6 +19,9 @@ tools/
   live-proof.mjs    the module, proven inside a running world without installing it
   quench-run.mjs    runs the Quench batches in the live world and prints the results
   check-manifest.mjs  the manifest rules of `npm run check`
+  build-release.mjs   dist/module.json + dist/module.zip for one tag, addresses pinned to it
+.github/workflows/
+  release.yml       on the GitHub mirror only: check, build, publish a v* tag
 test/
   core/             node:test - runs anywhere, in milliseconds, on every change
   quench/           Quench batches: tests that need a live Foundry. Shipped, but imported only when Quench is active
