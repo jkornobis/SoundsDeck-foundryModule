@@ -18,6 +18,7 @@
     "Position": "Position dans la piste",
     "Ducks": "Baisser la musique sous {name}",
     "DucksOn": "La musique baisse sous cet évènement - cliquer pour la garder à plein",
-    "DucksOff": "La musique reste à plein sous cet évènement - cliquer pour la baisser"
+    "DucksOff": "La musique reste à plein sous cet évènement - cliquer pour la baisser",
+    "Filter": "Filtrer les pads - glass, heartbeat, ponctuels… (noms en anglais)"
   }
 }

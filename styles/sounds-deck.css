@@ -122,3 +122,15 @@
 .sounds-deck .sd-duck.is-off {
   opacity: 0.6;
 }
+
+/* The filter box sits above the banks and stays in view while the board scrolls. */
+.sounds-deck .sd-filter {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  padding-bottom: 0.4rem;
+  background: var(--color-bg, var(--background, inherit));
+}
+.sounds-deck .sd-filter input {
+  width: 100%;
+}

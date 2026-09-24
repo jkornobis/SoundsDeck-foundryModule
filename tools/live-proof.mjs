@@ -29,6 +29,7 @@ const FILES = [
   'src/core/beds.mjs',
   'src/core/banks.mjs',
   'src/core/cues.mjs',
+  'src/core/filter.mjs',
   'src/foundry/snapshot.mjs',
   'src/foundry/ducking.mjs',
   'src/core/guard.mjs',
@@ -191,6 +192,21 @@ const report = await cdp.ev(`(async () => {
     const expected = game.playlists.filter(isBank).map((p) => p.name).sort();
     check('the board shows every bank and nothing else', JSON.stringify([...bankNames].sort()) === JSON.stringify(expected) && sandbox.every((p) => bankNames.includes(p.name)), bankNames);
     check('a Shuffle bank is drawn disabled, with its hint', bank(shufflePl).disabled && !!bank(shufflePl).querySelector('.sd-hint'));
+
+    // the filter box (v0.4 note 6): type, survive a re-render, clear with Escape
+    const filterBox = () => app.element.querySelector('.sd-filter input');
+    const visiblePads = () => [...app.element.querySelectorAll('.sd-pad-cell')].filter((c) => !c.hidden && !c.closest('.sd-bank').hidden).map((c) => c.dataset.padName);
+    const allPads = visiblePads().length;
+    filterBox().value = 'glass';
+    filterBox().dispatchEvent(new Event('input'));
+    const glass = visiblePads();
+    check('filter: "glass" leaves only the glass pads', glass.length > 0 && glass.every((n) => /glass/i.test(n)), glass);
+    await loopsPl.update({ fade: 501 }); // any playlist change re-renders the board
+    await wait(600);
+    check('filter: the typed text and the result survive a re-render', filterBox().value === 'glass' && visiblePads().length === glass.length);
+    filterBox().dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+    await wait(200);
+    check('filter: Escape clears it and every pad returns', filterBox().value === '' && visiblePads().length === allPads, [visiblePads().length, allPads]);
 
     // one-shots: the same pad twice must overlap - two Sounds for that file, both playing
     const src = shotsPl.sounds.contents[0].path;
