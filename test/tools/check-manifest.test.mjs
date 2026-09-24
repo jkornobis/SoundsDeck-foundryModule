@@ -51,52 +51,67 @@ const withManifest = (patch) => {
 
 describe('checkManifest', () => {
   it('a valid module passes, with no tag yet', () =>
-    assert.deepEqual(checkManifest(fixture(), { latestTag: null }), []));
+    assert.deepEqual(checkManifest(fixture(), { latestTag: null, tagsAtHead: [] }), []));
   it('a valid module newer than the last tag passes', () => {
-    assert.deepEqual(checkManifest(fixture(), { latestTag: 'v0.1.0' }), []);
+    assert.deepEqual(checkManifest(fixture(), { latestTag: 'v0.1.0', tagsAtHead: [] }), []);
   });
   it('a version equal to the last tag fails - every release must move the number', () => {
-    assert.match(checkManifest(fixture(), { latestTag: 'v0.2.0' }).join(), /not newer than the latest tag/);
+    assert.match(
+      checkManifest(fixture(), { latestTag: 'v0.2.0', tagsAtHead: [] }).join(),
+      /not newer than the latest tag/,
+    );
+  });
+  it('the release commit itself - tagged with its own version - passes', () => {
+    assert.deepEqual(checkManifest(fixture(), { latestTag: 'v0.2.0', tagsAtHead: ['v0.2.0'] }), []);
+  });
+  it('another tag at HEAD does not excuse an old version', () => {
+    assert.match(checkManifest(fixture(), { latestTag: 'v0.2.0', tagsAtHead: ['nightly'] }).join(), /not newer/);
   });
   it('a pre-release label fails - Foundry cannot compare it', () => {
-    const p = checkManifest(fixture({ ...withManifest({ version: '0.2.0-beta.1' }) }), { latestTag: null });
+    const p = checkManifest(fixture({ ...withManifest({ version: '0.2.0-beta.1' }) }), {
+      latestTag: null,
+      tagsAtHead: [],
+    });
     assert.match(p.join(), /without a label/);
   });
   it('a version with no changelog heading fails', () => {
     assert.match(
-      checkManifest(fixture({ 'CHANGELOG.md': '# Changelog\n' }), { latestTag: null }).join(),
+      checkManifest(fixture({ 'CHANGELOG.md': '# Changelog\n' }), { latestTag: null, tagsAtHead: [] }).join(),
       /no "## 0.2.0"/,
     );
   });
   it('"## 0.2.0" does not satisfy version 0.2.00 by prefix, nor 0.2.0 by "## 0.2.01"', () => {
     assert.match(
-      checkManifest(fixture({ 'CHANGELOG.md': '## 0.2.01\n' }), { latestTag: null }).join(),
+      checkManifest(fixture({ 'CHANGELOG.md': '## 0.2.01\n' }), { latestTag: null, tagsAtHead: [] }).join(),
       /no "## 0.2.0"/,
     );
   });
   it('a missing file named in the manifest fails', () => {
     assert.match(
-      checkManifest(fixture({ 'styles/sounds-deck.css': null }), { latestTag: null }).join(),
+      checkManifest(fixture({ 'styles/sounds-deck.css': null }), { latestTag: null, tagsAtHead: [] }).join(),
       /styles\/sounds-deck.css .* missing/,
     );
   });
   it('a key missing in one language fails, naming the key', () => {
-    const p = checkManifest(fixture({ 'lang/fr.json': '{"SD":{"A":"a"}}' }), { latestTag: null });
+    const p = checkManifest(fixture({ 'lang/fr.json': '{"SD":{"A":"a"}}' }), { latestTag: null, tagsAtHead: [] });
     assert.match(p.join(), /lang\/fr.json lacks SD.B/);
   });
   it('a key only in the second language fails too', () => {
-    const p = checkManifest(fixture({ 'lang/fr.json': '{"SD":{"A":"a","B":"b","C":"c"}}' }), { latestTag: null });
+    const p = checkManifest(fixture({ 'lang/fr.json': '{"SD":{"A":"a","B":"b","C":"c"}}' }), {
+      latestTag: null,
+      tagsAtHead: [],
+    });
     assert.match(p.join(), /has keys lang\/en.json lacks: SD.C/);
   });
   it('no compatibility.minimum fails', () => {
     assert.match(
-      checkManifest(fixture(withManifest({ compatibility: {} })), { latestTag: null }).join(),
+      checkManifest(fixture(withManifest({ compatibility: {} })), { latestTag: null, tagsAtHead: [] }).join(),
       /minimum is not set/,
     );
   });
   it('a wrong id fails', () => {
     assert.match(
-      checkManifest(fixture(withManifest({ id: 'soundsdeck' })), { latestTag: null }).join(),
+      checkManifest(fixture(withManifest({ id: 'soundsdeck' })), { latestTag: null, tagsAtHead: [] }).join(),
       /expected "sounds-deck"/,
     );
   });

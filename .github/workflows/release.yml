@@ -1,0 +1,34 @@
+# Publish a release when a version tag reaches the PUBLIC GitHub mirror.
+#
+# The source of truth is the private Forgejo repository. Forgejo push-mirrors every commit and tag to GitHub, where
+# Foundry can download without logging in. A v* tag there runs `npm run check`, confirms the tag is module.json's
+# version, builds module.json + module.zip at addresses pinned to that tag, and publishes them as the release.
+#
+# The job is fenced to github.com: Forgejo also reads .github/workflows, and a release there would fail or queue.
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    if: github.server_url == 'https://github.com'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # the tags: check-manifest compares the version with the latest one
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm ci
+      - run: npm run check
+      - run: node tools/build-release.mjs "$GITHUB_REPOSITORY" "$GITHUB_REF_NAME"
+      - name: Publish
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "$GITHUB_REF_NAME" dist/module.zip dist/module.json --title "$GITHUB_REF_NAME" --notes-file dist/notes.md --verify-tag

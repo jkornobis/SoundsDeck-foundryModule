@@ -58,8 +58,11 @@ export function checkManifest(root, opts = {}) {
   if (!SEMVER.test(v)) problems.push(`version "${m.version}" is not MAJOR.MINOR.PATCH without a label`);
   else {
     const latestTag = 'latestTag' in opts ? opts.latestTag : gitLatestTag(root);
+    const tagsAtHead = 'tagsAtHead' in opts ? opts.tagsAtHead : gitTagsAtHead(root);
     const tag = latestTag?.replace(/^v/, '');
-    if (tag && SEMVER.test(tag) && compareVersions(v, tag) <= 0) {
+    // The release commit itself carries the tag of its own version: that is the one case where equal is right.
+    const isThisRelease = tagsAtHead.includes(`v${v}`);
+    if (tag && SEMVER.test(tag) && !isThisRelease && compareVersions(v, tag) <= 0) {
       problems.push(`version ${v} is not newer than the latest tag ${latestTag}`);
     }
     if (
@@ -92,6 +95,17 @@ export function checkManifest(root, opts = {}) {
     });
   }
   return problems;
+}
+
+function gitTagsAtHead(root) {
+  try {
+    return execFileSync('git', ['tag', '--points-at', 'HEAD'], { cwd: root, stdio: ['ignore', 'pipe', 'ignore'] })
+      .toString()
+      .split('\n')
+      .filter(Boolean);
+  } catch {
+    return [];
+  }
 }
 
 function gitLatestTag(root) {

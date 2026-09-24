@@ -38,6 +38,21 @@ if anyone else is connected or anything is playing** - it starts beds and activa
 Structure and the reasons for it: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md). Decisions:
 [`docs/decisions/`](docs/decisions/).
 
+## Release
+
+**This repository is the source; a public GitHub mirror is where Foundry downloads from.** Forgejo push-mirrors every
+commit and tag to GitHub. A `v*` tag there runs `.github/workflows/release.yml`: `npm run check`, the tag must equal
+`module.json`'s version, then `tools/build-release.mjs` publishes `module.json` and `module.zip` **at addresses pinned
+to that tag** - no *latest* anywhere, so a world only changes version when someone installs a new one.
+
+```bash
+# bump module.json "version", give CHANGELOG.md its heading, merge, then:
+git tag v0.1.0 && git push origin v0.1.0
+# install in Foundry (Setup → Add-on Modules → Install Module → Manifest URL):
+#   https://github.com/<owner>/<repo>/releases/download/v0.1.0/module.json
+node tools/build-release.mjs <owner/repo> v0.1.0   # see locally exactly what would ship, in dist/
+```
+
 ## Licence
 
 Not chosen yet. That is the Composer's call.
