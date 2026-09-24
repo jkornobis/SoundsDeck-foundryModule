@@ -28,7 +28,10 @@ export function registerFoundryFacts(quench) {
         if (others.length) throw new Error(`refusing to play sounds: connected ${others.map((u) => u.name)}`);
         if (game.audio.locked) throw new Error('audio is locked: interact with the page once, then run again');
         const folder = game.folders.find((f) => f.type === 'Playlist' && f.name === 'GE-Foundry');
-        const fx = game.playlists.getName('Effets · Fond (boucles)').sounds.contents.slice(0, 3);
+        const fx = game.playlists.contents
+          .flatMap((p) => p.sounds.contents)
+          .filter((s) => s.path.startsWith('ge-foundry/fx/'))
+          .slice(0, 3);
         pl = await Playlist.create({
           name: '__sounds-deck-quench',
           folder: folder?.id ?? null,
