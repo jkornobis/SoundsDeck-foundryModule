@@ -597,6 +597,71 @@ export function registerDeck(quench) {
         });
       });
 
+      describe("preview in the GM's ear (note 3)", function () {
+        this.timeout(20000);
+        const phones = (p, i) => bank(p).querySelectorAll('.sd-preview')[i];
+        const P = () => S.api.preview;
+
+        it('every pad of a bank that plays has headphones, labelled in the table language; a disabled bank has none', () => {
+          const { shots, loops, cues, shuffle } = S.sandbox;
+          for (const p of [shots, loops, cues]) assert.lengthOf(bank(p).querySelectorAll('.sd-preview'), p.sounds.size);
+          assert.lengthOf(bank(shuffle).querySelectorAll('.sd-preview'), 0);
+          const name = bank(shots).querySelector('.sd-pad').getAttribute('aria-label');
+          assert.strictEqual(
+            phones(shots, 0).getAttribute('aria-label'),
+            game.i18n.format('SOUNDS_DECK.Preview', { name }),
+          );
+        });
+
+        it('the headphones play a pad in this browser only, at its layer level: no document plays, nothing is sent', async () => {
+          const { shots } = S.sandbox;
+          const snd = shots.sounds.contents[0];
+          await game.settings.set(ID, 'levels', { bed: 1, toggle: 1, cue: 1, oneshot: 0.5 });
+          const sent = [];
+          const emit = game.socket.emit;
+          game.socket.emit = function (event, ...rest) {
+            sent.push(event);
+            return emit.call(this, event, ...rest);
+          };
+          try {
+            phones(shots, 0).click();
+            await until(() => P().sound()?.playing);
+          } finally {
+            game.socket.emit = emit;
+          }
+          assert.strictEqual(P().previewing(), snd.id);
+          assert.isFalse(snd.playing, 'the pad document plays - the table would hear it');
+          assert.notInclude(sent, 'playAudio', 'the sound was sent to the other browsers');
+          assert.notInclude(sent, 'modifyDocument', 'a document was written');
+          assert.closeTo(P().sound().volume, snd.volume * 0.5, 0.01, 'not at the level the table would hear');
+          await until(() => phones(shots, 0)?.getAttribute('aria-pressed') === 'true');
+          assert.strictEqual(phones(shots, 0).getAttribute('aria-pressed'), 'true');
+          await game.settings.set(ID, 'levels', { bed: 1, toggle: 1, cue: 1, oneshot: 1 });
+        });
+
+        it('another pad replaces it; pressing the same one again stops it', async () => {
+          const { shots, loops } = S.sandbox;
+          const loop = loops.sounds.contents[1];
+          phones(loops, 1).click();
+          await until(() => P().previewing() === loop.id && P().sound()?.playing);
+          assert.strictEqual(P().previewing(), loop.id);
+          assert.isFalse(loop.playing, 'the loop document plays');
+          await until(() => phones(shots, 0)?.getAttribute('aria-pressed') === 'false');
+          assert.strictEqual(phones(shots, 0).getAttribute('aria-pressed'), 'false', 'the first preview still shows');
+          phones(loops, 1).click();
+          await until(() => P().previewing() === null);
+          assert.isNull(P().previewing());
+        });
+
+        it('a preview stops by itself at its limit', async () => {
+          const played = await P().toggle(S.sandbox.shots.sounds.contents[0], { maxMs: 1200 });
+          assert.isTrue(Boolean(played?.playing), 'the preview did not start');
+          await wait(1800);
+          assert.isNull(P().previewing());
+          assert.isFalse(played.playing);
+        });
+      });
+
       describe('moods', function () {
         this.timeout(30000);
         const dialog = async (cls) => {

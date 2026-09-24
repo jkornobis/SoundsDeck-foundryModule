@@ -22,6 +22,7 @@ import { appendEntry, summarise } from '../core/journal.mjs';
 import { captureMood, isEmptyMood, moodIsOn, moodPlan } from '../core/moods.mjs';
 import { deckName } from '../core/names.mjs';
 import { applyDuck } from './ducking.mjs';
+import { previewing, stopPreview, togglePreview } from './preview.mjs';
 import { arm, armedList, disarm, disarmAll, isArmed } from './random.mjs';
 import { snapshot } from './snapshot.mjs';
 
@@ -60,6 +61,7 @@ export class SoundsDeckApp extends HandlebarsApplicationMixin(ApplicationV2) {
       skip: SoundsDeckApp.#onSkip,
       stop: SoundsDeckApp.#onStop,
       pad: SoundsDeckApp.#onPad,
+      preview: SoundsDeckApp.#onPreview,
       nowStop: SoundsDeckApp.#onNowStop,
       stopAll: SoundsDeckApp.#onStopAll,
       randomToggle: SoundsDeckApp.#onRandomToggle,
@@ -113,6 +115,9 @@ export class SoundsDeckApp extends HandlebarsApplicationMixin(ApplicationV2) {
         label: shown(p.name), // what the pad shows; the filter still searches the full name (data-pad-name)
         description: hide ? null : p.description,
         armed: p.randomizable && isArmed(b.id, p.id),
+        // Every pad of a bank that plays can be heard in the GM's ear first (note 3); a disabled bank cannot.
+        previewable: Boolean(b.press),
+        previewing: previewing() === p.id,
       })),
     }));
     context.armed = armedList()
@@ -159,6 +164,7 @@ export class SoundsDeckApp extends HandlebarsApplicationMixin(ApplicationV2) {
       'deletePlaylist',
       'updatePlaylistSound',
       'soundsDeckRandom',
+      'soundsDeckPreview',
     ]) {
       this.#hooks.push([hook, Hooks.on(hook, rerender)]);
     }
@@ -184,6 +190,7 @@ export class SoundsDeckApp extends HandlebarsApplicationMixin(ApplicationV2) {
       started: 'SOUNDS_DECK.EventStarted',
       paused: 'SOUNDS_DECK.EventPaused',
       stopped: 'SOUNDS_DECK.EventStopped',
+      preview: 'SOUNDS_DECK.PreviewStarted',
     };
     live.textContent = changes.map((c) => game.i18n.format(key[c.kind], { name: c.name })).join(' · ');
   }
@@ -262,6 +269,7 @@ export class SoundsDeckApp extends HandlebarsApplicationMixin(ApplicationV2) {
     game.settings.set(MODULE_ID, 'geometry', { left, top, width, height });
     for (const [hook, id] of this.#hooks) Hooks.off(hook, id);
     this.#hooks = [];
+    stopPreview(); // a preview belongs to the open deck; nothing keeps playing in the ear once it is closed
     super._onClose(options);
   }
 
@@ -321,6 +329,18 @@ export class SoundsDeckApp extends HandlebarsApplicationMixin(ApplicationV2) {
     // Every pad: a click plays, the next click stops (the Composer, after first use - decision 0005). A one-shot is a
     // PlaylistSound in a Soundboard Only playlist like the others, so its stop reaches every player, not only this one.
     return sound.playing ? playlist.stopSound(sound) : playlist.playSound(sound);
+  }
+
+  /** The 🎧 on a pad: hear it in this browser only, before the table does (note 3; the rules are core/preview.mjs). */
+  static async #onPreview(_event, target) {
+    const playlist = SoundsDeckApp.#playlistOf(target);
+    const sound = playlist?.sounds.get(target.dataset.soundId);
+    if (!sound) return;
+    const started = await togglePreview(sound);
+    if (!started) return;
+    const name = deckName(sound.name, game.settings.get(MODULE_ID, 'hideSources'));
+    // biome-ignore lint/complexity/noThisInStatic: ApplicationV2 calls actions with `this` bound to the instance (see #onLayout).
+    this.#announce([{ kind: 'preview', name }]);
   }
 
   static #rowOf(target) {
