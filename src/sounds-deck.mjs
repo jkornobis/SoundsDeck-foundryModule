@@ -11,3 +11,9 @@ Hooks.once('ready', () => {
   if (module) module.api = onReady();
 });
 Hooks.on('renderPlaylistDirectory', onRenderPlaylistDirectory);
+
+// Tests that run inside Foundry, for whoever has Quench installed. Imported only then.
+Hooks.once('quenchReady', async (quench) => {
+  const { registerBatches } = await import('../test/quench/index.mjs');
+  registerBatches(quench);
+});

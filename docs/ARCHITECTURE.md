@@ -17,10 +17,10 @@ src/
 tools/
   cdp.mjs           the connection to the gamemaster session, and the one-key audio unlock
   live-proof.mjs    the module, proven inside a running world without installing it
-  probe-foundry.mjs what the design assumes about Foundry, measured - six verdicts
+  quench-run.mjs    runs the Quench batches in the live world and prints the results
 test/
   core/             node:test - runs anywhere, in milliseconds, on every change
-  quench/           (note 4) tests that need a live Foundry, run inside it with Quench
+  quench/           Quench batches: tests that need a live Foundry. Shipped, but imported only when Quench is active
 lang/               en.json, fr.json - no wording typed into the code
 styles/  templates/
 ```
@@ -41,5 +41,4 @@ future Foundry release cannot silently turn every toggle into a one-shot.
 | lint + format | Biome 2.5.14, pinned | `npm run check` | style, likely bugs, and the purity of `src/core` |
 | unit | `node --test` | `npm run check` | every rule in the core, with the real world's playlist names as fixtures |
 | live | `tools/live-proof.mjs` | by hand, world quiet | the window, the buttons, the scene fix, walked in the real world - 15 checks |
-| Foundry's behaviour | `tools/probe-foundry.mjs` | by hand, world quiet | the six facts the design relies on (polyphony, loop toggle, fade on stop, player rights, reopened geometry) - red if a Foundry release changes one |
-| integration | Quench, inside Foundry | not installed | see note 4 in the pull request that added the probes |
+| Foundry's behaviour | Quench batch `sounds-deck.foundry-facts` (`test/quench/`) | `node tools/quench-run.mjs`, or Quench's own window | the facts the design relies on - polyphony, loop toggle, fade on stop, player rights, window size - 8 tests, red if a Foundry release changes one |
