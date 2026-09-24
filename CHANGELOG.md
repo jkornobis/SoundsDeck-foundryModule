@@ -3,7 +3,7 @@
 Versions follow semver **without pre-release labels** - Foundry's `isNewerVersion` does not understand them
 ([Package Best Practices Checklist](https://foundryvtt.wiki/en/development/guides/package-best-practices)).
 
-## 0.5.1 - unreleased
+## 0.5.1 - 2026-09-24
 
 - **Sources stay in Foundry's playlist panel** (world setting, on by default): a sound's source written in parentheses
   at the end of its name - `At Risk (Gone Girl)` - and its description are not shown on the deck, which shows
