@@ -58,6 +58,10 @@
     "PreviewOff": "Hear this in your ear only - the table does not",
     "PreviewStarted": "In your ear only: {name}",
     "Disarm": "Stop firing at random",
+    "Crossfade": {
+      "Name": "Crossfade between beds (seconds)",
+      "Hint": "When the music changes from one bed to another - a bed card, or a mood that brings another bed - the new bed starts first and the old one fades out once the new one is heard. Both fade over this time, in every browser. 0 cuts straight across."
+    },
     "HideSources": {
       "Name": "Hide sources on the deck",
       "Hint": "A sound's source written in parentheses at the end of its name - \"At Risk (Gone Girl)\" - and its description stay in Foundry's playlist sidebar; the deck shows \"At Risk\". The filter still searches the full name."

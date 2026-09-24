@@ -16,6 +16,8 @@ src/
     deck-app.mjs    the window (ApplicationV2 + HandlebarsApplicationMixin)
     scene-bed-fix.mjs  replaces Foundry's scene -> playlist handover while Foundry's defect is present
     silent-start-fix.mjs  delays Foundry's stop-on-start while its defect is present, so a sound is never left silent (#37)
+    crossfade.mjs   a bed switch: the new bed first, the old once it is heard, both fading over the deck's crossfade
+    preview.mjs     the GM's-ear preview: a pad played in this browser only
 tools/
   cdp.mjs           the connection to the gamemaster session, and the one-key audio unlock
   live-proof.mjs    --show: a screenshot of the deck, without installing it (its checks moved to Quench)

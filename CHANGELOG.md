@@ -5,6 +5,10 @@ Versions follow semver **without pre-release labels** - Foundry's `isNewerVersio
 
 ## 0.6.1 - unreleased
 
+- **One crossfade between beds** (note 4): switching beds, from a card or a mood that brings another bed, starts
+  the new bed first and stops the old one only once the new one is heard, so the music no longer drops out while a
+  large track loads. Both fade over one duration, a world setting (*Crossfade between beds*, 4 s by default), in
+  every browser. Outside a switch every track keeps its own fade.
 - **Preview in your ear** (note 3): the 🎧 on a pad plays it in your browser only, at the level the table would
   hear, before you play it for everyone. Nothing is sent to the players and the music does not duck. One preview at
   a time: another pad replaces it, the same one again stops it, and it stops by itself after 20 s.

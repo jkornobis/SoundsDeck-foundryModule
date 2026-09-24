@@ -21,6 +21,7 @@ import { matches } from '../core/filter.mjs';
 import { appendEntry, summarise } from '../core/journal.mjs';
 import { captureMood, isEmptyMood, moodIsOn, moodPlan } from '../core/moods.mjs';
 import { deckName } from '../core/names.mjs';
+import { switchBed } from './crossfade.mjs';
 import { applyDuck } from './ducking.mjs';
 import { previewing, stopPreview, togglePreview } from './preview.mjs';
 import { arm, armedList, disarm, disarmAll, isArmed } from './random.mjs';
@@ -302,9 +303,9 @@ export class SoundsDeckApp extends HandlebarsApplicationMixin(ApplicationV2) {
     const playlist = SoundsDeckApp.#playlistOf(target);
     if (!playlist) return;
     const others = bedsToStop(bedCards(snapshot(game.playlists.contents)), playlist.id);
-    for (const id of others) await game.playlists.get(id)?.stopAll();
-    await playlist.playAll();
+    // The new bed first, the old ones once it is heard - one crossfade, never a hole while it loads (note 4).
     await SoundsDeckApp.#log('bed', playlist.name);
+    await switchBed(playlist, others);
   }
 
   static async #onSkip(_event, target) {
@@ -506,7 +507,6 @@ export class SoundsDeckApp extends HandlebarsApplicationMixin(ApplicationV2) {
     const plan = moodPlan(mood, snapshot(game.playlists.contents), armedList());
     const soundOf = ({ playlistId, soundId }) => game.playlists.get(playlistId)?.sounds.get(soundId);
     for (const r of plan.disarm) disarm(r.playlistId, r.soundId);
-    for (const id of plan.stopBeds) await game.playlists.get(id)?.stopAll();
     for (const r of plan.stopLoops) {
       const s = soundOf(r);
       if (s) await s.parent.stopSound(s);
@@ -516,10 +516,13 @@ export class SoundsDeckApp extends HandlebarsApplicationMixin(ApplicationV2) {
       const s = soundOf(r);
       if (s) await s.update({ volume: r.volume, playing: true });
     }
-    if (plan.startBed) await game.playlists.get(plan.startBed)?.playAll();
     for (const r of plan.arm) arm(r.playlistId, r.soundId);
     if (plan.missing) ui.notifications.warn(game.i18n.format('SOUNDS_DECK.MoodMissing', { count: plan.missing }));
     await SoundsDeckApp.#log('mood', mood.name);
+    // The music last, as one crossfade: the mood's bed first, the others once it is heard (note 4).
+    const bed = plan.startBed && game.playlists.get(plan.startBed);
+    if (bed) await switchBed(bed, plan.stopBeds);
+    else for (const id of plan.stopBeds) await game.playlists.get(id)?.stopAll();
   }
 
   static async #onMoodDelete(_event, target) {
