@@ -3,7 +3,9 @@
  * table without Quench never downloads a line of it.
  */
 import { registerFoundryFacts } from './foundry-facts.mjs';
+import { registerInstall } from './install.mjs';
 
 export function registerBatches(quench) {
   registerFoundryFacts(quench);
+  registerInstall(quench);
 }
