@@ -10,7 +10,7 @@
     "lint": "biome lint .",
     "format": "biome format --write .",
     "test": "node --test \"test/**/*.test.mjs\"",
-    "check": "biome ci . && npm test"
+    "check": "biome ci . && npm test && node tools/check-manifest.mjs"
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.14"
