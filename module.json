@@ -1,0 +1,15 @@
+{
+  "id": "sounds-deck",
+  "title": "Sounds Deck",
+  "description": "A deck over Foundry's own playlists: numbered playlists become bed cards, emoji playlists become banks of pads. No second store - every sound stays a core PlaylistSound.",
+  "version": "0.0.1",
+  "compatibility": { "minimum": "14" },
+  "authors": [{ "name": "jkornobis" }],
+  "esmodules": ["src/sounds-deck.mjs"],
+  "styles": ["styles/sounds-deck.css"],
+  "languages": [
+    { "lang": "en", "name": "English", "path": "lang/en.json" },
+    { "lang": "fr", "name": "Français", "path": "lang/fr.json" }
+  ],
+  "url": "https://git.jkosvr.fr/jkornobis/SoundsDeck-foundryModule"
+}
