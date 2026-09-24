@@ -12,14 +12,15 @@
 const TRAILING = /\s*\([^()]*\)\s*$/;
 
 /**
+ * ONLY THE LAST GROUP: a title can carry its own parentheses - "Ripe (With Decay)" - and the source follows it:
+ * "Ripe (With Decay) (The Fragile)" shows "Ripe (With Decay)". Stripping every group (the first version) cut that
+ * title down to "Ripe".
  * @param {string} name
  * @param {boolean} hideSources  the module setting
- * @returns {string} the name without every trailing "(…)" group - never empty: a name that is only parentheses is kept
+ * @returns {string} the name without its last "(…)" group - never empty: a name that is only parentheses is kept
  */
 export function deckName(name, hideSources) {
   const full = String(name ?? '');
   if (!hideSources) return full;
-  let short = full;
-  while (TRAILING.test(short)) short = short.replace(TRAILING, '');
-  return short.trim() || full;
+  return full.replace(TRAILING, '').trim() || full;
 }

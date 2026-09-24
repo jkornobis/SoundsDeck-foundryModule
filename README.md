@@ -48,7 +48,8 @@ A music card plays its playlist in whatever order the playlist is set to; **Shuf
 
 **A sound's source** - the film, series or game it comes from - can go in parentheses at the end of its name:
 `At Risk (Gone Girl)`. Foundry's playlist sidebar shows the whole name; the deck shows `At Risk`, so the table sees the
-moment and not the reference. The same goes for a sound's *description*. It is a world setting, **Hide sources on the
+moment and not the reference. Only the **last** parentheses are the source: `Ripe (With Decay) (The Fragile)`
+shows `Ripe (With Decay)`. The same goes for a sound's *description*. It is a world setting, **Hide sources on the
 deck**, on by default; turn it off to see both on the pads. The filter searches the whole name either way.
 
 ## What the deck does
