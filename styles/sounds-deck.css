@@ -29,3 +29,56 @@
   display: flex;
   gap: 0.25rem;
 }
+
+/* The two parts side by side, or stacked: the flex DIRECTION changes, never the markup order. */
+.sounds-deck .window-content {
+  display: flex;
+  flex-direction: row;
+  gap: 0.75rem;
+  overflow: auto;
+}
+.sounds-deck.is-vertical .window-content {
+  flex-direction: column;
+}
+.sounds-deck .sounds-deck-beds,
+.sounds-deck .sounds-deck-board {
+  flex: 1 1 0;
+  min-width: 0;
+  align-content: start;
+}
+.sounds-deck .sd-bank {
+  border: 1px solid var(--color-border, currentColor);
+  border-radius: 6px;
+  margin: 0 0 0.5rem;
+}
+.sounds-deck .sd-pads {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(7rem, 1fr));
+  gap: 0.35rem;
+}
+.sounds-deck .sd-pad {
+  min-height: 2.5rem;
+  white-space: normal;
+  line-height: 1.1;
+}
+.sounds-deck .sd-pad.is-playing {
+  outline: 2px solid var(--color-warm-2, var(--color-border-highlight, currentColor));
+}
+.sounds-deck .sd-pad.is-fired {
+  filter: brightness(1.6);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .sounds-deck .sd-pad {
+    transition: filter 0.2s;
+  }
+}
+.sounds-deck .sd-hint {
+  margin: 0.25rem 0 0;
+  font-size: var(--font-size-12, 0.8rem);
+  opacity: 0.8;
+}
+/* A bank whose mode gives no press must LOOK inactive, not only say so (first v0.2 screenshot: it did not). */
+.sounds-deck .sd-bank:disabled .sd-pad {
+  opacity: 0.45;
+  cursor: not-allowed;
+}

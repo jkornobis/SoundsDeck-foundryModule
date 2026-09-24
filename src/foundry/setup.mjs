@@ -10,6 +10,10 @@ export const MODULE_ID = 'sounds-deck';
 
 /** init: before any document exists. */
 export function onInit() {
+  // Client scope: layout and window size are one seat's preferences, never the table's (spec: "content in world
+  // data, layout in client data").
+  game.settings.register(MODULE_ID, 'layout', { scope: 'client', config: false, type: String, default: 'horizontal' });
+  game.settings.register(MODULE_ID, 'geometry', { scope: 'client', config: false, type: Object, default: {} });
   // The pure core carries its own copy of the playlist modes. If a Foundry release renumbers them, every press
   // would silently do the wrong thing - so the mismatch is loud, at start-up, before anything plays.
   const drift = Object.entries(MODES).filter(([k, v]) => CONST.PLAYLIST_MODES[k] !== v);

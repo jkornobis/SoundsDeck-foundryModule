@@ -7,6 +7,10 @@
     "Skip": "Next track",
     "Stop": "Stop",
     "Tracks": "{count} tracks",
-    "NoBeds": "No bed yet. A playlist whose name starts with a number and a dot (1 · …) appears here."
+    "NoBeds": "No bed yet. A playlist whose name starts with a number and a dot (1 · …) appears here.",
+    "Board": "Board",
+    "Layout": "Board beside or below the beds",
+    "NoBanks": "No bank yet. A playlist whose name starts with an emoji appears here: Soundboard Only for one-shots, Simultaneous for room loops, Sequential for events.",
+    "NoPress": "Shuffle mode gives these pads nothing to do: choose Soundboard Only, Simultaneous or Sequential."
   }
 }

@@ -7,6 +7,10 @@
     "Skip": "Piste suivante",
     "Stop": "Arrêter",
     "Tracks": "{count} pistes",
-    "NoBeds": "Aucune ambiance. Une playlist dont le nom commence par un nombre et un point (1 · …) apparaît ici."
+    "NoBeds": "Aucune ambiance. Une playlist dont le nom commence par un nombre et un point (1 · …) apparaît ici.",
+    "Board": "Pads",
+    "Layout": "Pads à côté ou sous les ambiances",
+    "NoBanks": "Aucune banque. Une playlist dont le nom commence par un emoji apparaît ici : Soundboard seulement pour les sons ponctuels, Simultanée pour les boucles d'ambiance, Séquentielle pour les évènements.",
+    "NoPress": "Le mode Aléatoire ne donne rien à faire à ces pads : choisir Soundboard seulement, Simultanée ou Séquentielle."
   }
 }
