@@ -77,3 +77,15 @@ describe('nextDensity', () => {
   });
   it('an unknown value starts over at comfortable', () => assert.equal(nextDensity('huge'), 'comfortable'));
 });
+
+describe('bankViews - a pad knows where it comes from (v0.4 note 9)', () => {
+  it('carries the sound description, or null', () => {
+    const [b] = bankViews([
+      pl('sh', '💥 Ponctuels', MODES.DISABLED, [{ ...s('gun'), description: 'Freesound: ShawnyBoy — CC0' }, s('door')]),
+    ]);
+    assert.deepEqual(
+      b.pads.map((p) => p.description),
+      ['Freesound: ShawnyBoy — CC0', null],
+    );
+  });
+});

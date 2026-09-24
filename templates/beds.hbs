@@ -2,7 +2,7 @@
   {{#each beds}}
   <article class="sd-bed{{#if playing}} is-playing{{/if}}" data-playlist-id="{{id}}">
     <header class="sd-bed-name">{{name}}</header>
-    <p class="sd-bed-now">{{#if playing}}{{nowPlaying}}{{else}}{{localize "SOUNDS_DECK.Tracks" count=tracks}}{{/if}}</p>
+    <p class="sd-bed-now" {{#if nowPlayingFrom}}data-tooltip="{{nowPlayingFrom}}"{{/if}}>{{#if playing}}{{nowPlaying}}{{else}}{{localize "SOUNDS_DECK.Tracks" count=tracks}}{{/if}}</p>
     <div class="sd-bed-controls">
       {{#if playing}}
       <button type="button" data-action="skip" aria-label="{{localize 'SOUNDS_DECK.Skip'}}" data-tooltip="{{localize 'SOUNDS_DECK.Skip'}}"><i class="fa-solid fa-forward-step" inert></i></button>
