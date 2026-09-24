@@ -1,59 +1,89 @@
 # Sounds Deck
 
-A Foundry VTT module that plays **Foundry's own playlists** as a deck: numbered playlists become **bed cards**,
-playlists whose name starts with an emoji become **banks of pads**. There is no second store. Every sound stays a
-core `PlaylistSound`, editable in the sidebar with the module switched off.
+**A deck over Foundry VTT's own playlists.** Music, looping ambience, sound effects and long event cues, played from
+one window - with nothing stored anywhere but in the playlists you already have.
 
-**Status: 0.5.0.** Released; proven inside a running world (Quench: 30 deck tests, 8 Foundry facts, the install check).
+![Sounds Deck](docs/screenshots/v0.5-deck.png)
 
-![The deck, 0.5 (unreleased)](docs/screenshots/v0.5-deck.png)
- The design lives in the Composer's knowledge repository:
-`FoundryVTT-KnowledgeDB/worlds/DeltaGreen/knowledge/the-playlist-is-the-bank.md`.
+- **No second library.** Every sound stays a core `PlaylistSound`. Switch the module off and your playlists are exactly
+  as they were, editable in the sidebar as always.
+- **Two conventions decide everything**: a playlist's **name** puts it on the deck, its **mode** decides what a press
+  does.
+- **Built for the gamemaster at the table**: one click to change the music, one click to fire an effect, and the music
+  steps aside by itself while an event plays.
 
-## The two rules
+**Foundry VTT 14** (verified on 14.368). Gamemaster only.
 
-| The playlist's… | decides… | Example |
+## Install
+
+In Foundry: **Setup → Add-on Modules → Install Module**, and paste the manifest of the version you want:
+
+```
+https://github.com/jkornobis/SoundsDeck-foundryModule/releases/download/v0.5.0/module.json
+```
+
+Each release has its own fixed address, so a world changes version only when you install a new one. Enable the module
+in your world, then open the deck from the **Sounds Deck** button at the top of the Playlists sidebar.
+
+## Set up your playlists
+
+**The name** places a playlist on the deck:
+
+| Name starts with… | On the deck | Example |
 |---|---|---|
-| **name** | whether and where it is on the deck | `5 · Wrong` → a bed card · `🎬 Long events` → a bank · `Références` → not on the deck |
-| **core mode** | what pressing one of its sounds does | Soundboard Only → one-shot · Simultaneous → toggle · Sequential → cue with a transport |
+| a **number and a dot** | a **music** card (one plays at a time) | `1 · Calm`, `2 · Tension`, `3 · Combat` |
+| an **emoji** | a **bank of pads** | `💥 Effects`, `🔁 Ambience loops`, `🎬 Events` |
+| anything else | not on the deck | `Soundtrack archive` |
+
+**The mode** (Foundry's own playlist setting) decides what a pad in a bank does:
+
+| Mode | A pad is… |
+|---|---|
+| **Soundboard Only** | a one-shot: click plays it, click again stops it |
+| **Simultaneous** | a loop you switch on and off; the others keep playing |
+| **Sequential** | an event: it gets pause, stop and a position slider, and the music drops under it |
+| **Shuffle** | nothing - the bank is shown greyed |
+
+A music card plays its playlist in whatever order the playlist is set to; **Shuffle** is the natural choice.
+
+## What the deck does
+
+- **Now playing**, at the top: everything sounding, each with its volume and a stop; events keep pause and position;
+  one button stops it all.
+- **Music follows the scene.** A scene that carries a playlist starts its music when it opens, and moving between two
+  scenes that share the same playlist **keeps the track playing** (Foundry 14.368 alone restarts it on a new track).
+  Music you picked by hand keeps playing into a scene that has none of its own.
+- **Ducking.** While an event plays, the music drops about 10 dB and comes back by itself - in every player's browser.
+  The small speaker on an event's pad turns this off for that event.
+- **Random triggering.** The 🎲 on a one-shot's pad fires it at random moments (every 10–45 s) until you switch it off.
+  Set your own interval per sound with the flag `flags["sounds-deck"].random = { min, max }` (seconds).
+- **Where a sound comes from.** Hover a pad: it shows the sound's own *description* from the playlist sidebar.
+- **Filter** the pads by typing part of a name; **beside or below** layout, **comfortable or compact** pads, and a
+  **"?"** that explains all of this - from the window's menu.
+- **Press log** (off by default, per browser, in the module settings): records what you pressed during a session, to
+  export afterwards.
+
+Available in English and French.
 
 ## Develop
 
-Node 22 or later. Three tools in all: Node's built-in test runner, Biome, and nothing else. No build step:
-Foundry loads the ES modules in `src/` as they are.
+Node 22 or later. Three tools in all: Node's built-in test runner, Biome, and nothing else. No build step: Foundry
+loads the ES modules in `src/` as they are.
 
 ```bash
 npm install        # Biome only, pinned
-npm test           # the pure core, outside Foundry
-npm run check      # what must pass before anything is merged: biome ci + tests
-npm run format     # rewrite formatting
-
-node tools/quench-run.mjs              # every Quench batch in the live world (loads src/ if not installed)
-node tools/player-proof.mjs            # ducking measured in a player's browser (a second session)
-node tools/live-proof.mjs --show x.png # photograph the deck; plays nothing
+npm test           # the pure rules, outside Foundry
+npm run check      # the definition of done: Biome, every test, the manifest rules
 ```
 
-These need the gamemaster session driven through Chrome's debugger on port 9222, and **refuse if anyone else is
-connected or anything is playing** - they start beds and activate scenes.
+Tests that need a running Foundry are **Quench** batches in `test/quench/`, run from Quench's own window once the
+module is installed. The deck batch walks a real world and names its playlists and scenes - in any other world it
+skips and says why. The `tools/` scripts drive a gamemaster session through Chrome's debugger for the maintainers'
+own proofs.
 
-Structure and the reasons for it: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md). Decisions:
-[`docs/decisions/`](docs/decisions/).
-
-## Release
-
-**This repository is the source; a public GitHub mirror is where Foundry downloads from.** Forgejo push-mirrors every
-commit and tag to GitHub. A `v*` tag there runs `.github/workflows/release.yml`: `npm run check`, the tag must equal
-`module.json`'s version, then `tools/build-release.mjs` publishes `module.json` and `module.zip` **at addresses pinned
-to that tag** - no *latest* anywhere, so a world only changes version when someone installs a new one.
-
-```bash
-# bump module.json "version", give CHANGELOG.md its heading, merge, then:
-git tag v0.1.0 && git push origin v0.1.0
-# install in Foundry (Setup → Add-on Modules → Install Module → Manifest URL):
-#   https://github.com/<owner>/<repo>/releases/download/v0.1.0/module.json
-node tools/build-release.mjs <owner/repo> v0.1.0   # see locally exactly what would ship, in dist/
-```
+Structure and reasons: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md). Decisions: [`docs/decisions/`](docs/decisions/).
+Changes: [`CHANGELOG.md`](CHANGELOG.md).
 
 ## Licence
 
-Not chosen yet. That is the Composer's call.
+Not chosen yet.
