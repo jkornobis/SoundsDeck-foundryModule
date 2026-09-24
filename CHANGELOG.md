@@ -3,7 +3,7 @@
 Versions follow semver **without pre-release labels** - Foundry's `isNewerVersion` does not understand them
 ([Package Best Practices Checklist](https://foundryvtt.wiki/en/development/guides/package-best-practices)).
 
-## 0.4.0 - unreleased
+## 0.4.0 - 2026-09-24 - first release
 
 - **Manual music survives a scene change** (his rule): a bed you picked by hand plays on into a scene with no music of
   its own; a scene that brings its own bed takes over and stops the rest. Stateless - a playing bed that is not the
@@ -35,7 +35,7 @@ Versions follow semver **without pre-release labels** - Foundry's `isNewerVersio
 - **The window remembers its size and place** between sessions (client setting, per seat).
 - `tools/live-proof.mjs` covers all of it: 19 checks, with sandbox banks created and deleted.
 
-## 0.1.0
+## 0.1.0 - not released (folded into 0.4.0)
 
 - **Bed cards**: one card per numbered playlist, in key order, with play, next track and stop. A bed is exclusive -
   starting one stops the other. Each card shows the documents' state, so a stop from the sidebar shows at once.
