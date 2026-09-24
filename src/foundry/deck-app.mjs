@@ -28,6 +28,7 @@ export class SoundsDeckApp extends HandlebarsApplicationMixin(ApplicationV2) {
       controls: [
         { icon: 'fa-solid fa-table-columns', label: 'SOUNDS_DECK.Layout', action: 'layout' },
         { icon: 'fa-solid fa-table-cells', label: 'SOUNDS_DECK.Density', action: 'density' },
+        { icon: 'fa-solid fa-circle-question', label: 'SOUNDS_DECK.Help.Title', action: 'help' },
       ],
     },
     // 🚨 A NUMBER, NEVER 'auto'. Measured on 14.368: with height 'auto', every re-render resets the window to fit its
@@ -45,6 +46,7 @@ export class SoundsDeckApp extends HandlebarsApplicationMixin(ApplicationV2) {
       cueStop: SoundsDeckApp.#onCueStop,
       layout: SoundsDeckApp.#onLayout,
       density: SoundsDeckApp.#onDensity,
+      help: SoundsDeckApp.#onHelp,
     },
   };
 
@@ -259,6 +261,31 @@ export class SoundsDeckApp extends HandlebarsApplicationMixin(ApplicationV2) {
     const wasPlaying = sound.playing;
     await sound.update({ playing: false, pausedTime: Number(input.value) });
     if (wasPlaying) await playlist.playSound(sound);
+  }
+
+  /**
+   * The two rules, said where they are needed (Auditorium on v0.4, note 11): without them a numbered name and an emoji
+   * are invisible conventions - to a new Handler, and to this one in a year.
+   */
+  static async #onHelp() {
+    const t = (k) => game.i18n.localize(`SOUNDS_DECK.Help.${k}`);
+    const content = `<p>${t('Intro')}</p>
+      <ul>
+        <li>${t('Bed')}</li>
+        <li>${t('Bank')}
+          <ul><li>${t('OneShot')}</li><li>${t('Toggle')}</li><li>${t('Cue')}</li><li>${t('Shuffle')}</li></ul>
+        </li>
+        <li>${t('Neither')}</li>
+      </ul>
+      <p>${t('Scenes')}</p>
+      <p>${t('Source')}</p>`;
+    return foundry.applications.api.DialogV2.prompt({
+      window: { title: 'SOUNDS_DECK.Help.Title', icon: 'fa-solid fa-circle-question' },
+      classes: ['sounds-deck-help'],
+      content,
+      ok: { label: 'SOUNDS_DECK.Help.Ok' },
+      rejectClose: false,
+    });
   }
 
   static async #onDensity() {

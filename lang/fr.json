@@ -23,6 +23,20 @@
     "Density": "Taille des pads : confortable ou compacte",
     "EventStarted": "Évènement lancé : {name}",
     "EventPaused": "Évènement en pause : {name}",
-    "EventStopped": "Évènement arrêté : {name}"
+    "EventStopped": "Évènement arrêté : {name}",
+    "Help": {
+      "Title": "Comment le deck lit vos playlists",
+      "Ok": "Compris",
+      "Intro": "Sounds Deck joue les playlists de Foundry. Deux choses décident de tout : le <b>nom</b> de la playlist et son <b>mode</b>.",
+      "Bed": "Un nom qui commence par un <b>nombre et un point</b> (<code>5 · Wrong</code>) est une <b>ambiance</b> : une carte, une seule à la fois.",
+      "Bank": "Un nom qui commence par un <b>emoji</b> (<code>💥 Ponctuels</code>) est une <b>banque de pads</b>. Son mode décide de ce que fait un pad :",
+      "OneShot": "<b>Soundboard seulement</b> : un son ponctuel, entendu par tous, qui peut se superposer à lui-même.",
+      "Toggle": "<b>Simultanée</b> : une boucle qu'on allume et éteint ; les autres continuent.",
+      "Cue": "<b>Séquentielle</b> : un évènement, avec pause, arrêt et position sous les pads ; la musique baisse dessous (le petit haut-parleur à côté du pad le désactive).",
+      "Shuffle": "<b>Aléatoire</b> : rien - la banque apparaît grisée.",
+      "Neither": "Un nom sans l'un ni l'autre reste hors du deck.",
+      "Scenes": "Une scène qui porte une playlist lance sa musique à son ouverture. Une musique choisie à la main continue dans une scène qui n'en a pas.",
+      "Source": "Survolez un pad pour voir d'où vient son son : la description du son dans la barre des playlists."
+    }
   }
 }
