@@ -15,7 +15,8 @@
  * The decision is the pure core's (decideSceneBed); this file only reads scenes and carries the verdict out,
  * with the same actions Foundry's method performs.
  */
-import { decideSceneBed } from '../core/scene-bed.mjs';
+import { classify } from '../core/classify.mjs';
+import { sceneAudioPlan } from '../core/scene-bed.mjs';
 
 const DEFECT = 'playlistSound: priorPlaylistSoundId';
 
@@ -39,22 +40,24 @@ export function installSceneBedFix(Playlists, activeScene) {
   let prior = bedOf(activeScene);
   proto._onChangeScene = async function (scene) {
     const next = bedOf(scene);
-    const verdict = decideSceneBed(prior, next);
-    const before = prior;
+    const playingBeds = this.contents
+      .filter((p) => p.playing && classify(p.name, p.mode)?.role === 'bed')
+      .map((p) => p.id);
+    const plan = sceneAudioPlan(prior, next, playingBeds);
     prior = next;
-    if (verdict === 'none' || verdict === 'keep') return;
-
-    const priorPlaylist = before && this.get(before.playlistId);
-    if (priorPlaylist) {
-      const sound = before.soundId && priorPlaylist.sounds.get(before.soundId);
+    // Foundry's own four actions, applied to the plan: a named sound is stopped or started alone, otherwise the
+    // whole playlist.
+    for (const s of plan.stop) {
+      const playlist = this.get(s.playlistId);
+      const sound = s.soundId && playlist?.sounds.get(s.soundId);
       if (sound) await sound.update({ playing: false });
-      else await priorPlaylist.stopAll();
+      else if (playlist?.playing) await playlist.stopAll();
     }
-    const playlist = next && this.get(next.playlistId);
-    if (playlist) {
-      const sound = next.soundId && playlist.sounds.get(next.soundId);
+    if (plan.start) {
+      const playlist = this.get(plan.start.playlistId);
+      const sound = plan.start.soundId && playlist?.sounds.get(plan.start.soundId);
       if (sound) await sound.update({ playing: true });
-      else await playlist.playAll();
+      else if (playlist) await playlist.playAll();
     }
   };
   return {

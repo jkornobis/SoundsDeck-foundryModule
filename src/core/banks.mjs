@@ -9,7 +9,7 @@ import { classify } from './classify.mjs';
 
 /**
  * @typedef {import('./beds.mjs').PlaylistSnap} PlaylistSnap
- * @typedef {{ id: string, name: string, playing: boolean, pressed: 'true' | 'false' | null }} Pad
+ * @typedef {{ id: string, name: string, playing: boolean, pressed: 'true' | 'false' | null, ducks: boolean | null }} Pad
  * @typedef {{ id: string, name: string, press: 'oneshot' | 'toggle' | 'cue' | null, pads: Pad[] }} Bank
  */
 
@@ -31,6 +31,8 @@ export function bankViews(playlists) {
         playing: Boolean(s.playing),
         // A toggle or a cue has a state worth announcing; a one-shot has none - it fires and is gone.
         pressed: c.press === 'toggle' || c.press === 'cue' ? String(Boolean(s.playing)) : null,
+        // Only an event has a say in ducking; it ducks unless it was explicitly told not to.
+        ducks: c.press === 'cue' ? s.duck !== false : null,
       })),
     }))
     .sort((a, b) => a.name.localeCompare(b.name));

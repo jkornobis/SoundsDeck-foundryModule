@@ -57,6 +57,7 @@
   gap: 0.35rem;
 }
 .sounds-deck .sd-pad {
+  flex: 1 1 auto; /* fills its cell beside an event's ducking switch; inert elsewhere */
   min-height: 2.5rem;
   white-space: normal;
   line-height: 1.1;
@@ -106,4 +107,18 @@
 .sounds-deck .sd-cue-time {
   font-variant-numeric: tabular-nums;
   font-size: var(--font-size-12, 0.8rem);
+}
+
+/* An event pad carries a small ducking switch beside it. */
+.sounds-deck .sd-pad-cell {
+  display: flex;
+  gap: 0.2rem;
+}
+.sounds-deck .sd-duck {
+  flex: 0 0 1.8rem;
+  width: 1.8rem;
+  padding: 0;
+}
+.sounds-deck .sd-duck.is-off {
+  opacity: 0.6;
 }

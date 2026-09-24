@@ -4,9 +4,9 @@ A Foundry VTT module that plays **Foundry's own playlists** as a deck: numbered 
 playlists whose name starts with an emoji become **banks of pads**. There is no second store. Every sound stays a
 core `PlaylistSound`, editable in the sidebar with the module switched off.
 
-**Status: 0.3.0 - beds, board, events and ducking.** Proven inside a running world (26 checks); not released yet.
+**Status: 0.4.0.** Proven inside a running world (31 checks); not released yet.
 
-![The deck, v0.2](docs/screenshots/v0.2-board.png)
+![The deck, v0.4](docs/screenshots/v0.4-deck.png)
  The design lives in the Composer's knowledge repository:
 `FoundryVTT-KnowledgeDB/worlds/DeltaGreen/knowledge/the-playlist-is-the-bank.md`.
 

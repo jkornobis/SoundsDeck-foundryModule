@@ -4,7 +4,12 @@
     <legend>{{name}}</legend>
     <div class="sd-pads">
       {{#each pads}}
-      <button type="button" class="sd-pad{{#if playing}} is-playing{{/if}}" data-action="pad" data-sound-id="{{id}}" {{#if pressed}}aria-pressed="{{pressed}}"{{/if}}>{{name}}</button>
+      <div class="sd-pad-cell">
+        <button type="button" class="sd-pad{{#if playing}} is-playing{{/if}}" data-action="pad" data-sound-id="{{id}}" {{#if pressed}}aria-pressed="{{pressed}}"{{/if}}>{{name}}</button>
+        {{#if (ne ducks null)}}
+        <button type="button" class="sd-duck{{#unless ducks}} is-off{{/unless}}" data-action="duckToggle" data-sound-id="{{id}}" aria-pressed="{{#if ducks}}true{{else}}false{{/if}}" aria-label="{{localize 'SOUNDS_DECK.Ducks' name=name}}" data-tooltip="{{#if ducks}}{{localize 'SOUNDS_DECK.DucksOn'}}{{else}}{{localize 'SOUNDS_DECK.DucksOff'}}{{/if}}"><i class="fa-solid {{#if ducks}}fa-volume-low{{else}}fa-volume-high{{/if}}" inert></i></button>
+        {{/if}}
+      </div>
       {{/each}}
     </div>
     {{#unless press}}<p class="sd-hint">{{localize "SOUNDS_DECK.NoPress"}}</p>{{/unless}}

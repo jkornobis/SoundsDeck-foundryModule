@@ -3,7 +3,16 @@
 Versions follow semver **without pre-release labels** - Foundry's `isNewerVersion` does not understand them
 ([Package Best Practices Checklist](https://foundryvtt.wiki/en/development/guides/package-best-practices)).
 
-## 0.3.0 - unreleased
+## 0.4.0 - unreleased
+
+- **Manual music survives a scene change** (his rule): a bed you picked by hand plays on into a scene with no music of
+  its own; a scene that brings its own bed takes over and stops the rest. Stateless - a playing bed that is not the
+  previous scene's own was picked by hand, from anywhere - so there is no flag to go stale.
+- **A ducking switch on every event pad**: the music drops under the event, or stays at full. Stored on the sound
+  itself (`flags["sounds-deck"].duck`), so it survives and every seat sees it.
+- `tools/live-proof.mjs`: 31 checks.
+
+## 0.3.0
 
 - **Events have a transport**: every cue playing or paused part-way gets a row under the board - pause, resume, stop,
   and a position slider that seeks. Pause, resume and stop do exactly what Foundry's own playlist sidebar does.

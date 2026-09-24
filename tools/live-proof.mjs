@@ -280,8 +280,12 @@ const report = await cdp.ev(`(async () => {
     await wait(2600);
     check('stop: the cue leaves the transport and the bed returns to full', !row() && gain() / full > 0.9, +(gain() / full).toFixed(3));
 
-    // per-cue override: flags["sounds-deck"].duck === false plays without ducking
-    await cuesPl.sounds.contents[1].update({ 'flags.sounds-deck.duck': false });
+    // per-cue override, set from the deck's own switch (v0.4): the pad's ducking button, clicked
+    const duckBtn = () => bank(cuesPl).querySelectorAll('.sd-duck')[1];
+    check('an event pad carries a ducking switch, on by default', duckBtn()?.getAttribute('aria-pressed') === 'true');
+    duckBtn().click();
+    await until(() => cuesPl.sounds.contents[1].flags?.['sounds-deck']?.duck === false && duckBtn()?.getAttribute('aria-pressed') === 'false');
+    check('the switch stores duck:false on the sound and shows it off', cuesPl.sounds.contents[1].flags?.['sounds-deck']?.duck === false && duckBtn().getAttribute('aria-pressed') === 'false');
     cuePad(1).click();
     await until(() => cuesPl.sounds.contents[1].sound?.playing, 10000);
     await wait(1500);
@@ -302,6 +306,21 @@ const report = await cdp.ev(`(async () => {
     }
     check('board -> board KEEPS the same track (Foundry alone restarts it)', walk[0].bedPlaying && walk[1].bedPlaying && walk[1].track === walk[0].track, walk.map((w) => w.track));
     check('board -> doorway stops it', !walk[2].bedPlaying);
+
+    // manual music survives a scene change (v0.4): pick Wrong by hand in a board scene, then leave for the doorway
+    await game.scenes.getName(P.BOARD_SCENES[0]).activate();
+    await until(() => board.playing, 8000);
+    click('5 · Wrong', 'play');
+    await until(() => wrong.playing && !board.playing, 8000);
+    await door.activate();
+    await wait(2500);
+    check('manual music survives: Wrong picked by hand plays on into a scene with no music', wrong.playing && !board.playing, { wrong: wrong.playing, board: board.playing });
+    await game.scenes.getName(P.BOARD_SCENES[0]).activate();
+    await wait(2500);
+    check('a scene with its own music takes over: the board starts and Wrong stops', board.playing && !wrong.playing, { wrong: wrong.playing, board: board.playing });
+    await door.activate();
+    await wait(2500);
+    check('and leaving it stops the music the scene brought', !board.playing && !wrong.playing);
 
     await ui.playlists.render({ force: true });
     await wait(500);
