@@ -27,6 +27,35 @@ export function bedVolume(docVolume, ducked, db = DUCK_DB) {
 }
 
 /**
+ * The deck's four kinds of sound, each with its own level (Auditorium on 0.5.2, note 2 - Syrinscape sets each Element
+ * and the master independently; Audio Forge each category). A level scales every sound of its kind, on every client,
+ * without rewriting a single sound's own volume.
+ */
+export const LAYERS = Object.freeze(['bed', 'toggle', 'cue', 'oneshot']);
+export const LEVELS_DEFAULT = Object.freeze({ bed: 1, toggle: 1, cue: 1, oneshot: 1 });
+
+/** The layer a playlist's sounds belong to, or null when the playlist is not on the deck. */
+export function layerOf(name, mode) {
+  const c = classify(name, mode);
+  if (!c?.press) return null;
+  return c.role === 'bed' ? 'bed' : c.press;
+}
+
+/**
+ * The volume a playing sound should sit at: its own volume, times its layer's level, times the duck for a bed.
+ * @param {number} docVolume   PlaylistSound.volume, 0..1
+ * @param {'bed' | 'toggle' | 'cue' | 'oneshot'} layer
+ * @param {Partial<Record<string, number>> | null | undefined} levels   anything missing or invalid counts as 1
+ * @param {boolean} ducked
+ */
+export function mixVolume(docVolume, layer, levels, ducked) {
+  const raw = levels?.[layer];
+  const level = Number.isFinite(raw) ? Math.min(1, Math.max(0, raw)) : 1;
+  const v = (Number.isFinite(docVolume) ? docVolume : 0) * level;
+  return layer === 'bed' ? bedVolume(v, ducked) : v;
+}
+
+/**
  * Is any cue playing that asks for ducking? A cue opts out with flags["sounds-deck"].duck === false on its sound.
  * @param {Array<{ name: string, mode: number, sounds: Array<{ playing: boolean, duck?: boolean }> }>} playlists
  */

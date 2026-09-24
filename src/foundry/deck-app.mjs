@@ -7,11 +7,21 @@
  */
 import { bankViews, nextDensity, nextLayout } from '../core/banks.mjs';
 import { bedCards, bedsToStop } from '../core/beds.mjs';
-import { bedVolume, clock, nowPlaying, shouldDuck, transportChanges, transportCues } from '../core/cues.mjs';
+import {
+  clock,
+  LAYERS,
+  LEVELS_DEFAULT,
+  mixVolume,
+  nowPlaying,
+  shouldDuck,
+  transportChanges,
+  transportCues,
+} from '../core/cues.mjs';
 import { matches } from '../core/filter.mjs';
 import { appendEntry, summarise } from '../core/journal.mjs';
 import { captureMood, isEmptyMood, moodIsOn, moodPlan } from '../core/moods.mjs';
 import { deckName } from '../core/names.mjs';
+import { applyDuck } from './ducking.mjs';
 import { arm, armedList, disarm, disarmAll, isArmed } from './random.mjs';
 import { snapshot } from './snapshot.mjs';
 
@@ -112,6 +122,12 @@ export class SoundsDeckApp extends HandlebarsApplicationMixin(ApplicationV2) {
         return sound ? { playlistId, soundId, name: shown(sound.name), from: pl.name } : null;
       })
       .filter(Boolean);
+    const levels = { ...LEVELS_DEFAULT, ...game.settings.get(MODULE_ID, 'levels') };
+    context.levels = LAYERS.map((layer) => ({
+      layer,
+      label: game.i18n.localize(`SOUNDS_DECK.Layer.${layer}`),
+      input: foundry.audio.AudioHelper.volumeToInput(levels[layer]),
+    }));
     const armedNow = armedList();
     context.moods = game.settings.get(MODULE_ID, 'moods').map((m) => ({
       ...m,
@@ -215,6 +231,10 @@ export class SoundsDeckApp extends HandlebarsApplicationMixin(ApplicationV2) {
     this.#applyFilter();
     for (const input of this.element.querySelectorAll('.sd-cue .sd-seek')) {
       input.addEventListener('change', () => SoundsDeckApp.#seek(input));
+    }
+    for (const input of this.element.querySelectorAll('.sd-level')) {
+      input.addEventListener('input', () => applyDuck(SoundsDeckApp.#levelsWith(input)));
+      input.addEventListener('change', () => game.settings.set(MODULE_ID, 'levels', SoundsDeckApp.#levelsWith(input)));
     }
     for (const input of this.element.querySelectorAll('.sd-now-row .sd-volume')) {
       input.addEventListener('input', () => SoundsDeckApp.#volume(input));
@@ -351,11 +371,21 @@ export class SoundsDeckApp extends HandlebarsApplicationMixin(ApplicationV2) {
     const volume = foundry.audio.AudioHelper.inputToVolume(input.value);
     if (volume === sound.volume) return;
     sound.updateSource({ volume });
-    const isBed = input.closest('.sd-now-row')?.dataset.kind === 'bed';
-    const target = isBed ? bedVolume(volume, shouldDuck(snapshot(game.playlists.contents))) : volume;
+    const layer = input.closest('.sd-now-row')?.dataset.kind;
+    const ducked = shouldDuck(snapshot(game.playlists.contents));
+    const target = mixVolume(volume, layer, game.settings.get(MODULE_ID, 'levels'), ducked);
     sound.sound?.fade(target, { duration: 250 });
     if (sound.isOwner) sound.debounceVolume(volume);
     return playlist;
+  }
+
+  /** The table's levels with one layer moved to where its slider now stands. */
+  static #levelsWith(input) {
+    return {
+      ...LEVELS_DEFAULT,
+      ...game.settings.get(MODULE_ID, 'levels'),
+      [input.dataset.layer]: foundry.audio.AudioHelper.inputToVolume(input.value),
+    };
   }
 
   /** An event's say in ducking, stored on its own sound as flags["sounds-deck"].duck - world data, the GM's to set. */

@@ -70,6 +70,14 @@
     "MoodMissing": "{count} part(s) of this mood no longer exist and were skipped.",
     "MoodNone": "No mood yet. Set up a bed, loops and random effects, then save them here.",
     "MoodSummary": "{loops} loop(s) · {random} random",
-    "MoodNoBed": "No music"
+    "MoodNoBed": "No music",
+    "Levels": "Levels",
+    "LevelOf": "Level of every {layer} sound",
+    "Layer": {
+      "bed": "Music",
+      "toggle": "Loops",
+      "cue": "Events",
+      "oneshot": "Effects"
+    }
   }
 }

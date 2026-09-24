@@ -70,6 +70,14 @@
     "MoodMissing": "{count} élément(s) de cette ambiance n'existent plus et ont été ignorés.",
     "MoodNone": "Aucune ambiance. Réglez musique, boucles et effets au hasard, puis enregistrez-les ici.",
     "MoodSummary": "{loops} boucle(s) · {random} au hasard",
-    "MoodNoBed": "Sans musique"
+    "MoodNoBed": "Sans musique",
+    "Levels": "Niveaux",
+    "LevelOf": "Niveau de tous les sons : {layer}",
+    "Layer": {
+      "bed": "Musique",
+      "toggle": "Boucles",
+      "cue": "Évènements",
+      "oneshot": "Effets"
+    }
   }
 }

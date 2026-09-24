@@ -6,6 +6,10 @@ import {
   clock,
   DUCK_DB,
   dbToGain,
+  LAYERS,
+  LEVELS_DEFAULT,
+  layerOf,
+  mixVolume,
   nowPlaying,
   shouldDuck,
   transportChanges,
@@ -120,4 +124,29 @@ describe('nowPlaying - the list above the beds (after first use)', () => {
   it('a playlist that is not on the deck is not listed', () =>
     assert.ok(!now.some((x) => x.from.startsWith('Référence'))));
   it('silence is an empty list', () => assert.deepEqual(nowPlaying([]), []));
+});
+
+describe('layer levels (0.6, note 2)', () => {
+  it('a level scales the sound; the duck applies to a bed on top of it', () => {
+    assert.equal(mixVolume(0.8, 'toggle', { toggle: 0.5 }, true), 0.4);
+    assert.ok(Math.abs(mixVolume(0.8, 'bed', { bed: 0.5 }, true) - 0.4 * dbToGain(DUCK_DB)) < 1e-9);
+  });
+  it('no levels, a missing layer or a nonsense value count as full', () => {
+    assert.equal(mixVolume(0.6, 'cue', undefined, false), 0.6);
+    assert.equal(mixVolume(0.6, 'cue', { bed: 0.1 }, false), 0.6);
+    assert.equal(mixVolume(0.6, 'cue', { cue: 'loud' }, false), 0.6);
+  });
+  it('a level is held between 0 and 1', () => {
+    assert.equal(mixVolume(0.5, 'oneshot', { oneshot: 3 }, false), 0.5);
+    assert.equal(mixVolume(0.5, 'oneshot', { oneshot: -1 }, false), 0);
+  });
+  it('the layer of a playlist follows the deck rule', () => {
+    assert.equal(layerOf('3 · Out of Town', MODES.SHUFFLE), 'bed');
+    assert.equal(layerOf('🔁 Loops', MODES.SIMULTANEOUS), 'toggle');
+    assert.equal(layerOf('🎞️ Events', MODES.SEQUENTIAL), 'cue');
+    assert.equal(layerOf('💥 Hits', MODES.DISABLED), 'oneshot');
+    assert.equal(layerOf('🎲 Shuffled', MODES.SHUFFLE), null);
+    assert.equal(layerOf('Not on the deck', MODES.SEQUENTIAL), null);
+  });
+  it('the four layers and their defaults agree', () => assert.deepEqual(Object.keys(LEVELS_DEFAULT), [...LAYERS]));
 });

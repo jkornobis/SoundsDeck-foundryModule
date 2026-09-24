@@ -247,3 +247,20 @@
 .sounds-deck.is-compact .sd-moods .sd-card {
   min-height: 0;
 }
+/* Layer levels (0.6, note 2): four labelled sliders under the Now playing title, two by two. */
+.sounds-deck .sd-levels {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.2rem 0.6rem;
+  padding: 0.3rem 0;
+}
+.sounds-deck .sd-level-row {
+  display: flex;
+  flex-direction: column;
+  font-size: var(--font-size-11, 0.72rem);
+  min-width: 0;
+}
+.sounds-deck .sd-level-row input {
+  width: 100%;
+  margin: 0;
+}
