@@ -1,6 +1,6 @@
 # 0003 - One-shots play through AudioHelper; the playlist stays the store
 
-**Date:** 2026-09-24 · **Status:** accepted on measurement (`tools/probe-foundry.mjs`, question 1).
+**Date:** 2026-09-24 · **Status:** accepted on measurement (`tools/probe-foundry.mjs`, question 1 - that script is now the Quench batch `test/quench/foundry-facts.mjs`, "polyphony").
 
 **Context.** The spec's first open question: can the same sound overlap itself? A gunshot pressed twice must fire
 twice. If a `PlaylistSound` could not, the claim *"a bank is a playlist"* would weaken.

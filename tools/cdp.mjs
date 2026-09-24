@@ -51,19 +51,46 @@ export async function connect() {
 }
 
 /**
- * Browsers hold audio until a user gesture. A trusted Shift press through the debugger is that gesture, and it does
- * nothing else. Measured 2026-09-24: game.audio.locked true -> false, the three channels "running" at 44.1 kHz.
+ * Browsers hold audio until a user gesture. Two layers, both measured 2026-09-24 on 14.368 in headless Chrome:
+ *
+ * 1. Foundry's own lock: a trusted Shift press through the debugger sets game.audio.locked false.
+ * 2. 🚨 THE AUDIO CONTEXTS: on a freshly loaded page they stay "suspended" after that - a modifier key is not a
+ *    user activation to Chrome, and Foundry, now believing itself unlocked, never tries again. The first probe
+ *    run looked fine only because an earlier trusted click had already activated the page. Measured: Shift ->
+ *    still suspended; a plain click on a window title -> still suspended; a click whose pointerdown handler calls
+ *    context.resume() -> "running" on all three channels.
+ *
+ * So: press Shift, then - if any context is not running - arm a one-shot pointerdown listener that resumes them,
+ * and click somewhere that does nothing (a window's title text, else the middle of the canvas).
  */
 export async function unlockAudio({ send, ev }) {
+  const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+  const running = async () =>
+    ev(`['music', 'environment', 'interface'].every((k) => game.audio[k]?.state === 'running') && !game.audio.locked`);
   for (const type of ['keyDown', 'keyUp']) {
-    await send('Input.dispatchKeyEvent', {
+    await send('Input.dispatchKeyEvent', { type, key: 'Shift', code: 'ShiftLeft', windowsVirtualKeyCode: 16 });
+  }
+  await wait(500);
+  if (await running()) return true;
+  const pt = JSON.parse(
+    await ev(`(() => {
+      document.addEventListener('pointerdown', () => {
+        for (const k of ['music', 'environment', 'interface']) game.audio[k]?.resume();
+      }, { once: true, capture: true });
+      const title = document.querySelector('.window-title');
+      if (title) { const r = title.getBoundingClientRect(); return JSON.stringify({ x: r.x + 10, y: r.y + r.height / 2 }); }
+      return JSON.stringify({ x: innerWidth / 2, y: innerHeight / 2 });
+    })()`),
+  );
+  for (const type of ['mousePressed', 'mouseReleased']) {
+    await send('Input.dispatchMouseEvent', {
       type,
-      key: 'Shift',
-      code: 'ShiftLeft',
-      windowsVirtualKeyCode: 16,
-      modifiers: type === 'keyDown' ? 8 : 0,
+      x: Math.round(pt.x),
+      y: Math.round(pt.y),
+      button: 'left',
+      clickCount: 1,
     });
   }
-  for (let i = 0; i < 20 && (await ev('game.audio.locked')); i++) await new Promise((r) => setTimeout(r, 200));
-  return !(await ev('game.audio.locked'));
+  for (let i = 0; i < 10 && !(await running()); i++) await wait(200);
+  return running();
 }
