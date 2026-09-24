@@ -15,6 +15,7 @@
  * scene and the two board scenes bound to 8 · The Board.
  */
 import { classify } from '../../src/core/classify.mjs';
+import { deckName } from '../../src/core/names.mjs';
 
 const ID = 'sounds-deck';
 const DOORWAY = 'Opening Dashboard';
@@ -138,7 +139,9 @@ export function registerDeck(quench) {
           await until(() => S.board.playing && card('8 · The Board')?.classList.contains('is-playing'));
           const now = card('8 · The Board').querySelector('.sd-bed-now').textContent.trim();
           assert.isTrue(S.board.playing);
-          assert.strictEqual(now, S.board.sounds.find((s) => s.playing)?.name);
+          // what the deck shows: with "hide sources" on, the name without its last "(…)"
+          const expected = deckName(S.board.sounds.find((s) => s.playing)?.name, game.settings.get(ID, 'hideSources'));
+          assert.strictEqual(now, expected);
         });
 
         it('a bed is exclusive: starting Wrong stops The Board', async () => {
