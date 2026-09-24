@@ -52,7 +52,8 @@ future Foundry release cannot silently turn every toggle into a one-shot.
 
 ## Definition of done
 
-**Release rule (decision 0004):** 0.5 is not released before one table session has been played on 0.4.
+**Release rule (decision 0004):** a new version waits for the previous one to have been used at the table - waived by
+the Composer for 0.5, whose content came from his own use of 0.4.
 
 **`npm run check` passes.** It is Biome, then every Node test, then the manifest rules, and it stops at the first
 failure. A pull request is merged only on a green run. **A release additionally needs** the live proof

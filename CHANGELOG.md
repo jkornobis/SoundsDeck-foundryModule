@@ -3,7 +3,7 @@
 Versions follow semver **without pre-release labels** - Foundry's `isNewerVersion` does not understand them
 ([Package Best Practices Checklist](https://foundryvtt.wiki/en/development/guides/package-best-practices)).
 
-## 0.5.0 - unreleased: not before one table session on 0.4 (decision 0004)
+## 0.5.0 - 2026-09-24
 
 **After the Composer's first use of 0.4** (2026-09-24):
 
