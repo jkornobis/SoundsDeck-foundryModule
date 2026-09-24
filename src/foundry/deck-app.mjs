@@ -7,23 +7,14 @@
  */
 import { bankViews, nextLayout, oneShot } from '../core/banks.mjs';
 import { bedCards, bedsToStop } from '../core/beds.mjs';
+import { clock, transportCues } from '../core/cues.mjs';
+import { snapshot } from './snapshot.mjs';
 
 export const TEMPLATE_BEDS = 'modules/sounds-deck/templates/beds.hbs';
 export const TEMPLATE_BOARD = 'modules/sounds-deck/templates/board.hbs';
 const MODULE_ID = 'sounds-deck';
 
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
-
-/** Plain snapshots for the pure core: it never sees a document. */
-function snapshot(playlists) {
-  return playlists.map((p) => ({
-    id: p.id,
-    name: p.name,
-    mode: p.mode,
-    playing: p.playing,
-    sounds: p.sounds.map((s) => ({ id: s.id, name: s.name, playing: s.playing })),
-  }));
-}
 
 export class SoundsDeckApp extends HandlebarsApplicationMixin(ApplicationV2) {
   static DEFAULT_OPTIONS = {
@@ -44,6 +35,9 @@ export class SoundsDeckApp extends HandlebarsApplicationMixin(ApplicationV2) {
       skip: SoundsDeckApp.#onSkip,
       stop: SoundsDeckApp.#onStop,
       pad: SoundsDeckApp.#onPad,
+      cuePause: SoundsDeckApp.#onCuePause,
+      cueResume: SoundsDeckApp.#onCueResume,
+      cueStop: SoundsDeckApp.#onCueStop,
       layout: SoundsDeckApp.#onLayout,
     },
   };
@@ -70,6 +64,7 @@ export class SoundsDeckApp extends HandlebarsApplicationMixin(ApplicationV2) {
     const snaps = snapshot(game.playlists.contents);
     context.beds = bedCards(snaps);
     context.banks = bankViews(snaps);
+    context.cues = transportCues(snaps).map((c) => ({ ...c, at: clock(c.pausedTime) }));
     return context;
   }
 
@@ -81,12 +76,34 @@ export class SoundsDeckApp extends HandlebarsApplicationMixin(ApplicationV2) {
     }
   }
 
+  /** Ticks the transport's position while the window is open; nothing is re-rendered for it. */
+  #ticker = null;
+
   _onRender(context, options) {
     super._onRender(context, options);
     this.element.classList.toggle('is-vertical', game.settings.get(MODULE_ID, 'layout') === 'vertical');
+    for (const input of this.element.querySelectorAll('.sd-cue input[type=range]')) {
+      input.addEventListener('change', () => SoundsDeckApp.#seek(input));
+    }
+    this.#ticker ??= setInterval(() => this.#tick(), 500);
+  }
+
+  #tick() {
+    for (const row of this.element?.querySelectorAll('.sd-cue') ?? []) {
+      const sound = game.playlists.get(row.dataset.playlistId)?.sounds.get(row.dataset.soundId);
+      const live = sound?.sound;
+      if (!live) continue;
+      const range = row.querySelector('input[type=range]');
+      if (Number.isFinite(live.duration)) range.max = String(Math.floor(live.duration));
+      const t = sound.playing ? live.currentTime : (sound.pausedTime ?? 0);
+      if (document.activeElement !== range) range.value = String(Math.floor(t));
+      row.querySelector('.sd-cue-time').textContent = `${clock(t)} / ${clock(live.duration)}`;
+    }
   }
 
   _onClose(options) {
+    clearInterval(this.#ticker);
+    this.#ticker = null;
     const { left, top, width, height } = this.position;
     game.settings.set(MODULE_ID, 'geometry', { left, top, width, height });
     for (const [hook, id] of this.#hooks) Hooks.off(hook, id);
@@ -134,6 +151,37 @@ export class SoundsDeckApp extends HandlebarsApplicationMixin(ApplicationV2) {
       default:
         return undefined; // a bank whose mode gives no press: drawn disabled, and does nothing if reached anyway
     }
+  }
+
+  static #cueOf(target) {
+    const row = target.closest('.sd-cue');
+    const playlist = game.playlists.get(row?.dataset.playlistId);
+    return { playlist, sound: playlist?.sounds.get(row?.dataset.soundId) };
+  }
+
+  // Pause, resume and stop are exactly what Foundry's own playlist sidebar does, so the two never disagree.
+  static async #onCuePause(_event, target) {
+    const { sound } = SoundsDeckApp.#cueOf(target);
+    if (sound?.playing) await sound.update({ playing: false, pausedTime: sound.sound?.currentTime ?? 0 });
+  }
+
+  static async #onCueResume(_event, target) {
+    const { playlist, sound } = SoundsDeckApp.#cueOf(target);
+    if (sound) await playlist.playSound(sound);
+  }
+
+  static async #onCueStop(_event, target) {
+    const { playlist, sound } = SoundsDeckApp.#cueOf(target);
+    if (sound) await playlist.stopSound(sound);
+  }
+
+  /** Seek = pause at the new position, then play from it: a playing Sound cannot be moved by its document. */
+  static async #seek(input) {
+    const { playlist, sound } = SoundsDeckApp.#cueOf(input);
+    if (!sound) return;
+    const wasPlaying = sound.playing;
+    await sound.update({ playing: false, pausedTime: Number(input.value) });
+    if (wasPlaying) await playlist.playSound(sound);
   }
 
   static async #onLayout() {

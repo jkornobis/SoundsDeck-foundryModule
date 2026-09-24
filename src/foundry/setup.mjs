@@ -4,6 +4,7 @@
  */
 import { MODES } from '../core/classify.mjs';
 import { SoundsDeckApp } from './deck-app.mjs';
+import { installDucking } from './ducking.mjs';
 import { installSceneBedFix } from './scene-bed-fix.mjs';
 
 export const MODULE_ID = 'sounds-deck';
@@ -30,7 +31,9 @@ export function onReady() {
     ? installSceneBedFix(foundry.documents.collections.Playlists, game.scenes.active ?? null)
     : null;
   if (sceneFix && !sceneFix.installed) console.info(`${MODULE_ID} | scene fix not installed: ${sceneFix.reason}`);
-  return { open: openDeck, sceneFix };
+  // Every client ducks its own copy of the bed - players included, since each browser plays its own audio.
+  const ducking = installDucking();
+  return { open: openDeck, sceneFix, ducking };
 }
 
 let deck = null;

@@ -1,0 +1,65 @@
+import assert from 'node:assert/strict';
+import { describe, it } from 'node:test';
+import { MODES } from '../../src/core/classify.mjs';
+import { bedVolume, clock, DUCK_DB, dbToGain, shouldDuck, transportCues } from '../../src/core/cues.mjs';
+
+const pl = (id, name, mode, sounds) => ({ id, name, mode, sounds });
+const s = (id, extra = {}) => ({ id, name: id, playing: false, ...extra });
+
+describe('ducking arithmetic', () => {
+  it('his 10 dB is a gain of about 0.316', () => assert.ok(Math.abs(dbToGain(DUCK_DB) - 0.3162) < 0.0001));
+  it('0 dB changes nothing', () => assert.equal(dbToGain(0), 1));
+  it('a ducked bed at 0.6 sits near 0.19; undocked it stays 0.6', () => {
+    assert.ok(Math.abs(bedVolume(0.6, true) - 0.1897) < 0.001);
+    assert.equal(bedVolume(0.6, false), 0.6);
+  });
+  it('a missing volume is silence, not NaN', () => assert.equal(bedVolume(undefined, true), 0));
+});
+
+describe('shouldDuck', () => {
+  const events = (sounds) => pl('ev', '🎞️ Évènements longs', MODES.SEQUENTIAL, sounds);
+  it('a playing cue ducks', () => assert.equal(shouldDuck([events([s('a', { playing: true })])]), true));
+  it('no cue playing, no duck', () => assert.equal(shouldDuck([events([s('a')])]), false));
+  it('a cue that opts out does not duck', () => {
+    assert.equal(shouldDuck([events([s('a', { playing: true, duck: false })])]), false);
+  });
+  it('a playing room loop is not a cue and does not duck', () => {
+    assert.equal(
+      shouldDuck([pl('lp', '🔁 Fond (boucles)', MODES.SIMULTANEOUS, [s('rain', { playing: true })])]),
+      false,
+    );
+  });
+  it('a playing BED is not a cue and does not duck itself', () => {
+    assert.equal(shouldDuck([pl('b5', '5 · Wrong', MODES.SHUFFLE, [s('x', { playing: true })])]), false);
+  });
+  it('a sequential playlist without the emoji is not a bank, so not a cue', () => {
+    assert.equal(shouldDuck([pl('r', 'Référence · Millennium', MODES.SEQUENTIAL, [s('x', { playing: true })])]), false);
+  });
+});
+
+describe('transportCues', () => {
+  const ev = pl('ev', '🎞️ Évènements longs', MODES.SEQUENTIAL, [
+    s('at-risk', { playing: true }),
+    s('clue-one', { pausedTime: 42.5 }),
+    s('never', {}),
+  ]);
+  it('shows the playing cue and the paused one, not the untouched one', () => {
+    assert.deepEqual(
+      transportCues([ev]).map((c) => [c.soundId, c.state, c.pausedTime]),
+      [
+        ['at-risk', 'playing', null],
+        ['clue-one', 'paused', 42.5],
+      ],
+    );
+  });
+  it('a room loop never appears on the transport', () => {
+    assert.deepEqual(transportCues([pl('lp', '🔁 Fond', MODES.SIMULTANEOUS, [s('rain', { playing: true })])]), []);
+  });
+});
+
+describe('clock', () => {
+  it('formats minutes and seconds', () => assert.equal(clock(125.9), '2:05'));
+  it('guards nonsense', () => {
+    for (const v of [-3, NaN, undefined, Infinity]) assert.equal(clock(v), '0:00');
+  });
+});
