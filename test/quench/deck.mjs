@@ -29,6 +29,14 @@ const until = async (fn, ms = 8000) => {
   return false;
 };
 
+// What a sound's audio is doing, as opposed to what its document says (#37): sounding once it really plays - PLAYING,
+// with a position - and quiet once it has fully stopped, or never started.
+const sounding = (s) => s.sound?._state === foundry.audio.Sound.STATES.PLAYING && Number.isFinite(s.sound.currentTime);
+const quiet = (s) => {
+  const { NONE, LOADED, STOPPED } = foundry.audio.Sound.STATES;
+  return !s.sound || [NONE, LOADED, STOPPED].includes(s.sound._state);
+};
+
 export function registerDeck(quench) {
   quench.registerBatch(
     'sounds-deck.deck',
@@ -486,6 +494,34 @@ export function registerDeck(quench) {
           );
           await S.board.stopAll();
           await wait(800);
+        });
+      });
+
+      describe('a sound stopped before it starts (#37)', function () {
+        this.timeout(20000);
+        const loop = () => S.sandbox.loops.sounds.contents[2];
+        const heard = () =>
+          `state ${loop().sound?._state}, at ${loop().sound?.currentTime}, gain ${loop().sound?.volume}`;
+
+        it('the silent-start fix is installed on this Foundry (its defect is present)', () => {
+          assert.isTrue(S.api.silentFix?.installed, S.api.silentFix?.reason);
+        });
+
+        it('started again during its fade-out and stopped at once, a loop ends stopped - and sounds on the next press', async () => {
+          await loop().update({ playing: true });
+          await until(() => sounding(loop()));
+          // The race, on purpose: stopped (its 500 ms fade-out starts), started again inside that fade, stopped again
+          // before it sounds. Without the fix, Foundry leaves it PLAYING with no position and a gain of 0.
+          await loop().update({ playing: false });
+          await loop().update({ playing: true });
+          await loop().update({ playing: false });
+          await wait(1500);
+          assert.isTrue(quiet(loop()), `left "playing" after the race: ${heard()}`);
+          await loop().update({ playing: true });
+          await until(() => sounding(loop()) && loop().sound.volume > 0.3, 5000);
+          assert.isTrue(sounding(loop()), `silent on the next press: ${heard()}`);
+          await loop().update({ playing: false });
+          await until(() => quiet(loop()));
         });
       });
 

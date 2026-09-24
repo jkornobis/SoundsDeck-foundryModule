@@ -15,6 +15,7 @@ src/
     setup.mjs       what happens at init and ready, as functions the live proof can call too
     deck-app.mjs    the window (ApplicationV2 + HandlebarsApplicationMixin)
     scene-bed-fix.mjs  replaces Foundry's scene -> playlist handover while Foundry's defect is present
+    silent-start-fix.mjs  delays Foundry's stop-on-start while its defect is present, so a sound is never left silent (#37)
 tools/
   cdp.mjs           the connection to the gamemaster session, and the one-key audio unlock
   live-proof.mjs    --show: a screenshot of the deck, without installing it (its checks moved to Quench)

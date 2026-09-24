@@ -12,6 +12,9 @@ Versions follow semver **without pre-release labels** - Foundry's `isNewerVersio
   name, and recall it in one click. A recall keeps a bed that is already playing on the same track, and never touches
   an event. Moods are world data (setting `moods`), so every gamemaster seat has them. A mood whose sounds were
   deleted recalls what remains and says how much was skipped.
+- **A sound stopped before it starts no longer goes silent until reload** (#37). Foundry 14.368 left such a sound
+  marked playing but disconnected, so pressing it again played nothing; music was hit hardest after a quick switch.
+  This happens on every browser, players' included. The fix steps aside by itself once Foundry's own line changes.
 - `docs/field-study.md`: what six tabletop audio tools offer that the deck does not.
 
 ## 0.5.2 - 2026-09-24
