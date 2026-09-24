@@ -21,25 +21,22 @@
  * folder, and leaves the world as it found it: sandbox deleted, nothing playing, the same scene active, the seat's
  * own layout and window size put back.
  */
-import { readFile, writeFile } from 'node:fs/promises';
+import { readdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { connect } from './cdp.mjs';
 
 const ROOT = path.resolve(new URL('..', import.meta.url).pathname);
-const FILES = [
-  'src/core/classify.mjs',
-  'src/core/scene-bed.mjs',
-  'src/core/beds.mjs',
-  'src/core/banks.mjs',
-  'src/core/cues.mjs',
-  'src/core/filter.mjs',
-  'src/foundry/snapshot.mjs',
-  'src/foundry/ducking.mjs',
-  'src/core/guard.mjs',
-  'src/foundry/scene-bed-fix.mjs',
-  'src/foundry/deck-app.mjs',
-  'src/foundry/setup.mjs',
-];
+// Every src/ file except the entry point, found rather than listed: a hand-kept list went stale twice.
+async function list(dir) {
+  const out = [];
+  for (const e of await readdir(path.join(ROOT, dir), { withFileTypes: true })) {
+    const rel = path.posix.join(dir, e.name);
+    if (e.isDirectory()) out.push(...(await list(rel)));
+    else if (e.name.endsWith('.mjs')) out.push(rel);
+  }
+  return out;
+}
+const FILES = (await list('src')).filter((f) => f !== 'src/sounds-deck.mjs');
 const TEMPLATES = { TEMPLATE_BEDS: 'templates/beds.hbs', TEMPLATE_BOARD: 'templates/board.hbs' };
 // The scenes the Delta Green world binds to 8 · The Board, and its quiet doorway (knowledge repo, scene-beds.mjs).
 const DOORWAY = 'Opening Dashboard';
@@ -57,7 +54,16 @@ async function modules() {
     });
     out.push([file, src]);
   }
-  return out;
+  // dependencies first, so each blob's imports already have URLs
+  const deps = Object.fromEntries(out.map(([f, src]) => [f, [...src.matchAll(/__MOD__(.+?)__/g)].map((m) => m[1])]));
+  const ordered = [];
+  const visit = (f) => {
+    if (ordered.includes(f)) return;
+    for (const d of deps[f]) visit(d);
+    ordered.push(f);
+  };
+  for (const [f] of out) visit(f);
+  return ordered.map((f) => out.find(([g]) => g === f));
 }
 
 const payload = {

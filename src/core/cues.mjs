@@ -84,3 +84,34 @@ export function transportChanges(before, after) {
   for (const [k, c] of was) if (!now.has(k)) out.push({ kind: 'stopped', name: c.name });
   return out;
 }
+
+/**
+ * Everything sounding right now, for the "Now playing" list above the beds (the Composer's note after first use,
+ * 2026-09-24: "all sound played viewer/stopper and volume slider"). Beds first, then events, loops and one-shots.
+ * A paused event stays listed, so it can be resumed.
+ * @param {Array<{ id: string, name: string, mode: number, sounds: Array<{ id: string, name: string, playing: boolean, pausedTime?: number | null, volume?: number }> }>} playlists
+ * @returns {Array<{ playlistId: string, soundId: string, name: string, from: string, kind: 'bed' | 'cue' | 'toggle' | 'oneshot', state: 'playing' | 'paused', volume: number }>}
+ */
+export function nowPlaying(playlists) {
+  const order = { bed: 0, cue: 1, toggle: 2, oneshot: 3 };
+  const out = [];
+  for (const p of playlists) {
+    const c = classify(p.name, p.mode);
+    if (!c?.press) continue;
+    const kind = c.role === 'bed' ? 'bed' : c.press;
+    for (const s of p.sounds) {
+      const paused = kind === 'cue' && !s.playing && (s.pausedTime ?? 0) > 0;
+      if (!s.playing && !paused) continue;
+      out.push({
+        playlistId: p.id,
+        soundId: s.id,
+        name: s.name,
+        from: p.name,
+        kind,
+        state: s.playing ? 'playing' : 'paused',
+        volume: Number.isFinite(s.volume) ? s.volume : 0.5,
+      });
+    }
+  }
+  return out.sort((a, b) => order[a.kind] - order[b.kind] || a.name.localeCompare(b.name));
+}

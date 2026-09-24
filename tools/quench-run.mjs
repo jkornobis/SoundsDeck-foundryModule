@@ -4,6 +4,9 @@
  *
  *   node tools/quench-run.mjs            every batch
  *   node tools/quench-run.mjs deck       only sounds-deck.deck (any batch key suffix)
+ *   node tools/quench-run.mjs --src deck test the WORKING COPY even though a release is installed: the installed
+ *                                        copy's scene fix, ducking and window are switched off, src/ is loaded in their
+ *                                        place, and the page is reloaded at the end so the installed release is back
  *
  * INSTALLED: the module registered its batches at quenchReady; this only runs them.
  * NOT INSTALLED: this loads src/ and test/quench/ into the gamemaster's page as blob modules, supplies the templates,
@@ -22,7 +25,8 @@ import path from 'node:path';
 import { connect, unlockAudio } from './cdp.mjs';
 
 const ROOT = path.resolve(new URL('..', import.meta.url).pathname);
-const only = process.argv[2];
+const FROM_SRC = process.argv.includes('--src');
+const only = process.argv.slice(2).find((a) => !a.startsWith('--'));
 
 async function list(dir) {
   const out = [];
@@ -66,6 +70,7 @@ const payload = {
   },
   css: await readFile(path.join(ROOT, 'styles/sounds-deck.css'), 'utf8'),
   only: only ? `sounds-deck.${only}` : 'sounds-deck.**',
+  fromSrc: FROM_SRC,
 };
 
 const cdp = await connect();
@@ -84,7 +89,14 @@ const out = await cdp.ev(`(async () => {
   }
   const installed = !!game.modules.get('sounds-deck')?.active;
   let harness = null;
-  if (!installed) {
+  if (installed && P.fromSrc) {
+    // Silence the installed release so the working copy can stand in its place; the reload at the end restores it.
+    const inst = game.modules.get('sounds-deck').api;
+    inst?.sceneFix?.uninstall?.();
+    inst?.ducking?.uninstall?.();
+    for (const app of foundry.applications.instances.values()) if (app.id === 'sounds-deck') await app.close();
+  }
+  if (!installed || P.fromSrc) {
     // What an install would provide, supplied by hand: templates, strings, styles, init and ready.
     const deck = await import(urls['src/foundry/deck-app.mjs']);
     for (const [k, src] of Object.entries(P.templates)) Handlebars.registerPartial(deck[k], Handlebars.compile(src, { preventIndent: true }));
@@ -150,6 +162,10 @@ const out = await cdp.ev(`(async () => {
   });
 })()`);
 const r = JSON.parse(out);
+if (FROM_SRC && r.installed) {
+  await cdp.send('Page.reload', {});
+  console.log('page reloaded: the installed release is back in charge');
+}
 if (r.refused) console.log('REFUSED', r.refused);
 else if (r.hung) console.log('HUNG', JSON.stringify(r.hung, null, 1));
 else {

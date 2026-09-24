@@ -6,6 +6,7 @@ import {
   clock,
   DUCK_DB,
   dbToGain,
+  nowPlaying,
   shouldDuck,
   transportChanges,
   transportCues,
@@ -87,4 +88,36 @@ describe('transportChanges - what a screen reader hears (v0.4 note 10)', () => {
   it('nothing changed, nothing said', () => {
     assert.deepEqual(transportChanges([c('a', 'playing')], [c('a', 'playing')]), []);
   });
+});
+
+describe('nowPlaying - the list above the beds (after first use)', () => {
+  const lists = [
+    pl('b5', '5 · Wrong', MODES.SHUFFLE, [s('Apéritif', { playing: true, volume: 0.6 }), s('Sorbet')]),
+    pl('ev', '🎞️ Évènements longs', MODES.SEQUENTIAL, [
+      s('At Risk', { playing: true, volume: 0.7 }),
+      s('Clue One', { pausedTime: 12 }),
+    ]),
+    pl('lp', '🔁 Fond (boucles)', MODES.SIMULTANEOUS, [s('Rain', { playing: true, volume: 0.3 })]),
+    pl('sh', '💥 Ponctuels', MODES.DISABLED, [s('Gunshot', { playing: true, volume: 0.4 })]),
+    pl('ref', 'Référence · X', MODES.SEQUENTIAL, [s('Not on the deck', { playing: true })]),
+  ];
+  const now = nowPlaying(lists);
+  it('lists everything sounding on the deck, beds first, then events, loops, one-shots', () => {
+    assert.deepEqual(
+      now.map((x) => [x.kind, x.name, x.state]),
+      [
+        ['bed', 'Apéritif', 'playing'],
+        ['cue', 'At Risk', 'playing'],
+        ['cue', 'Clue One', 'paused'],
+        ['toggle', 'Rain', 'playing'],
+        ['oneshot', 'Gunshot', 'playing'],
+      ],
+    );
+  });
+  it('says where each comes from and carries its volume', () => {
+    assert.deepEqual({ from: now[0].from, volume: now[0].volume }, { from: '5 · Wrong', volume: 0.6 });
+  });
+  it('a playlist that is not on the deck is not listed', () =>
+    assert.ok(!now.some((x) => x.from.startsWith('Référence'))));
+  it('silence is an empty list', () => assert.deepEqual(nowPlaying([]), []));
 });

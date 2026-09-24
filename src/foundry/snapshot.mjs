@@ -12,6 +12,7 @@ export function snapshot(playlists) {
       id: s.id,
       name: s.name,
       playing: s.playing,
+      volume: s.volume,
       pausedTime: s.pausedTime ?? null,
       // Where the sound comes from - Foundry's own PlaylistSound.description, shown on hover (v0.4 note 9).
       description: s.description || null,

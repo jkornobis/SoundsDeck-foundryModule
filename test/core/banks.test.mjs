@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import { bankViews, nextDensity, nextLayout, oneShot } from '../../src/core/banks.mjs';
+import { bankViews, nextDensity, nextLayout } from '../../src/core/banks.mjs';
 import { MODES } from '../../src/core/classify.mjs';
 
 const pl = (id, name, mode, sounds = []) => ({ id, name, mode, playing: sounds.some((s) => s.playing), sounds });
@@ -33,22 +33,8 @@ describe('bankViews', () => {
       ],
     );
   });
-  it('a one-shot pad announces nothing - it has no state', () => {
-    assert.equal(banks.find((b) => b.id === 'shots').pads[0].pressed, null);
-  });
-});
-
-describe('oneShot', () => {
-  it('reads the sound as data', () => {
-    assert.deepEqual(oneShot({ path: 'ge-foundry/fx/x.mp3', volume: 0.3 }), {
-      src: 'ge-foundry/fx/x.mp3',
-      volume: 0.3,
-      loop: false,
-      channel: 'environment',
-    });
-  });
-  it('a missing volume falls back to 0.5 rather than to silence or full blast', () => {
-    assert.equal(oneShot({ path: 'p', volume: undefined }).volume, 0.5);
+  it('a one-shot pad announces its state too: it plays on a click and stops on the next', () => {
+    assert.equal(banks.find((b) => b.id === 'shots').pads[0].pressed, 'false');
   });
 });
 

@@ -6,17 +6,6 @@
   grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr));
   gap: 0.5rem;
 }
-.sounds-deck .sd-bed {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-  padding: 0.5rem;
-  border: 1px solid var(--color-border, currentColor);
-  border-radius: 6px;
-}
-.sounds-deck .sd-bed.is-playing {
-  outline: 2px solid var(--color-warm-2, var(--color-border-highlight, currentColor));
-}
 .sounds-deck .sd-bed-name {
   font-weight: bold;
 }
@@ -25,10 +14,6 @@
   font-size: var(--font-size-12, 0.8rem);
   opacity: 0.8;
   min-height: 1.2em;
-}
-.sounds-deck .sd-bed-controls {
-  display: flex;
-  gap: 0.25rem;
 }
 
 /* The two parts side by side, or stacked: the flex DIRECTION changes, never the markup order. */
@@ -54,7 +39,7 @@
 }
 .sounds-deck .sd-pads {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(7rem, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(8.5rem, 1fr));
   gap: 0.35rem;
 }
 .sounds-deck .sd-pad {
@@ -85,88 +70,148 @@
   cursor: not-allowed;
 }
 
-/* The transport: one row per cue that is playing or paused part-way. */
-.sounds-deck .sd-transport {
+/* ---- 0.5, after first use --------------------------------------------------------------------------------------
+   The left column (Now playing + beds) is ONE column of fixed width; the board takes the rest. */
+.sounds-deck .sounds-deck-left {
+  flex: 0 0 18rem;
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
-  margin-top: 0.5rem;
-  padding-top: 0.5rem;
-  border-top: 1px solid var(--color-border, currentColor);
+  gap: 0.6rem;
+  min-width: 0;
 }
-.sounds-deck .sd-cue {
-  display: grid;
-  grid-template-columns: minmax(6rem, 1fr) auto auto minmax(6rem, 2fr) auto;
+.sounds-deck.is-vertical .sounds-deck-left {
+  flex: 0 0 auto;
+}
+.sounds-deck .sounds-deck-left .sounds-deck-beds {
+  grid-template-columns: 1fr;
+}
+/* Text never leaves its card: at most two lines, then an ellipsis; the full name is in the tooltip. */
+.sounds-deck .sd-clamp {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+  /* break a word only when it cannot fit on a line by itself ("anywhere" split Technical|ly on the first shot) */
+  overflow-wrap: break-word;
+  hyphens: auto;
+}
+/* Every card: its body on the left, its actions stacked on a strip at the right edge, behind a thin rule. */
+.sounds-deck .sd-card {
+  display: flex;
+  flex-direction: row; /* said, not assumed: an older stylesheet in the page once stacked bed cards */
+  align-items: stretch;
+  gap: 0;
+  padding: 0;
+  min-width: 0;
+  border: 1px solid var(--color-border, currentColor);
+  border-radius: 6px;
+  overflow: hidden;
+}
+.sounds-deck .sd-card.is-playing {
+  outline: 2px solid var(--color-warm-2, var(--color-border-highlight, currentColor));
+}
+.sounds-deck .sd-card-body {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 0.35rem 0.5rem;
+}
+.sounds-deck .sd-card-actions {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.15rem;
+  padding: 0.2rem;
+  border-left: 1px solid var(--color-border, currentColor);
+}
+.sounds-deck .sd-card-actions button {
+  width: 1.9rem;
+  height: 1.7rem;
+  padding: 0;
+  margin: 0;
+}
+.sounds-deck .sd-pads .sd-pad-cell .sd-pad {
+  flex: 1 1 auto;
+  min-width: 0;
+  border: none;
+  border-radius: 0;
+  min-height: 2.8rem;
+}
+/* Now playing */
+.sounds-deck .sd-now {
+  border: 1px solid var(--color-border, currentColor);
+  border-radius: 6px;
+  padding: 0.35rem 0.5rem;
+}
+.sounds-deck .sd-now-head {
+  display: flex;
   align-items: center;
-  gap: 0.35rem;
+  justify-content: space-between;
 }
-.sounds-deck .sd-cue-name {
+.sounds-deck .sd-now-head h3 {
+  margin: 0;
+  border: none;
+  font-size: var(--font-size-14, 0.9rem);
+}
+.sounds-deck .sd-stop-all {
+  width: auto;
+  flex: 0 0 auto;
+  padding: 0 0.5rem;
+}
+.sounds-deck .sd-now-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  padding: 0.3rem 0;
+  border-top: 1px solid var(--color-border-light, rgb(128 128 128 / 30%));
+}
+.sounds-deck .sd-now-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.sounds-deck .sd-now-from {
+  font-size: var(--font-size-11, 0.72rem);
+  opacity: 0.75;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.sounds-deck .sd-cue-time {
-  font-variant-numeric: tabular-nums;
-  font-size: var(--font-size-12, 0.8rem);
-}
-
-/* An event pad carries a small ducking switch beside it. */
-.sounds-deck .sd-pad-cell {
+.sounds-deck .sd-now-controls {
   display: flex;
-  gap: 0.2rem;
+  align-items: center;
+  gap: 0.25rem;
 }
-.sounds-deck .sd-duck {
+.sounds-deck .sd-now-controls button {
   flex: 0 0 1.8rem;
   width: 1.8rem;
+  height: 1.6rem;
   padding: 0;
 }
-.sounds-deck .sd-duck.is-off {
-  opacity: 0.6;
+.sounds-deck .sd-now-controls .sd-volume {
+  flex: 1 1 4rem;
+  min-width: 3rem;
 }
-
-/* The filter box sits above the banks and stays in view while the board scrolls. */
-.sounds-deck .sd-filter {
-  position: sticky;
-  top: 0;
-  z-index: 1;
-  padding-bottom: 0.4rem;
-  background: var(--color-bg, var(--background, inherit));
+.sounds-deck .sd-now-controls .sd-seek {
+  flex: 2 1 5rem;
+  min-width: 3rem;
 }
-.sounds-deck .sd-filter input {
-  width: 100%;
-}
-
-/* Compact: smaller pads and cards, so both real banks (51 pads) fit without scrolling. One seat's choice. */
-.sounds-deck.is-compact .sd-pads {
-  grid-template-columns: repeat(auto-fill, minmax(5.2rem, 1fr));
-  gap: 0.2rem;
-}
-.sounds-deck.is-compact .sd-pads .sd-pad {
-  min-height: 1.7rem;
+.sounds-deck .sd-cue-time {
+  font-variant-numeric: tabular-nums;
   font-size: var(--font-size-11, 0.72rem);
-  padding: 0 0.25rem;
-}
-.sounds-deck.is-compact .sd-bed {
-  padding: 0.25rem 0.4rem;
-  gap: 0.1rem;
-}
-.sounds-deck.is-compact .sounds-deck-beds {
-  grid-template-columns: repeat(auto-fill, minmax(8rem, 1fr));
-  gap: 0.3rem;
-}
-
-/* Keyboard focus you can see from across the table: every button in the deck. */
-.sounds-deck button:focus-visible,
-.sounds-deck input:focus-visible {
-  outline: 2px solid var(--color-border-highlight, var(--color-warm-2, currentColor));
-  outline-offset: 2px;
-}
-/* The announcement region: read by screen readers, never shown. */
-.sounds-deck .sd-live {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip-path: inset(50%);
   white-space: nowrap;
+}
+.sounds-deck .sd-card-actions .sd-random.is-armed {
+  background: var(--color-warm-2, var(--color-border-highlight, currentColor));
+  color: var(--color-dark-1, #111);
+}
+/* Compact must outrank the card rule above it (the first 0.5 run caught compact pads at full height). */
+.sounds-deck.is-compact .sd-pads .sd-pad-cell .sd-pad {
+  min-height: 1.9rem;
+  font-size: var(--font-size-11, 0.72rem);
+}
+.sounds-deck.is-compact .sd-card-actions button {
+  height: 1.3rem;
+  width: 1.6rem;
 }
