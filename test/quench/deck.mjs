@@ -49,6 +49,8 @@ export function registerDeck(quench) {
           layout: game.settings.get(ID, 'layout'),
           geometry: game.settings.get(ID, 'geometry'),
           density: game.settings.get(ID, 'density'),
+          journal: game.settings.get(ID, 'journal'),
+          journalEntries: game.settings.get(ID, 'journalEntries'),
         };
         const folder = game.folders.find((f) => f.type === 'Playlist' && f.name === 'GE-Foundry');
         const fx = game.playlists.contents
@@ -90,6 +92,8 @@ export function registerDeck(quench) {
         await game.settings.set(ID, 'layout', S.seat.layout);
         await game.settings.set(ID, 'geometry', S.seat.geometry);
         await game.settings.set(ID, 'density', S.seat.density);
+        await game.settings.set(ID, 'journal', S.seat.journal);
+        await game.settings.set(ID, 'journalEntries', S.seat.journalEntries);
         if (S.activeBefore && !S.activeBefore.active) await S.activeBefore.activate();
       });
 
@@ -402,6 +406,36 @@ export function registerDeck(quench) {
           );
           await S.board.stopAll();
           await wait(800);
+        });
+      });
+
+      describe('the press log', function () {
+        this.timeout(20000);
+        it('off by default: pressing records nothing, and the export entry is hidden', async () => {
+          await game.settings.set(ID, 'journal', false);
+          await game.settings.set(ID, 'journalEntries', []);
+          bank(S.sandbox.shots).querySelector('.sd-pad').click();
+          await wait(500);
+          assert.lengthOf(game.settings.get(ID, 'journalEntries'), 0);
+          const exportControl = S.app._getHeaderControls().find((c) => c.action === 'journalExport');
+          assert.isFalse(exportControl.visible());
+        });
+        it('switched on: a pad press and a bed press are recorded, with kind, name and bank', async () => {
+          await game.settings.set(ID, 'journal', true);
+          bank(S.sandbox.shots).querySelector('.sd-pad').click();
+          click('5 · Wrong', 'play');
+          await until(() => game.settings.get(ID, 'journalEntries').length >= 2);
+          const log = game.settings.get(ID, 'journalEntries');
+          assert.isTrue(
+            log.some(
+              (x) =>
+                x.kind === 'oneshot' &&
+                x.name === S.sandbox.shots.sounds.contents[0].name &&
+                x.bank === S.sandbox.shots.name,
+            ),
+          );
+          assert.isTrue(log.some((x) => x.kind === 'bed' && x.name === '5 · Wrong'));
+          await S.wrong.stopAll();
         });
       });
 

@@ -37,6 +37,11 @@
       "Neither": "Un nom sans l'un ni l'autre reste hors du deck.",
       "Scenes": "Une scène qui porte une playlist lance sa musique à son ouverture. Une musique choisie à la main continue dans une scène qui n'en a pas.",
       "Source": "Survolez un pad pour voir d'où vient son son : la description du son dans la barre des playlists."
+    },
+    "Journal": {
+      "Name": "Sounds Deck : tenir un journal des appuis sur ce poste",
+      "Hint": "Désactivé par défaut. Enregistre chaque appui sur le deck (ambiances, pads, évènements) avec l'heure, dans ce navigateur seulement, pour revoir une séance ensuite. Export depuis le menu du deck.",
+      "Export": "Exporter le journal des appuis"
     }
   }
 }

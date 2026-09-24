@@ -37,6 +37,11 @@
       "Neither": "A name with neither stays off the deck.",
       "Scenes": "A scene that carries a playlist starts its music when it opens. Music you pick by hand keeps playing into a scene that has none.",
       "Source": "Hover a pad to see where its sound comes from: the sound's own description in the playlist sidebar."
+    },
+    "Journal": {
+      "Name": "Sounds Deck: keep a press log on this seat",
+      "Hint": "Off by default. Records each press on the deck (music, pads, events) with the time, in this browser only, so a session can be reviewed afterwards. Export it from the deck's menu.",
+      "Export": "Export the press log"
     }
   }
 }
