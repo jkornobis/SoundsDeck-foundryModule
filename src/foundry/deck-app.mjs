@@ -7,7 +7,7 @@
  */
 import { bankViews, nextDensity, nextLayout, oneShot } from '../core/banks.mjs';
 import { bedCards, bedsToStop } from '../core/beds.mjs';
-import { clock, transportCues } from '../core/cues.mjs';
+import { clock, transportChanges, transportCues } from '../core/cues.mjs';
 import { matches } from '../core/filter.mjs';
 import { snapshot } from './snapshot.mjs';
 
@@ -70,7 +70,10 @@ export class SoundsDeckApp extends HandlebarsApplicationMixin(ApplicationV2) {
     const snaps = snapshot(game.playlists.contents);
     context.beds = bedCards(snaps);
     context.banks = bankViews(snaps);
-    context.cues = transportCues(snaps).map((c) => ({ ...c, at: clock(c.pausedTime) }));
+    const cues = transportCues(snaps);
+    this.#announce(transportChanges(this.#lastCues ?? cues, cues));
+    this.#lastCues = cues;
+    context.cues = cues.map((c) => ({ ...c, at: clock(c.pausedTime) }));
     return context;
   }
 
@@ -80,6 +83,30 @@ export class SoundsDeckApp extends HandlebarsApplicationMixin(ApplicationV2) {
     for (const hook of ['createPlaylist', 'updatePlaylist', 'deletePlaylist', 'updatePlaylistSound']) {
       this.#hooks.push([hook, Hooks.on(hook, rerender)]);
     }
+  }
+
+  /** The transport as last drawn, to tell a screen reader what changed since. */
+  #lastCues = null;
+
+  /**
+   * A polite live region, created once on the window itself - outside the parts, which every render replaces, so a
+   * screen reader keeps listening to the same element.
+   */
+  #announce(changes) {
+    if (!changes.length || !this.element) return;
+    let live = this.element.querySelector(':scope > .sd-live');
+    if (!live) {
+      live = Object.assign(document.createElement('p'), { className: 'sd-live' });
+      live.setAttribute('aria-live', 'polite');
+      live.setAttribute('role', 'status');
+      this.element.append(live);
+    }
+    const key = {
+      started: 'SOUNDS_DECK.EventStarted',
+      paused: 'SOUNDS_DECK.EventPaused',
+      stopped: 'SOUNDS_DECK.EventStopped',
+    };
+    live.textContent = changes.map((c) => game.i18n.format(key[c.kind], { name: c.name })).join(' · ');
   }
 
   /** What the filter box holds - kept on the window, so a re-render (any playlist change) does not wipe it. */
