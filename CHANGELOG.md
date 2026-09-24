@@ -3,6 +3,13 @@
 Versions follow semver **without pre-release labels** - Foundry's `isNewerVersion` does not understand them
 ([Package Best Practices Checklist](https://foundryvtt.wiki/en/development/guides/package-best-practices)).
 
+## 0.5.1 - unreleased
+
+- **The README is written for any world**, not the one the deck was built in: install, the two conventions with neutral
+  examples, what the deck does. The "?" help uses the same neutral examples.
+- `module.json` declares `verified: 14.368`, where every release so far was tested.
+- The deck's Quench batch skips, and says why, in a world without the playlists and scenes it walks.
+
 ## 0.5.0 - 2026-09-24
 
 **After the Composer's first use of 0.4** (2026-09-24):

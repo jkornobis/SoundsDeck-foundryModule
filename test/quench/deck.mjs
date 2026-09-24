@@ -40,6 +40,15 @@ export function registerDeck(quench) {
         // The harness, when present, is the code under test (tools/quench-run.mjs --src) - even over an installed release.
         S.api = globalThis.__soundsDeckHarness?.api ?? game.modules.get(ID)?.api;
         if (!S.api || !game.user.isGM) this.skip();
+        // This batch walks the world it was written in. Anywhere else it skips - and says what it looked for.
+        const missing = [
+          ...['8 · The Board', '5 · Wrong'].filter((n) => !game.playlists.getName(n)),
+          ...[DOORWAY, ...BOARD_SCENES].filter((n) => !game.scenes.getName(n)),
+        ];
+        if (missing.length) {
+          console.info(`sounds-deck | deck batch skipped: this world has no ${missing.join(', ')}`);
+          this.skip();
+        }
         const others = game.users.filter((u) => u.active && u.id !== game.user.id).map((u) => u.name);
         const playing = game.playlists.filter((p) => p.playing).map((p) => p.name);
         if (others.length || playing.length) throw new Error(`refusing: connected ${others}, playing ${playing}`);
@@ -323,7 +332,10 @@ export function registerDeck(quench) {
           // A cold page loads a 20 MB track before it plays: two runs out of four needed more than 10 s here.
           await until(() => bedSound()?.sound?.playing, 20000);
           assert.isTrue(!!bedSound()?.sound?.playing, `the board never became audible (playing ${S.board.playing})`);
-          await wait(3500); // past the bed's own fade-in
+          // Past the bed's own fade-in - and on the first playback after a world restart the fade starts late: one run
+          // read the gain at 0 after 3.5 s. Wait for the level itself, not a fixed time.
+          await until(() => gain() > 0.9 * (bedSound()?.volume ?? 1), 12000);
+          await wait(500);
           S.full = gain();
           cuePad(0).click();
           await until(() => row() && cue(0).sound?.playing, 10000);
@@ -505,8 +517,12 @@ export function registerDeck(quench) {
           const text = dialog.element.textContent;
           await dialog.close();
           assert.include(text, game.i18n.localize('SOUNDS_DECK.Help.Title'));
-          assert.include(text, '5 · Wrong');
-          assert.include(text, '💥 Ponctuels');
+          // the examples are whatever the strings carry (neutral since 0.5.1), read from the strings themselves
+          for (const key of ['Bed', 'Bank']) {
+            const example = game.i18n.localize(`SOUNDS_DECK.Help.${key}`).match(/<code>(.*?)<\/code>/)?.[1];
+            assert.exists(example, key);
+            assert.include(text, example);
+          }
         });
       });
 
