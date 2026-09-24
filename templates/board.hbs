@@ -9,10 +9,17 @@
     <legend>{{name}}</legend>
     <div class="sd-pads">
       {{#each pads}}
-      <div class="sd-pad-cell" data-pad-name="{{name}}">
-        <button type="button" class="sd-pad{{#if playing}} is-playing{{/if}}" data-action="pad" data-sound-id="{{id}}" {{#if pressed}}aria-pressed="{{pressed}}"{{/if}} {{#if description}}data-tooltip="{{description}}" aria-description="{{description}}"{{/if}}>{{name}}</button>
+      <div class="sd-pad-cell sd-card{{#if playing}} is-playing{{/if}}" data-pad-name="{{name}}">
+        <button type="button" class="sd-pad" data-action="pad" data-sound-id="{{id}}" {{#if pressed}}aria-pressed="{{pressed}}"{{/if}} aria-label="{{name}}" data-tooltip="{{name}}{{#if description}}<br>{{description}}{{/if}}" {{#if description}}aria-description="{{description}}"{{/if}}><span class="sd-clamp">{{name}}</span></button>
+        {{#if randomizable}}
+        <div class="sd-card-actions">
+          <button type="button" class="sd-random{{#if armed}} is-armed{{/if}}" data-action="randomToggle" data-sound-id="{{id}}" aria-pressed="{{#if armed}}true{{else}}false{{/if}}" aria-label="{{localize 'SOUNDS_DECK.Random' name=name}}" data-tooltip="{{#if armed}}{{localize 'SOUNDS_DECK.RandomOn'}}{{else}}{{localize 'SOUNDS_DECK.RandomOff'}}{{/if}}"><i class="fa-solid fa-dice" inert></i></button>
+        </div>
+        {{/if}}
         {{#if (ne ducks null)}}
-        <button type="button" class="sd-duck{{#unless ducks}} is-off{{/unless}}" data-action="duckToggle" data-sound-id="{{id}}" aria-pressed="{{#if ducks}}true{{else}}false{{/if}}" aria-label="{{localize 'SOUNDS_DECK.Ducks' name=name}}" data-tooltip="{{#if ducks}}{{localize 'SOUNDS_DECK.DucksOn'}}{{else}}{{localize 'SOUNDS_DECK.DucksOff'}}{{/if}}"><i class="fa-solid {{#if ducks}}fa-volume-low{{else}}fa-volume-high{{/if}}" inert></i></button>
+        <div class="sd-card-actions">
+          <button type="button" class="sd-duck{{#unless ducks}} is-off{{/unless}}" data-action="duckToggle" data-sound-id="{{id}}" aria-pressed="{{#if ducks}}true{{else}}false{{/if}}" aria-label="{{localize 'SOUNDS_DECK.Ducks' name=name}}" data-tooltip="{{#if ducks}}{{localize 'SOUNDS_DECK.DucksOn'}}{{else}}{{localize 'SOUNDS_DECK.DucksOff'}}{{/if}}"><i class="fa-solid {{#if ducks}}fa-volume-low{{else}}fa-volume-high{{/if}}" inert></i></button>
+        </div>
         {{/if}}
       </div>
       {{/each}}
@@ -22,21 +29,4 @@
   {{else}}
   <p class="sd-empty">{{localize "SOUNDS_DECK.NoBanks"}}</p>
   {{/each}}
-  {{#if cues.length}}
-  <section class="sd-transport" aria-label="{{localize 'SOUNDS_DECK.Transport'}}">
-    {{#each cues}}
-    <div class="sd-cue is-{{state}}" data-playlist-id="{{playlistId}}" data-sound-id="{{soundId}}">
-      <span class="sd-cue-name">{{name}}</span>
-      {{#if (eq state "playing")}}
-      <button type="button" data-action="cuePause" aria-label="{{localize 'SOUNDS_DECK.Pause'}}" data-tooltip="{{localize 'SOUNDS_DECK.Pause'}}"><i class="fa-solid fa-pause" inert></i></button>
-      {{else}}
-      <button type="button" data-action="cueResume" aria-label="{{localize 'SOUNDS_DECK.Resume'}}" data-tooltip="{{localize 'SOUNDS_DECK.Resume'}}"><i class="fa-solid fa-play" inert></i></button>
-      {{/if}}
-      <button type="button" data-action="cueStop" aria-label="{{localize 'SOUNDS_DECK.Stop'}}" data-tooltip="{{localize 'SOUNDS_DECK.Stop'}}"><i class="fa-solid fa-stop" inert></i></button>
-      <input type="range" min="0" max="1" step="1" value="0" aria-label="{{localize 'SOUNDS_DECK.Position'}}">
-      <span class="sd-cue-time">{{at}}</span>
-    </div>
-    {{/each}}
-  </section>
-  {{/if}}
 </section>

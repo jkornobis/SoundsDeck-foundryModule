@@ -1,15 +1,16 @@
 /**
- * The Sounds Deck window. v0.1: one part, the bed cards.
+ * The Sounds Deck window: on the left, what is playing now and the bed cards; on the right, the board of banks.
  *
  * Built on Foundry's own application class (ApplicationV2 + HandlebarsApplicationMixin), so it pops out, themes
  * and closes like any core window. Every card shows the DOCUMENTS' state and re-renders when a playlist or a sound
  * changes - whoever changed it, from wherever.
  */
-import { bankViews, nextDensity, nextLayout, oneShot } from '../core/banks.mjs';
+import { bankViews, nextDensity, nextLayout } from '../core/banks.mjs';
 import { bedCards, bedsToStop } from '../core/beds.mjs';
-import { clock, transportChanges, transportCues } from '../core/cues.mjs';
+import { bedVolume, clock, nowPlaying, shouldDuck, transportChanges, transportCues } from '../core/cues.mjs';
 import { matches } from '../core/filter.mjs';
 import { appendEntry, summarise } from '../core/journal.mjs';
+import { arm, armedList, disarm, disarmAll, isArmed } from './random.mjs';
 import { snapshot } from './snapshot.mjs';
 
 export const TEMPLATE_BEDS = 'modules/sounds-deck/templates/beds.hbs';
@@ -47,6 +48,10 @@ export class SoundsDeckApp extends HandlebarsApplicationMixin(ApplicationV2) {
       skip: SoundsDeckApp.#onSkip,
       stop: SoundsDeckApp.#onStop,
       pad: SoundsDeckApp.#onPad,
+      nowStop: SoundsDeckApp.#onNowStop,
+      stopAll: SoundsDeckApp.#onStopAll,
+      randomToggle: SoundsDeckApp.#onRandomToggle,
+      disarm: SoundsDeckApp.#onDisarm,
       duckToggle: SoundsDeckApp.#onDuckToggle,
       cuePause: SoundsDeckApp.#onCuePause,
       cueResume: SoundsDeckApp.#onCueResume,
@@ -79,18 +84,41 @@ export class SoundsDeckApp extends HandlebarsApplicationMixin(ApplicationV2) {
     const context = await super._prepareContext(options);
     const snaps = snapshot(game.playlists.contents);
     context.beds = bedCards(snaps);
-    context.banks = bankViews(snaps);
+    context.banks = bankViews(snaps).map((b) => ({
+      ...b,
+      pads: b.pads.map((p) => ({ ...p, armed: p.randomizable && isArmed(b.id, p.id) })),
+    }));
+    context.armed = armedList()
+      .map(({ playlistId, soundId }) => {
+        const pl = game.playlists.get(playlistId);
+        const sound = pl?.sounds.get(soundId);
+        return sound ? { playlistId, soundId, name: sound.name, from: pl.name } : null;
+      })
+      .filter(Boolean);
     const cues = transportCues(snaps);
     this.#announce(transportChanges(this.#lastCues ?? cues, cues));
     this.#lastCues = cues;
-    context.cues = cues.map((c) => ({ ...c, at: clock(c.pausedTime) }));
+    const { volumeToInput } = foundry.audio.AudioHelper;
+    context.now = nowPlaying(snaps).map((n) => ({
+      ...n,
+      isCue: n.kind === 'cue',
+      isPlaying: n.state === 'playing',
+      volumeInput: volumeToInput(n.volume),
+      at: clock(snaps.find((p) => p.id === n.playlistId)?.sounds.find((x) => x.id === n.soundId)?.pausedTime),
+    }));
     return context;
   }
 
   _onFirstRender(context, options) {
     super._onFirstRender(context, options);
     const rerender = () => this.render({ parts: ['beds', 'board'] });
-    for (const hook of ['createPlaylist', 'updatePlaylist', 'deletePlaylist', 'updatePlaylistSound']) {
+    for (const hook of [
+      'createPlaylist',
+      'updatePlaylist',
+      'deletePlaylist',
+      'updatePlaylistSound',
+      'soundsDeckRandom',
+    ]) {
       this.#hooks.push([hook, Hooks.on(hook, rerender)]);
     }
   }
@@ -160,8 +188,11 @@ export class SoundsDeckApp extends HandlebarsApplicationMixin(ApplicationV2) {
       });
     }
     this.#applyFilter();
-    for (const input of this.element.querySelectorAll('.sd-cue input[type=range]')) {
+    for (const input of this.element.querySelectorAll('.sd-cue .sd-seek')) {
       input.addEventListener('change', () => SoundsDeckApp.#seek(input));
+    }
+    for (const input of this.element.querySelectorAll('.sd-now-row .sd-volume')) {
+      input.addEventListener('input', () => SoundsDeckApp.#volume(input));
     }
     this.#ticker ??= setInterval(() => this.#tick(), 500);
   }
@@ -171,7 +202,7 @@ export class SoundsDeckApp extends HandlebarsApplicationMixin(ApplicationV2) {
       const sound = game.playlists.get(row.dataset.playlistId)?.sounds.get(row.dataset.soundId);
       const live = sound?.sound;
       if (!live) continue;
-      const range = row.querySelector('input[type=range]');
+      const range = row.querySelector('.sd-seek');
       if (Number.isFinite(live.duration)) range.max = String(Math.floor(live.duration));
       const t = sound.playing ? live.currentTime : (sound.pausedTime ?? 0);
       if (document.activeElement !== range) range.value = String(Math.floor(t));
@@ -239,21 +270,67 @@ export class SoundsDeckApp extends HandlebarsApplicationMixin(ApplicationV2) {
     const sound = playlist?.sounds.get(target.dataset.soundId);
     if (!sound) return;
     const bank = bankViews(snapshot([playlist]))[0];
-    if (bank?.press) await SoundsDeckApp.#log(bank.press, sound.name, playlist.name);
-    switch (bank?.press) {
-      case 'oneshot': {
-        // Broadcast to every client (true), and let it overlap itself: a PlaylistSound cannot (measured, 0003).
-        const sound_ = await foundry.audio.AudioHelper.play(oneShot(sound), true);
-        target.classList.add('is-fired');
-        setTimeout(() => target.classList.remove('is-fired'), 400);
-        return sound_;
-      }
-      case 'toggle':
-      case 'cue':
-        return sound.playing ? playlist.stopSound(sound) : playlist.playSound(sound);
-      default:
-        return undefined; // a bank whose mode gives no press: drawn disabled, and does nothing if reached anyway
+    // A bank whose mode gives no press is drawn disabled, and does nothing if reached anyway.
+    if (!bank?.press) return undefined;
+    await SoundsDeckApp.#log(bank.press, sound.name, playlist.name);
+    // Every pad: a click plays, the next click stops (the Composer, after first use - decision 0005). A one-shot is a
+    // PlaylistSound in a Soundboard Only playlist like the others, so its stop reaches every player, not only this one.
+    return sound.playing ? playlist.stopSound(sound) : playlist.playSound(sound);
+  }
+
+  static #rowOf(target) {
+    const row = target.closest('[data-sound-id]');
+    const playlist = game.playlists.get(row?.dataset.playlistId);
+    return { playlist, sound: playlist?.sounds.get(row?.dataset.soundId) };
+  }
+
+  /** Stop one line of the "Now playing" list: a bed stops as a whole playlist, anything else as its one sound. */
+  static async #onNowStop(_event, target) {
+    const { playlist, sound } = SoundsDeckApp.#rowOf(target);
+    if (!sound) return;
+    if (target.closest('.sd-now-row')?.dataset.kind === 'bed') return playlist.stopAll();
+    return playlist.stopSound(sound);
+  }
+
+  static async #onStopAll() {
+    disarmAll();
+    for (const p of game.playlists.filter((x) => x.playing)) await p.stopAll();
+  }
+
+  /** The 🎲 on a one-shot's strip: arm it to fire at random moments, or disarm it. */
+  static async #onRandomToggle(_event, target) {
+    const { playlist, sound } = SoundsDeckApp.#rowOf(target);
+    const pid = playlist?.id ?? target.closest('[data-playlist-id]')?.dataset.playlistId;
+    const sid = target.dataset.soundId;
+    if (!pid || !sid) return;
+    if (isArmed(pid, sid)) disarm(pid, sid);
+    else {
+      arm(pid, sid);
+      await SoundsDeckApp.#log('random', sound?.name ?? sid, playlist?.name);
     }
+  }
+
+  static #onDisarm(_event, target) {
+    const row = target.closest('[data-playlist-id]');
+    disarm(row?.dataset.playlistId, row?.dataset.soundId);
+  }
+
+  /**
+   * A volume slider in the "Now playing" list does what Foundry's own playlist sidebar does, read from its source:
+   * the new volume applies at once on this client, and reaches the world after the sound's own debounce. A ducked bed
+   * is faded to its ducked level, so moving its slider during an event does not un-duck it.
+   */
+  static #volume(input) {
+    const { playlist, sound } = SoundsDeckApp.#rowOf(input);
+    if (!sound) return;
+    const volume = foundry.audio.AudioHelper.inputToVolume(input.value);
+    if (volume === sound.volume) return;
+    sound.updateSource({ volume });
+    const isBed = input.closest('.sd-now-row')?.dataset.kind === 'bed';
+    const target = isBed ? bedVolume(volume, shouldDuck(snapshot(game.playlists.contents))) : volume;
+    sound.sound?.fade(target, { duration: 250 });
+    if (sound.isOwner) sound.debounceVolume(volume);
+    return playlist;
   }
 
   /** An event's say in ducking, stored on its own sound as flags["sounds-deck"].duck - world data, the GM's to set. */

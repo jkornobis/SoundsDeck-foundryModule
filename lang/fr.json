@@ -42,6 +42,16 @@
       "Name": "Sounds Deck : tenir un journal des appuis sur ce poste",
       "Hint": "Désactivé par défaut. Enregistre chaque appui sur le deck (ambiances, pads, évènements) avec l'heure, dans ce navigateur seulement, pour revoir une séance ensuite. Export depuis le menu du deck.",
       "Export": "Exporter le journal des appuis"
-    }
+    },
+    "NowPlaying": "En cours",
+    "StopAll": "Arrêter tous les sons",
+    "StopAllShort": "Tout",
+    "Silence": "Silence.",
+    "Volume": "Volume",
+    "Random": "Déclencher {name} au hasard",
+    "RandomOn": "Se déclenche au hasard - cliquer pour arrêter",
+    "RandomOff": "Déclencher au hasard (toutes les 10 à 45 s)",
+    "RandomArmed": "au hasard",
+    "Disarm": "Arrêter le déclenchement au hasard"
   }
 }

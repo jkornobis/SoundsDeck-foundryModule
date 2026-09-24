@@ -30,27 +30,15 @@ export function bankViews(playlists) {
         name: s.name,
         playing: Boolean(s.playing),
         description: s.description ?? null,
-        // A toggle or a cue has a state worth announcing; a one-shot has none - it fires and is gone.
-        pressed: c.press === 'toggle' || c.press === 'cue' ? String(Boolean(s.playing)) : null,
+        // Every pad plays on a click and stops on the next (the Composer, after first use), so every pad has a state.
+        pressed: c.press ? String(Boolean(s.playing)) : null,
         // Only an event has a say in ducking; it ducks unless it was explicitly told not to.
         ducks: c.press === 'cue' ? s.duck !== false : null,
+        // Only a one-shot can be armed to fire at random moments.
+        randomizable: c.press === 'oneshot',
       })),
     }))
     .sort((a, b) => a.name.localeCompare(b.name));
-}
-
-/**
- * What a one-shot pad plays: the PlaylistSound read as data - the playlist stays the only store (decision 0003).
- * @param {{ path: string, volume: number }} sound
- * @returns {{ src: string, volume: number, loop: false, channel: 'environment' }}
- */
-export function oneShot(sound) {
-  return {
-    src: sound.path,
-    volume: Number.isFinite(sound.volume) ? sound.volume : 0.5,
-    loop: false,
-    channel: 'environment',
-  };
 }
 
 /** The two layouts his design names: the board beside the beds, or below them. */

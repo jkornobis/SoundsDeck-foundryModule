@@ -6,7 +6,7 @@ core `PlaylistSound`, editable in the sidebar with the module switched off.
 
 **Status: 0.4.0.** Proven inside a running world (31 checks); not released yet.
 
-![The deck, v0.4](docs/screenshots/v0.4-deck.png)
+![The deck, 0.5 (unreleased)](docs/screenshots/v0.5-deck.png)
  The design lives in the Composer's knowledge repository:
 `FoundryVTT-KnowledgeDB/worlds/DeltaGreen/knowledge/the-playlist-is-the-bank.md`.
 

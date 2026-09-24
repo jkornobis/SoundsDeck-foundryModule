@@ -1,18 +1,65 @@
-<section class="sounds-deck-beds" aria-label="{{localize 'SOUNDS_DECK.Beds'}}">
-  {{#each beds}}
-  <article class="sd-bed{{#if playing}} is-playing{{/if}}" data-playlist-id="{{id}}">
-    <header class="sd-bed-name">{{name}}</header>
-    <p class="sd-bed-now" {{#if nowPlayingFrom}}data-tooltip="{{nowPlayingFrom}}"{{/if}}>{{#if playing}}{{nowPlaying}}{{else}}{{localize "SOUNDS_DECK.Tracks" count=tracks}}{{/if}}</p>
-    <div class="sd-bed-controls">
-      {{#if playing}}
-      <button type="button" data-action="skip" aria-label="{{localize 'SOUNDS_DECK.Skip'}}" data-tooltip="{{localize 'SOUNDS_DECK.Skip'}}"><i class="fa-solid fa-forward-step" inert></i></button>
-      <button type="button" data-action="stop" aria-label="{{localize 'SOUNDS_DECK.Stop'}}" data-tooltip="{{localize 'SOUNDS_DECK.Stop'}}"><i class="fa-solid fa-stop" inert></i></button>
-      {{else}}
-      <button type="button" data-action="play" aria-label="{{localize 'SOUNDS_DECK.Play'}}" data-tooltip="{{localize 'SOUNDS_DECK.Play'}}"><i class="fa-solid fa-play" inert></i></button>
+<section class="sounds-deck-left">
+  <section class="sd-now" aria-label="{{localize 'SOUNDS_DECK.NowPlaying'}}">
+    <header class="sd-now-head">
+      <h3>{{localize "SOUNDS_DECK.NowPlaying"}}</h3>
+      {{#if (or now.length armed.length)}}
+      <button type="button" class="sd-stop-all" data-action="stopAll" data-tooltip="{{localize 'SOUNDS_DECK.StopAll'}}" aria-label="{{localize 'SOUNDS_DECK.StopAll'}}"><i class="fa-solid fa-stop" inert></i> {{localize "SOUNDS_DECK.StopAllShort"}}</button>
       {{/if}}
+    </header>
+    {{#each now}}
+    <div class="sd-now-row sd-kind-{{kind}} is-{{state}}{{#if isCue}} sd-cue{{/if}}" data-kind="{{kind}}" data-playlist-id="{{playlistId}}" data-sound-id="{{soundId}}">
+      <div class="sd-now-text">
+        <span class="sd-now-name sd-clamp" data-tooltip="{{name}}">{{name}}</span>
+        <span class="sd-now-from">{{from}}</span>
+      </div>
+      <div class="sd-now-controls">
+        {{#if isCue}}
+        {{#if isPlaying}}
+        <button type="button" data-action="cuePause" aria-label="{{localize 'SOUNDS_DECK.Pause'}}" data-tooltip="{{localize 'SOUNDS_DECK.Pause'}}"><i class="fa-solid fa-pause" inert></i></button>
+        {{else}}
+        <button type="button" data-action="cueResume" aria-label="{{localize 'SOUNDS_DECK.Resume'}}" data-tooltip="{{localize 'SOUNDS_DECK.Resume'}}"><i class="fa-solid fa-play" inert></i></button>
+        {{/if}}
+        <input type="range" class="sd-seek" min="0" max="1" step="1" value="0" aria-label="{{localize 'SOUNDS_DECK.Position'}}">
+        <span class="sd-cue-time">{{at}}</span>
+        {{/if}}
+        <input type="range" class="sd-volume" min="0" max="1" step="0.05" value="{{volumeInput}}" aria-label="{{localize 'SOUNDS_DECK.Volume'}}" data-tooltip="{{localize 'SOUNDS_DECK.Volume'}}">
+        <button type="button" data-action="nowStop" aria-label="{{localize 'SOUNDS_DECK.Stop'}}" data-tooltip="{{localize 'SOUNDS_DECK.Stop'}}"><i class="fa-solid fa-stop" inert></i></button>
+      </div>
     </div>
-  </article>
-  {{else}}
-  <p class="sd-empty">{{localize "SOUNDS_DECK.NoBeds"}}</p>
-  {{/each}}
+    {{else}}
+    {{#unless armed.length}}<p class="sd-empty">{{localize "SOUNDS_DECK.Silence"}}</p>{{/unless}}
+    {{/each}}
+    {{#each armed}}
+    <div class="sd-now-row sd-kind-random" data-kind="random" data-playlist-id="{{playlistId}}" data-sound-id="{{soundId}}">
+      <div class="sd-now-text">
+        <span class="sd-now-name sd-clamp" data-tooltip="{{name}}"><i class="fa-solid fa-dice" inert></i> {{name}}</span>
+        <span class="sd-now-from">{{from}} · {{localize "SOUNDS_DECK.RandomArmed"}}</span>
+      </div>
+      <div class="sd-now-controls">
+        <button type="button" data-action="disarm" aria-label="{{localize 'SOUNDS_DECK.Disarm'}}" data-tooltip="{{localize 'SOUNDS_DECK.Disarm'}}"><i class="fa-solid fa-stop" inert></i></button>
+      </div>
+    </div>
+    {{/each}}
+  </section>
+
+  <section class="sounds-deck-beds" aria-label="{{localize 'SOUNDS_DECK.Beds'}}">
+    {{#each beds}}
+    <article class="sd-bed sd-card{{#if playing}} is-playing{{/if}}" data-playlist-id="{{id}}">
+      <div class="sd-card-body">
+        <header class="sd-bed-name sd-clamp" data-tooltip="{{name}}">{{name}}</header>
+        <p class="sd-bed-now sd-clamp" {{#if nowPlayingFrom}}data-tooltip="{{nowPlayingFrom}}"{{/if}}>{{#if playing}}{{nowPlaying}}{{else}}{{localize "SOUNDS_DECK.Tracks" count=tracks}}{{/if}}</p>
+      </div>
+      <div class="sd-card-actions">
+        {{#if playing}}
+        <button type="button" data-action="skip" aria-label="{{localize 'SOUNDS_DECK.Skip'}}" data-tooltip="{{localize 'SOUNDS_DECK.Skip'}}"><i class="fa-solid fa-forward-step" inert></i></button>
+        <button type="button" data-action="stop" aria-label="{{localize 'SOUNDS_DECK.Stop'}}" data-tooltip="{{localize 'SOUNDS_DECK.Stop'}}"><i class="fa-solid fa-stop" inert></i></button>
+        {{else}}
+        <button type="button" data-action="play" aria-label="{{localize 'SOUNDS_DECK.Play'}}" data-tooltip="{{localize 'SOUNDS_DECK.Play'}}"><i class="fa-solid fa-play" inert></i></button>
+        {{/if}}
+      </div>
+    </article>
+    {{else}}
+    <p class="sd-empty">{{localize "SOUNDS_DECK.NoBeds"}}</p>
+    {{/each}}
+  </section>
 </section>

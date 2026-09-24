@@ -37,7 +37,8 @@ export function registerDeck(quench) {
 
       before(async function () {
         this.timeout(30000);
-        S.api = game.modules.get(ID)?.api ?? globalThis.__soundsDeckHarness?.api;
+        // The harness, when present, is the code under test (tools/quench-run.mjs --src) - even over an installed release.
+        S.api = globalThis.__soundsDeckHarness?.api ?? game.modules.get(ID)?.api;
         if (!S.api || !game.user.isGM) this.skip();
         const others = game.users.filter((u) => u.active && u.id !== game.user.id).map((u) => u.name);
         const playing = game.playlists.filter((p) => p.playing).map((p) => p.name);
@@ -184,28 +185,41 @@ export function registerDeck(quench) {
           assert.lengthOf(visible(), all);
         });
 
-        it('a one-shot pressed twice overlaps itself, touches no document, and announces no state', async () => {
+        it('a pad plays on a click and stops on the next, lit while it plays (decision 0005)', async () => {
           const { shots } = S.sandbox;
-          const src = shots.sounds.contents[0].path;
-          const playingOf = () =>
-            [...game.audio.playing.values()].filter((s) => decodeURIComponent(s.src ?? '').endsWith(src) && s.playing);
+          const snd = shots.sounds.contents[0];
           const pad = () => bank(shots).querySelector('.sd-pad');
           pad().click();
-          await wait(700);
+          await until(() => snd.playing && pad()?.getAttribute('aria-pressed') === 'true');
+          assert.isTrue(snd.playing, 'the one-shot did not start');
+          assert.isTrue(pad().closest('.sd-pad-cell').classList.contains('is-playing'));
           pad().click();
-          await until(() => playingOf().length >= 2, 6000);
-          S.shots.push(...playingOf());
-          assert.isAtLeast(playingOf().length, 2);
-          assert.isFalse(shots.playing || shots.sounds.some((s) => s.playing));
-          assert.isFalse(pad().hasAttribute('aria-pressed'));
+          await until(() => !snd.playing);
+          assert.isFalse(snd.playing, 'a second click did not stop it');
+        });
+
+        it('no pad or bed name spills out of its card', () => {
+          const spills = [];
+          for (const el of S.app.element.querySelectorAll('.sd-clamp')) {
+            const card = el.closest('.sd-card, .sd-now-row') ?? el.parentElement;
+            const a = el.getBoundingClientRect();
+            const c = card.getBoundingClientRect();
+            if (a.bottom > c.bottom + 1 || a.right > c.right + 1) spills.push(el.textContent.trim());
+          }
+          assert.deepEqual(spills, []);
+        });
+
+        it('the beds are one column', () => {
+          const beds = S.app.element.querySelector('.sounds-deck-beds');
+          assert.lengthOf(getComputedStyle(beds).gridTemplateColumns.split(' '), 1);
         });
 
         it('a pad shows where its sound comes from on hover (the sound description)', async () => {
           const { shots } = S.sandbox;
           await shots.sounds.contents[0].update({ description: 'Se7en (1995) — Howard Shore' });
-          await until(() => bank(shots).querySelector('.sd-pad')?.dataset.tooltip);
+          await until(() => bank(shots).querySelector('.sd-pad')?.dataset.tooltip?.includes('Se7en'));
           const pad = bank(shots).querySelector('.sd-pad');
-          assert.strictEqual(pad.dataset.tooltip, 'Se7en (1995) — Howard Shore');
+          assert.include(pad.dataset.tooltip, 'Se7en (1995) — Howard Shore'); // the name, then the source
           assert.strictEqual(pad.getAttribute('aria-description'), 'Se7en (1995) — Howard Shore');
         });
 
@@ -225,6 +239,42 @@ export function registerDeck(quench) {
           assert.isTrue(l1.playing);
           assert.strictEqual(pad(0).getAttribute('aria-pressed'), 'false');
           await loops.stopAll();
+        });
+
+        it('Now playing lists what sounds, with a volume slider that sets the sound volume, and stop all', async () => {
+          const { loops } = S.sandbox;
+          const l0 = loops.sounds.contents[0];
+          bank(loops).querySelectorAll('.sd-pad')[0].click();
+          await until(() => l0.playing);
+          const row = () => S.app.element.querySelector(`.sd-now-row[data-sound-id="${l0.id}"]`);
+          await until(() => row());
+          assert.exists(row(), 'the playing loop is not listed');
+          const slider = row().querySelector('.sd-volume');
+          slider.value = String(foundry.audio.AudioHelper.volumeToInput(0.2));
+          slider.dispatchEvent(new Event('input'));
+          await until(() => Math.abs(l0.volume - 0.2) < 0.02, 4000);
+          assert.closeTo(l0.volume, 0.2, 0.02);
+          S.app.element.querySelector('[data-action=stopAll]').click();
+          await until(() => !loops.playing);
+          assert.isFalse(loops.playing, 'stop all left a loop playing');
+        });
+
+        it('the dice arms a one-shot to fire at random moments, listed in Now playing, and disarms', async () => {
+          const { shots } = S.sandbox;
+          const snd = shots.sounds.contents[1];
+          await snd.update({ 'flags.sounds-deck.random': { min: 1, max: 1 } });
+          const dice = () => bank(shots).querySelectorAll('.sd-random')[1];
+          dice().click();
+          await until(() => dice()?.getAttribute('aria-pressed') === 'true');
+          assert.exists(S.app.element.querySelector(`.sd-now-row.sd-kind-random[data-sound-id="${snd.id}"]`));
+          await until(() => snd.playing, 5000);
+          assert.isTrue(snd.playing, 'armed, it never fired');
+          S.app.element
+            .querySelector(`.sd-now-row.sd-kind-random[data-sound-id="${snd.id}"] [data-action=disarm]`)
+            .click();
+          await until(() => !S.app.element.querySelector('.sd-now-row.sd-kind-random'));
+          assert.strictEqual(dice().getAttribute('aria-pressed'), 'false');
+          await shots.stopAll();
         });
 
         it('the layout switch changes the direction, never the markup order', async () => {
@@ -270,14 +320,17 @@ export function registerDeck(quench) {
 
         it('a cue playing ducks the bed 10 dB (x0.32) and shows on the transport', async () => {
           click('8 · The Board', 'play');
-          await until(() => bedSound()?.sound?.playing, 10000);
+          // A cold page loads a 20 MB track before it plays: two runs out of four needed more than 10 s here.
+          await until(() => bedSound()?.sound?.playing, 20000);
+          assert.isTrue(!!bedSound()?.sound?.playing, `the board never became audible (playing ${S.board.playing})`);
           await wait(3500); // past the bed's own fade-in
           S.full = gain();
           cuePad(0).click();
           await until(() => row() && cue(0).sound?.playing, 10000);
           await wait(1500);
           const ratio = gain() / S.full;
-          assert.isAbove(ratio, 0.22, `ratio ${ratio}`);
+          const why = `ratio ${ratio} full ${S.full} boardPlaying ${S.board.playing} track ${bedSound()?.name} sound ${!!bedSound()?.sound} playBtn ${!!card('8 · The Board')?.querySelector('[data-action=play]')}`;
+          assert.isAbove(ratio, 0.22, why);
           assert.isBelow(ratio, 0.42, `ratio ${ratio}`);
           assert.exists(row()?.querySelector('[data-action=cuePause]'));
         });
@@ -310,7 +363,7 @@ export function registerDeck(quench) {
           await until(() => cue(0).sound?.playing, 8000);
           await wait(1500);
           assert.isBelow(gain() / S.full, 0.42);
-          const range = row().querySelector('input[type=range]');
+          const range = row().querySelector('.sd-seek');
           range.value = '30';
           range.dispatchEvent(new Event('change'));
           await wait(2500);
@@ -320,7 +373,7 @@ export function registerDeck(quench) {
         });
 
         it('stop removes the cue from the transport and the bed returns to full', async () => {
-          row().querySelector('[data-action=cueStop]').click();
+          row().querySelector('[data-action=nowStop]').click();
           await until(() => !row(), 6000);
           await wait(2600);
           assert.notExists(row());

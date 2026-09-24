@@ -5,6 +5,19 @@ Versions follow semver **without pre-release labels** - Foundry's `isNewerVersio
 
 ## 0.5.0 - unreleased: not before one table session on 0.4 (decision 0004)
 
+**After the Composer's first use of 0.4** (2026-09-24):
+
+- **Now playing**, above the beds: every sound on the deck that is playing (or an event paused), each with its volume
+  slider and a stop; events keep pause and position there; one button stops everything. It replaces the transport that
+  sat below the board, out of sight.
+- **The beds are one column** of fixed width; the board takes the rest.
+- **Every card has a structure**: its body on the left, its actions stacked on a strip at the right edge.
+- **No text leaves its card**: two lines at most, then an ellipsis; the full name in the tooltip.
+- **A click plays, the next click stops** - every pad, one-shots included (decision 0005). A stop reaches every player.
+- **🎲 random triggering** on a one-shot's strip: armed, it fires at random moments (10-45 s by default,
+  `flags["sounds-deck"].random = { min, max }` on the sound), listed in Now playing until disarmed.
+
+
 - **Pad size, per seat**: comfortable or compact, from the window's menu - compact fits both real banks without scrolling.
 - **Where a sound comes from, on hover**: a pad shows its sound's description (Foundry's own field), a bed card its
   playing track's.

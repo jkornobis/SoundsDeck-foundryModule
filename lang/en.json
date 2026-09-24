@@ -42,6 +42,16 @@
       "Name": "Sounds Deck: keep a press log on this seat",
       "Hint": "Off by default. Records each press on the deck (music, pads, events) with the time, in this browser only, so a session can be reviewed afterwards. Export it from the deck's menu.",
       "Export": "Export the press log"
-    }
+    },
+    "NowPlaying": "Now playing",
+    "StopAll": "Stop every sound",
+    "StopAllShort": "All",
+    "Silence": "Silence.",
+    "Volume": "Volume",
+    "Random": "Fire {name} at random moments",
+    "RandomOn": "Firing at random moments - click to stop",
+    "RandomOff": "Fire this at random moments (every 10–45 s)",
+    "RandomArmed": "at random",
+    "Disarm": "Stop firing at random"
   }
 }
