@@ -3,6 +3,12 @@
 Versions follow semver **without pre-release labels** - Foundry's `isNewerVersion` does not understand them
 ([Package Best Practices Checklist](https://foundryvtt.wiki/en/development/guides/package-best-practices)).
 
+## 0.5.0 - unreleased: not before one table session on 0.4 (decision 0004)
+
+- **A filter box on the board**: type part of a pad's or a bank's name; case and accents do not matter.
+- **The scene fix fails safe**: if it ever throws, Foundry's own method handles that scene change.
+- Tests: an install check that runs once the module is really installed; ducking measured in a player's browser.
+
 ## 0.4.0 - 2026-09-24 - first release
 
 - **Manual music survives a scene change** (his rule): a bed you picked by hand plays on into a scene with no music of
