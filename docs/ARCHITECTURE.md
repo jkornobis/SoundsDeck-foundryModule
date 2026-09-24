@@ -9,6 +9,7 @@ src/
     classify.mjs    name + mode -> bed | bank (+ what a press does) | not on the deck
     scene-bed.mjs   bed of the scene left + bed of the scene entered -> none | keep | start | stop | switch
     beds.mjs        playlist snapshots -> the bed cards to draw, and which beds a start must stop
+    moods.mjs       a saved mix: capture what plays, and the plan that brings it back (what to stop, start, set, arm)
   sounds-deck.mjs   THE SHELL's entry point: wiring only
   foundry/          the rest of the shell
     setup.mjs       what happens at init and ready, as functions the live proof can call too

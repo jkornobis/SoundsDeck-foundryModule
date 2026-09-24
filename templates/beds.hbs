@@ -42,6 +42,27 @@
     {{/each}}
   </section>
 
+  <section class="sd-moods" aria-label="{{localize 'SOUNDS_DECK.Moods'}}">
+    <header class="sd-now-head">
+      <h3>{{localize "SOUNDS_DECK.Moods"}}</h3>
+      <button type="button" class="sd-mood-save" data-action="moodSave" data-tooltip="{{localize 'SOUNDS_DECK.MoodSave'}}" aria-label="{{localize 'SOUNDS_DECK.MoodSave'}}"><i class="fa-solid fa-floppy-disk" inert></i> {{localize "SOUNDS_DECK.MoodSaveShort"}}</button>
+    </header>
+    {{#each moods}}
+    <article class="sd-mood sd-card{{#if on}} is-playing{{/if}}" data-mood-id="{{id}}">
+      <div class="sd-card-body">
+        <header class="sd-bed-name sd-clamp" data-tooltip="{{name}}">{{name}}</header>
+        <p class="sd-bed-now sd-clamp">{{bedName}} · {{summary}}</p>
+      </div>
+      <div class="sd-card-actions">
+        <button type="button" data-action="moodRecall" aria-pressed="{{#if on}}true{{else}}false{{/if}}" aria-label="{{localize 'SOUNDS_DECK.MoodRecall'}}" data-tooltip="{{localize 'SOUNDS_DECK.MoodRecall'}}"><i class="fa-solid fa-play" inert></i></button>
+        <button type="button" data-action="moodDelete" aria-label="{{localize 'SOUNDS_DECK.MoodDelete'}}" data-tooltip="{{localize 'SOUNDS_DECK.MoodDelete'}}"><i class="fa-solid fa-trash" inert></i></button>
+      </div>
+    </article>
+    {{else}}
+    <p class="sd-empty">{{localize "SOUNDS_DECK.MoodNone"}}</p>
+    {{/each}}
+  </section>
+
   <section class="sounds-deck-beds" aria-label="{{localize 'SOUNDS_DECK.Beds'}}">
     {{#each beds}}
     <article class="sd-bed sd-card{{#if playing}} is-playing{{/if}}" data-playlist-id="{{id}}">

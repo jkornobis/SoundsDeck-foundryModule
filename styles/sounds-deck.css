@@ -230,3 +230,20 @@
   height: 1.3rem;
   width: 1.6rem;
 }
+/* Moods (0.6): the same card as a bed, in their own section above the beds. */
+.sounds-deck .sd-moods {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+.sounds-deck .sd-moods .sd-card {
+  min-height: 3.6rem;
+}
+.sounds-deck .sd-mood-save {
+  width: auto;
+  flex: 0 0 auto;
+  padding: 0 0.5rem;
+}
+.sounds-deck.is-compact .sd-moods .sd-card {
+  min-height: 0;
+}

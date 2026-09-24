@@ -56,6 +56,9 @@ deck**, on by default; turn it off to see both on the pads. The filter searches 
 
 - **Now playing**, at the top: everything sounding, each with its volume and a stop; events keep pause and position;
   one button stops it all.
+- **Moods.** Save what plays (the music, the room loops and their levels, the random effects) under a name, and bring
+  it all back in one click. A recall keeps music that is already playing and never touches an event. Moods belong to
+  the world, so every gamemaster seat sees them.
 - **Music follows the scene.** A scene that carries a playlist starts its music when it opens, and moving between two
   scenes that share the same playlist **keeps the track playing** (Foundry 14.368 alone restarts it on a new track).
   Music you picked by hand keeps playing into a scene that has none of its own.

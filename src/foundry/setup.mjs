@@ -44,6 +44,16 @@ export function onInit() {
     hint: 'SOUNDS_DECK.Journal.Hint',
   });
   game.settings.register(MODULE_ID, 'journalEntries', { scope: 'client', config: false, type: Array, default: [] });
+  // Moods are the table's (Auditorium on 0.5.2, note 1): world scope, so a mood saved on one seat is there on the next.
+  game.settings.register(MODULE_ID, 'moods', {
+    scope: 'world',
+    config: false,
+    type: Array,
+    default: [],
+    onChange: () => {
+      for (const app of foundry.applications.instances.values()) if (app.id === MODULE_ID) app.render();
+    },
+  });
   // The pure core carries its own copy of the playlist modes. If a Foundry release renumbers them, every press
   // would silently do the wrong thing - so the mismatch is loud, at start-up, before anything plays.
   const drift = Object.entries(MODES).filter(([k, v]) => CONST.PLAYLIST_MODES[k] !== v);
