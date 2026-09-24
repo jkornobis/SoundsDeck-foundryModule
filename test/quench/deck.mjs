@@ -45,7 +45,11 @@ export function registerDeck(quench) {
         if (game.audio.locked) throw new Error('audio is locked: interact with the page once, then run again');
 
         S.activeBefore = game.scenes.active;
-        S.seat = { layout: game.settings.get(ID, 'layout'), geometry: game.settings.get(ID, 'geometry') };
+        S.seat = {
+          layout: game.settings.get(ID, 'layout'),
+          geometry: game.settings.get(ID, 'geometry'),
+          density: game.settings.get(ID, 'density'),
+        };
         const folder = game.folders.find((f) => f.type === 'Playlist' && f.name === 'GE-Foundry');
         const fx = game.playlists.contents
           .flatMap((p) => p.sounds.contents)
@@ -85,6 +89,7 @@ export function registerDeck(quench) {
         for (const p of Object.values(S.sandbox)) await p.delete();
         await game.settings.set(ID, 'layout', S.seat.layout);
         await game.settings.set(ID, 'geometry', S.seat.geometry);
+        await game.settings.set(ID, 'density', S.seat.density);
         if (S.activeBefore && !S.activeBefore.active) await S.activeBefore.activate();
       });
 
@@ -218,6 +223,15 @@ export function registerDeck(quench) {
           assert.strictEqual(before.dir, 'row');
           assert.strictEqual(getComputedStyle(content()).flexDirection, 'column');
           assert.strictEqual(order(), before.order);
+        });
+
+        it('compact makes the pads smaller, and the seat keeps its choice', async () => {
+          const pad = () => bank(S.sandbox.shots).querySelector('.sd-pad');
+          const tall = pad().getBoundingClientRect().height;
+          await S.app.options.actions.density.call(S.app);
+          await until(() => S.app.element.classList.contains('is-compact'));
+          assert.strictEqual(game.settings.get(ID, 'density'), 'compact');
+          assert.isBelow(pad().getBoundingClientRect().height, tall);
         });
 
         it('the window reopens at the size it closed at', async () => {

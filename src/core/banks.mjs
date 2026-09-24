@@ -59,3 +59,11 @@ export const LAYOUTS = Object.freeze(['horizontal', 'vertical']);
 export function nextLayout(current) {
   return current === 'horizontal' ? 'vertical' : 'horizontal';
 }
+
+/** Pad size, per seat (Auditorium on v0.4, note 8): comfortable by default, compact to fit both banks without scrolling. */
+export const DENSITIES = Object.freeze(['comfortable', 'compact']);
+
+/** @returns {'comfortable' | 'compact'} the other size; anything unknown starts over at comfortable */
+export function nextDensity(current) {
+  return current === 'comfortable' ? 'compact' : 'comfortable';
+}

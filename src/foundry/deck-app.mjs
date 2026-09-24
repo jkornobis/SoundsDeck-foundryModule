@@ -5,7 +5,7 @@
  * and closes like any core window. Every card shows the DOCUMENTS' state and re-renders when a playlist or a sound
  * changes - whoever changed it, from wherever.
  */
-import { bankViews, nextLayout, oneShot } from '../core/banks.mjs';
+import { bankViews, nextDensity, nextLayout, oneShot } from '../core/banks.mjs';
 import { bedCards, bedsToStop } from '../core/beds.mjs';
 import { clock, transportCues } from '../core/cues.mjs';
 import { matches } from '../core/filter.mjs';
@@ -25,7 +25,10 @@ export class SoundsDeckApp extends HandlebarsApplicationMixin(ApplicationV2) {
       title: 'SOUNDS_DECK.Title',
       icon: 'fa-solid fa-sliders',
       resizable: true,
-      controls: [{ icon: 'fa-solid fa-table-columns', label: 'SOUNDS_DECK.Layout', action: 'layout' }],
+      controls: [
+        { icon: 'fa-solid fa-table-columns', label: 'SOUNDS_DECK.Layout', action: 'layout' },
+        { icon: 'fa-solid fa-table-cells', label: 'SOUNDS_DECK.Density', action: 'density' },
+      ],
     },
     // 🚨 A NUMBER, NEVER 'auto'. Measured on 14.368: with height 'auto', every re-render resets the window to fit its
     // content and throws away a resize - the snap the Composer hit on the soundboard. A numeric default survives
@@ -41,6 +44,7 @@ export class SoundsDeckApp extends HandlebarsApplicationMixin(ApplicationV2) {
       cueResume: SoundsDeckApp.#onCueResume,
       cueStop: SoundsDeckApp.#onCueStop,
       layout: SoundsDeckApp.#onLayout,
+      density: SoundsDeckApp.#onDensity,
     },
   };
 
@@ -101,6 +105,7 @@ export class SoundsDeckApp extends HandlebarsApplicationMixin(ApplicationV2) {
   _onRender(context, options) {
     super._onRender(context, options);
     this.element.classList.toggle('is-vertical', game.settings.get(MODULE_ID, 'layout') === 'vertical');
+    this.element.classList.toggle('is-compact', game.settings.get(MODULE_ID, 'density') === 'compact');
     const box = this.element.querySelector('.sd-filter input');
     if (box) {
       box.value = this.#filter;
@@ -227,6 +232,12 @@ export class SoundsDeckApp extends HandlebarsApplicationMixin(ApplicationV2) {
     const wasPlaying = sound.playing;
     await sound.update({ playing: false, pausedTime: Number(input.value) });
     if (wasPlaying) await playlist.playSound(sound);
+  }
+
+  static async #onDensity() {
+    await game.settings.set(MODULE_ID, 'density', nextDensity(game.settings.get(MODULE_ID, 'density')));
+    // biome-ignore lint/complexity/noThisInStatic: ApplicationV2 calls actions with `this` bound to the instance (see #onLayout).
+    this.render();
   }
 
   static async #onLayout() {
