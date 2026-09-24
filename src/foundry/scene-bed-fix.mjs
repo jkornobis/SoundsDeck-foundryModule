@@ -16,6 +16,7 @@
  * with the same actions Foundry's method performs.
  */
 import { classify } from '../core/classify.mjs';
+import { guarded } from '../core/guard.mjs';
 import { sceneAudioPlan } from '../core/scene-bed.mjs';
 
 const DEFECT = 'playlistSound: priorPlaylistSoundId';
@@ -38,7 +39,9 @@ export function installSceneBedFix(Playlists, activeScene) {
   if (!String(original).includes(DEFECT)) return { installed: false, reason: 'defect not present', uninstall() {} };
 
   let prior = bedOf(activeScene);
-  proto._onChangeScene = async function (scene) {
+  // Wrapped fail-safe (Auditorium v0.4, note 3): if anything below throws, Foundry's own method handles this change -
+  // a restarted bed at worst, never silence.
+  const replacement = async function (scene) {
     const next = bedOf(scene);
     const playingBeds = this.contents
       .filter((p) => p.playing && classify(p.name, p.mode)?.role === 'bed')
@@ -60,6 +63,9 @@ export function installSceneBedFix(Playlists, activeScene) {
       else if (playlist) await playlist.playAll();
     }
   };
+  proto._onChangeScene = guarded(replacement, original, (error) =>
+    console.error('sounds-deck | scene fix failed; Foundry handled this scene change instead:', error),
+  );
   return {
     installed: true,
     uninstall() {

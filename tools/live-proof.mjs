@@ -31,6 +31,7 @@ const FILES = [
   'src/core/cues.mjs',
   'src/foundry/snapshot.mjs',
   'src/foundry/ducking.mjs',
+  'src/core/guard.mjs',
   'src/foundry/scene-bed-fix.mjs',
   'src/foundry/deck-app.mjs',
   'src/foundry/setup.mjs',
@@ -321,6 +322,36 @@ const report = await cdp.ev(`(async () => {
     await door.activate();
     await wait(2500);
     check('and leaving it stops the music the scene brought', !board.playing && !wrong.playing);
+
+    // fail safe (v0.4 note 3): a fault inside the scene fix must hand the change to Foundry, not silence it.
+    // The fault is REAL, injected at the edge: a scene whose playlist throws the first time it is read.
+    let thrown = false;
+    const desk = game.scenes.getName(P.BOARD_SCENES[0]);
+    const faulty = new Proxy(desk, {
+      get(t, k) {
+        if (k === 'playlist' && !thrown) {
+          thrown = true;
+          throw new Error('injected fault');
+        }
+        return Reflect.get(t, k, t);
+      },
+    });
+    const errors = [];
+    const origError = console.error;
+    console.error = (...a) => {
+      errors.push(String(a[0]));
+      origError(...a);
+    };
+    try {
+      await game.playlists._onChangeScene(faulty);
+      await until(() => board.playing, 6000);
+    } finally {
+      console.error = origError;
+    }
+    check('a fault in the scene fix falls back to Foundry: the scene music still starts', thrown && board.playing, { thrown, boardPlaying: board.playing });
+    check('and the fault is reported, once', errors.filter((e) => e.includes('scene fix failed')).length === 1, errors.length);
+    await board.stopAll();
+    await wait(800);
 
     await ui.playlists.render({ force: true });
     await wait(500);
