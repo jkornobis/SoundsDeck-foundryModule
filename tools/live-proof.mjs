@@ -80,7 +80,7 @@ const LOAD = `
   setup.onInit();
   const seat = { layout: game.settings.get('sounds-deck', 'layout'), geometry: game.settings.get('sounds-deck', 'geometry') };
   const folder = game.folders.find((f) => f.type === 'Playlist' && f.name === 'GE-Foundry');
-  const fx = game.playlists.getName('Effets · Fond (boucles)').sounds.contents.slice(0, 3);
+  const fx = game.playlists.contents.flatMap((p) => p.sounds.contents).filter((s) => s.path.startsWith('ge-foundry/fx/')).slice(0, 3);
   const M = CONST.PLAYLIST_MODES;
   const mk = (name, mode) => Playlist.create({ name, mode, folder: folder?.id ?? null,
     sounds: fx.map((s, i) => ({ name: name.slice(3) + ' ' + (i + 1), path: s.path, volume: 0.4, repeat: mode === M.SIMULTANEOUS, fade: 500 })) });
@@ -181,7 +181,11 @@ const report = await cdp.ev(`(async () => {
     const [shotsPl, loopsPl, shufflePl] = sandbox;
     await until(() => bank(shotsPl) && bank(loopsPl) && bank(shufflePl));
     const bankNames = [...app.element.querySelectorAll('.sd-bank legend')].map((e) => e.textContent.trim());
-    check('the board shows the emoji playlists and nothing else', bankNames.length === 3 && bankNames.every((n) => n.includes('__sd')), bankNames);
+    // The module's own rule decides what a bank is - one definition, and no regex to escape through a template string.
+    const { classify } = await import(urls['src/core/classify.mjs']);
+    const isBank = (p) => classify(p.name, p.mode)?.role === 'bank';
+    const expected = game.playlists.filter(isBank).map((p) => p.name).sort();
+    check('the board shows every bank and nothing else', JSON.stringify([...bankNames].sort()) === JSON.stringify(expected) && sandbox.every((p) => bankNames.includes(p.name)), bankNames);
     check('a Shuffle bank is drawn disabled, with its hint', bank(shufflePl).disabled && !!bank(shufflePl).querySelector('.sd-hint'));
 
     // one-shots: the same pad twice must overlap - two Sounds for that file, both playing

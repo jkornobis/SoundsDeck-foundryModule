@@ -10,8 +10,10 @@ describe('classify - the name places a playlist', () => {
     ['1 · Bureau & Briefing', SHUFFLE, 'bed'],
     ['5 · Wrong', SHUFFLE, 'bed'],
     ['8 · The Board', SHUFFLE, 'bed'],
-    ['Effets · Fond (boucles)', SIMULTANEOUS, null],
+    ['Effets · Fond (boucles)', SIMULTANEOUS, null], // the names before 2026-09-24: no marker, not on the deck
     ['Effets · Évènements longs', SEQUENTIAL, null],
+    ['🔁 Fond (boucles)', SIMULTANEOUS, 'bank'], // his names since: an emoji makes them banks
+    ['🎞️ Évènements longs', SEQUENTIAL, 'bank'],
     ['Référence · Millennium — Mark Snow', SEQUENTIAL, null],
   ];
   for (const [name, mode, role] of world) {
