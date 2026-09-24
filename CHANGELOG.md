@@ -13,6 +13,7 @@ Versions follow semver **without pre-release labels** - Foundry's `isNewerVersio
 - A **Sounds Deck** button in the playlists sidebar header.
 - `tools/live-proof.mjs`: the module proven inside a running world without installing it - 15 checks.
 - The spec's five open questions answered by measurement; one-shots will play through `AudioHelper` (decision 0003).
+- **`npm run check` is the definition of done**: Biome, tests, then the manifest (version, changelog, files, languages).
 - **Quench batch** `sounds-deck.foundry-facts`: those answers as 8 tests run inside Foundry (`tools/quench-run.mjs`).
 
 ## 0.0.1
