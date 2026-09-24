@@ -8,6 +8,7 @@
 import { bankViews, nextLayout, oneShot } from '../core/banks.mjs';
 import { bedCards, bedsToStop } from '../core/beds.mjs';
 import { clock, transportCues } from '../core/cues.mjs';
+import { matches } from '../core/filter.mjs';
 import { snapshot } from './snapshot.mjs';
 
 export const TEMPLATE_BEDS = 'modules/sounds-deck/templates/beds.hbs';
@@ -77,12 +78,46 @@ export class SoundsDeckApp extends HandlebarsApplicationMixin(ApplicationV2) {
     }
   }
 
+  /** What the filter box holds - kept on the window, so a re-render (any playlist change) does not wipe it. */
+  #filter = '';
+
+  /** Hide the pads and banks the filter does not match. Pure matching in core/filter.mjs; this only shows and hides. */
+  #applyFilter() {
+    for (const bank of this.element?.querySelectorAll('.sd-bank') ?? []) {
+      const bankName = bank.querySelector('legend')?.textContent ?? '';
+      let shown = 0;
+      for (const cell of bank.querySelectorAll('.sd-pad-cell')) {
+        const hit = matches(this.#filter, cell.dataset.padName, bankName);
+        cell.hidden = !hit;
+        if (hit) shown++;
+      }
+      bank.hidden = shown === 0;
+    }
+  }
+
   /** Ticks the transport's position while the window is open; nothing is re-rendered for it. */
   #ticker = null;
 
   _onRender(context, options) {
     super._onRender(context, options);
     this.element.classList.toggle('is-vertical', game.settings.get(MODULE_ID, 'layout') === 'vertical');
+    const box = this.element.querySelector('.sd-filter input');
+    if (box) {
+      box.value = this.#filter;
+      box.addEventListener('input', () => {
+        this.#filter = box.value;
+        this.#applyFilter();
+      });
+      box.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && box.value) {
+          e.stopPropagation(); // clear the filter first; a second Escape reaches the window as usual
+          box.value = '';
+          this.#filter = '';
+          this.#applyFilter();
+        }
+      });
+    }
+    this.#applyFilter();
     for (const input of this.element.querySelectorAll('.sd-cue input[type=range]')) {
       input.addEventListener('change', () => SoundsDeckApp.#seek(input));
     }
