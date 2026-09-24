@@ -16,7 +16,7 @@ src/
     scene-bed-fix.mjs  replaces Foundry's scene -> playlist handover while Foundry's defect is present
 tools/
   cdp.mjs           the connection to the gamemaster session, and the one-key audio unlock
-  live-proof.mjs    the module, proven inside a running world without installing it
+  live-proof.mjs    --show: a screenshot of the deck, without installing it (its checks moved to Quench)
   quench-run.mjs    runs the Quench batches in the live world and prints the results
   player-proof.mjs  ducking measured in a PLAYER's browser: a second, isolated session joins as the test seat
   check-manifest.mjs  the manifest rules of `npm run check`
@@ -46,7 +46,7 @@ future Foundry release cannot silently turn every toggle into a one-shot.
 | lint + format | Biome 2.5.14, pinned | `npm run check` | style, likely bugs, and the purity of `src/core` |
 | unit | `node --test` | `npm run check` | every rule in the core, with the real world's playlist names as fixtures |
 | manifest | `tools/check-manifest.mjs` | `npm run check` | id; a version without a label and newer than the last tag; a changelog heading for it; compatibility; every file the manifest names exists; every language has the same keys |
-| live | `tools/live-proof.mjs` | by hand, world quiet | the window, the buttons, the scene fix, walked in the real world - 15 checks |
+| the deck | Quench batch `sounds-deck.deck` (`test/quench/deck.mjs`) | `node tools/quench-run.mjs deck`, world quiet | the window, every button, ducking, the scene fix and its fail-safe, walked in the real world - 20 tests |
 | player side | `tools/player-proof.mjs` | by hand, world quiet | what a player's browser does: the bed ducked 10 dB under a GM's event, and back |
 | Foundry's behaviour | Quench batch `sounds-deck.foundry-facts` (`test/quench/`) | `node tools/quench-run.mjs`, or Quench's own window | the facts the design relies on - polyphony, loop toggle, fade on stop, player rights, window size - 8 tests, red if a Foundry release changes one |
 
