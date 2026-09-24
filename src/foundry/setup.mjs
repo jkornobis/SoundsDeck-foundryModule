@@ -21,6 +21,16 @@ export function onInit() {
     type: String,
     default: 'comfortable',
   });
+  // The press log: OFF by default, this seat only, switched on in the module settings (v0.4 note 12).
+  game.settings.register(MODULE_ID, 'journal', {
+    scope: 'client',
+    config: true,
+    type: Boolean,
+    default: false,
+    name: 'SOUNDS_DECK.Journal.Name',
+    hint: 'SOUNDS_DECK.Journal.Hint',
+  });
+  game.settings.register(MODULE_ID, 'journalEntries', { scope: 'client', config: false, type: Array, default: [] });
   // The pure core carries its own copy of the playlist modes. If a Foundry release renumbers them, every press
   // would silently do the wrong thing - so the mismatch is loud, at start-up, before anything plays.
   const drift = Object.entries(MODES).filter(([k, v]) => CONST.PLAYLIST_MODES[k] !== v);

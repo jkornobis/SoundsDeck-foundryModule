@@ -9,6 +9,7 @@ import { bankViews, nextDensity, nextLayout, oneShot } from '../core/banks.mjs';
 import { bedCards, bedsToStop } from '../core/beds.mjs';
 import { clock, transportChanges, transportCues } from '../core/cues.mjs';
 import { matches } from '../core/filter.mjs';
+import { appendEntry, summarise } from '../core/journal.mjs';
 import { snapshot } from './snapshot.mjs';
 
 export const TEMPLATE_BEDS = 'modules/sounds-deck/templates/beds.hbs';
@@ -29,6 +30,12 @@ export class SoundsDeckApp extends HandlebarsApplicationMixin(ApplicationV2) {
         { icon: 'fa-solid fa-table-columns', label: 'SOUNDS_DECK.Layout', action: 'layout' },
         { icon: 'fa-solid fa-table-cells', label: 'SOUNDS_DECK.Density', action: 'density' },
         { icon: 'fa-solid fa-circle-question', label: 'SOUNDS_DECK.Help.Title', action: 'help' },
+        {
+          icon: 'fa-solid fa-file-export',
+          label: 'SOUNDS_DECK.Journal.Export',
+          action: 'journalExport',
+          visible: () => game.settings.get(MODULE_ID, 'journal'),
+        },
       ],
     },
     // 🚨 A NUMBER, NEVER 'auto'. Measured on 14.368: with height 'auto', every re-render resets the window to fit its
@@ -47,6 +54,7 @@ export class SoundsDeckApp extends HandlebarsApplicationMixin(ApplicationV2) {
       layout: SoundsDeckApp.#onLayout,
       density: SoundsDeckApp.#onDensity,
       help: SoundsDeckApp.#onHelp,
+      journalExport: SoundsDeckApp.#onJournalExport,
     },
   };
 
@@ -181,6 +189,27 @@ export class SoundsDeckApp extends HandlebarsApplicationMixin(ApplicationV2) {
     super._onClose(options);
   }
 
+  /** One press into this seat's log - only when the seat switched the log on. */
+  static async #log(kind, name, bank) {
+    if (!game.settings.get(MODULE_ID, 'journal')) return;
+    const entry = { at: new Date().toISOString(), kind, name, ...(bank ? { bank } : {}) };
+    await game.settings.set(
+      MODULE_ID,
+      'journalEntries',
+      appendEntry(game.settings.get(MODULE_ID, 'journalEntries'), entry),
+    );
+  }
+
+  static async #onJournalExport() {
+    const entries = game.settings.get(MODULE_ID, 'journalEntries');
+    const data = JSON.stringify({ exported: new Date().toISOString(), summary: summarise(entries), entries }, null, 2);
+    foundry.utils.saveDataToFile(
+      data,
+      'application/json',
+      `sounds-deck-journal-${new Date().toISOString().slice(0, 10)}.json`,
+    );
+  }
+
   static #playlistOf(target) {
     return game.playlists.get(target.closest('[data-playlist-id]')?.dataset.playlistId);
   }
@@ -191,10 +220,13 @@ export class SoundsDeckApp extends HandlebarsApplicationMixin(ApplicationV2) {
     const others = bedsToStop(bedCards(snapshot(game.playlists.contents)), playlist.id);
     for (const id of others) await game.playlists.get(id)?.stopAll();
     await playlist.playAll();
+    await SoundsDeckApp.#log('bed', playlist.name);
   }
 
   static async #onSkip(_event, target) {
-    await SoundsDeckApp.#playlistOf(target)?.playNext();
+    const playlist = SoundsDeckApp.#playlistOf(target);
+    await playlist?.playNext();
+    if (playlist) await SoundsDeckApp.#log('bed-skip', playlist.name);
   }
 
   static async #onStop(_event, target) {
@@ -207,6 +239,7 @@ export class SoundsDeckApp extends HandlebarsApplicationMixin(ApplicationV2) {
     const sound = playlist?.sounds.get(target.dataset.soundId);
     if (!sound) return;
     const bank = bankViews(snapshot([playlist]))[0];
+    if (bank?.press) await SoundsDeckApp.#log(bank.press, sound.name, playlist.name);
     switch (bank?.press) {
       case 'oneshot': {
         // Broadcast to every client (true), and let it overlap itself: a PlaylistSound cannot (measured, 0003).
