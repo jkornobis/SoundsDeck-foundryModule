@@ -134,3 +134,22 @@
 .sounds-deck .sd-filter input {
   width: 100%;
 }
+
+/* Compact: smaller pads and cards, so both real banks (51 pads) fit without scrolling. One seat's choice. */
+.sounds-deck.is-compact .sd-pads {
+  grid-template-columns: repeat(auto-fill, minmax(5.2rem, 1fr));
+  gap: 0.2rem;
+}
+.sounds-deck.is-compact .sd-pads .sd-pad {
+  min-height: 1.7rem;
+  font-size: var(--font-size-11, 0.72rem);
+  padding: 0 0.25rem;
+}
+.sounds-deck.is-compact .sd-bed {
+  padding: 0.25rem 0.4rem;
+  gap: 0.1rem;
+}
+.sounds-deck.is-compact .sounds-deck-beds {
+  grid-template-columns: repeat(auto-fill, minmax(8rem, 1fr));
+  gap: 0.3rem;
+}

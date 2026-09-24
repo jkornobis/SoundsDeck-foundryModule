@@ -56,5 +56,6 @@ future Foundry release cannot silently turn every toggle into a one-shot.
 
 **`npm run check` passes.** It is Biome, then every Node test, then the manifest rules, and it stops at the first
 failure. A pull request is merged only on a green run. **A release additionally needs** the live proof
-(`tools/live-proof.mjs`) and the Quench batch (`tools/quench-run.mjs`) green in the world, because those need a running
+(`tools/quench-run.mjs`: the deck, the Foundry facts and, once installed, the install check) and the player proof
+(`tools/player-proof.mjs`) green in the world, because those need a running
 Foundry and cannot run on every change.

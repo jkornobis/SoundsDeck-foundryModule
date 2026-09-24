@@ -19,6 +19,7 @@
     "Ducks": "Lower the music under {name}",
     "DucksOn": "The music drops under this event - click to keep it at full",
     "DucksOff": "The music stays at full under this event - click to lower it",
-    "Filter": "Filter the pads - glass, heartbeat, ponctuels…"
+    "Filter": "Filter the pads - glass, heartbeat, ponctuels…",
+    "Density": "Pad size: comfortable or compact"
   }
 }

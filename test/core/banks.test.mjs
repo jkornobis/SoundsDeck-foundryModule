@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import { bankViews, nextLayout, oneShot } from '../../src/core/banks.mjs';
+import { bankViews, nextDensity, nextLayout, oneShot } from '../../src/core/banks.mjs';
 import { MODES } from '../../src/core/classify.mjs';
 
 const pl = (id, name, mode, sounds = []) => ({ id, name, mode, playing: sounds.some((s) => s.playing), sounds });
@@ -68,4 +68,12 @@ describe('bankViews - the duck toggle (v0.4)', () => {
     const loops = bankViews([pl('lp', '🔁 Fond', MODES.SIMULTANEOUS, [s('rain')])])[0];
     assert.equal(loops.pads[0].ducks, null);
   });
+});
+
+describe('nextDensity', () => {
+  it('flips between comfortable and compact', () => {
+    assert.equal(nextDensity('comfortable'), 'compact');
+    assert.equal(nextDensity('compact'), 'comfortable');
+  });
+  it('an unknown value starts over at comfortable', () => assert.equal(nextDensity('huge'), 'comfortable'));
 });
