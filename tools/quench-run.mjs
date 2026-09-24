@@ -43,8 +43,12 @@ const out = await cdp.ev(`(async () => {
   for (const [f, src] of ${JSON.stringify(mods)}) {
     urls[f] = URL.createObjectURL(new Blob([src.replace(/__MOD__(.+?)__/g, (_m, d) => urls[d])], { type: 'text/javascript' }));
   }
-  const { registerBatches } = await import(urls['index.mjs']);
-  registerBatches(quench);
+  // Installed, the module registered its own batches at quenchReady; registering again would duplicate them.
+  const installed = !!game.modules.get('sounds-deck')?.active;
+  if (!installed) {
+    const { registerBatches } = await import(urls['index.mjs']);
+    registerBatches(quench);
+  }
   const results = [];
   const pageErrors = [];
   const onErr = (e) => pageErrors.push(String(e.error?.stack ?? e.reason?.stack ?? e.message ?? e.reason).slice(0, 400));
@@ -55,6 +59,7 @@ const out = await cdp.ev(`(async () => {
   const ended = await Promise.race([
     new Promise((resolve) => {
       runner.on('pass', (t) => results.push({ ok: true, test: t.fullTitle(), ms: t.duration }));
+      runner.on('pending', (t) => results.push({ ok: true, skipped: true, test: t.fullTitle() }));
       runner.on('fail', (t, err) => results.push({ ok: false, test: t.fullTitle(), error: String(err?.message ?? err).slice(0, 300) }));
       runner.once('end', () => resolve(true));
     }),
@@ -69,7 +74,7 @@ const out = await cdp.ev(`(async () => {
   for (const u of Object.values(urls)) URL.revokeObjectURL(u);
   return JSON.stringify({
     results,
-    passed: results.filter((r) => r.ok).length + ' / ' + results.length,
+    passed: `${results.filter((r) => r.ok && !r.skipped).length} passed, ${results.filter((r) => !r.ok).length} failed, ${results.filter((r) => r.skipped).length} skipped`,
     sandboxLeft: !!game.playlists.getName('__sounds-deck-quench'),
     playing: game.playlists.filter((p) => p.playing).map((p) => p.name),
   });
@@ -82,7 +87,7 @@ if (r.refused) {
 } else {
   for (const t of r.results)
     console.log(
-      `${t.ok ? 'PASS' : 'FAIL'} ${t.test.replace(/sounds-deck\.foundry-facts_root /, '')}${t.ok ? '' : `  -> ${t.error}`}`,
+      `${t.skipped ? 'SKIP' : t.ok ? 'PASS' : 'FAIL'} ${t.test.replace(/sounds-deck\.[a-z-]+_root /, '')}${t.ok ? '' : `  -> ${t.error}`}`,
     );
   console.log(r.passed, '| sandbox left behind:', r.sandboxLeft, '| playing:', r.playing);
 }
