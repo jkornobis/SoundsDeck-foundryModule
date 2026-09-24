@@ -3,7 +3,7 @@
 Versions follow semver **without pre-release labels** - Foundry's `isNewerVersion` does not understand them
 ([Package Best Practices Checklist](https://foundryvtt.wiki/en/development/guides/package-best-practices)).
 
-## 0.6.0 - unreleased
+## 0.6.0 - 2026-09-24
 
 **The Auditorium on 0.5.2** (2026-09-24) ranked five Musts from a study of six tabletop audio tools
 (`docs/field-study.md`). This version carries them.
