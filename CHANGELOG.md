@@ -3,6 +3,11 @@
 Versions follow semver **without pre-release labels** - Foundry's `isNewerVersion` does not understand them
 ([Package Best Practices Checklist](https://foundryvtt.wiki/en/development/guides/package-best-practices)).
 
+## 0.5.2 - unreleased
+
+- The deck test compares a bed card's playing track with what the deck shows (the name without its source), not the
+  full name - it failed against 0.5.1 once the world's names carried their sources.
+
 ## 0.5.1 - 2026-09-24
 
 - **Sources stay in Foundry's playlist panel** (world setting, on by default): a sound's source written in parentheses
