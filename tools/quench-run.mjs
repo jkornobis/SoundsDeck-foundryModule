@@ -94,6 +94,7 @@ const out = await cdp.ev(`(async () => {
     const inst = game.modules.get('sounds-deck').api;
     inst?.sceneFix?.uninstall?.();
     inst?.ducking?.uninstall?.();
+    inst?.silentFix?.uninstall?.();
     for (const app of foundry.applications.instances.values()) if (app.id === 'sounds-deck') await app.close();
   }
   if (!installed || P.fromSrc) {
@@ -136,6 +137,7 @@ const out = await cdp.ev(`(async () => {
     const Playlists = foundry.documents.collections.Playlists;
     harness.api.sceneFix?.uninstall?.();
     harness.api.ducking?.uninstall?.();
+    harness.api.silentFix?.uninstall?.();
     Hooks.off('renderPlaylistDirectory', harness.hookId);
     harness.style.remove();
     delete globalThis.__soundsDeckHarness;
@@ -143,6 +145,7 @@ const out = await cdp.ev(`(async () => {
     await new Promise((r) => setTimeout(r, 800));
     leftAsFound = {
       methodRestored: String(Playlists.prototype._onChangeScene).includes('playlistSound: priorPlaylistSoundId'),
+      onStartRestored: String(foundry.documents.PlaylistSound.prototype._onStart).includes('return this.sound.stop()'),
       sandboxGone: !game.playlists.some((p) => p.name.includes('__sd')),
       playing: game.playlists.filter((p) => p.playing).map((p) => p.name),
       active: game.scenes.active?.name ?? null,
@@ -164,7 +167,16 @@ const out = await cdp.ev(`(async () => {
 const r = JSON.parse(out);
 if (FROM_SRC && r.installed) {
   await cdp.send('Page.reload', {});
-  console.log('page reloaded: the installed release is back in charge');
+  // Leave the world ready for whatever runs next. Measured 2026-09-24: a second run started 1 s after this reload found
+  // no Foundry page on the debugger, and a third found a page without Quench.
+  let ready = false;
+  for (let i = 0; i < 60 && !ready; i++) {
+    await new Promise((res) => setTimeout(res, 1000));
+    ready = await cdp.ev('!!(globalThis.game?.ready && globalThis.quench)').catch(() => false);
+  }
+  console.log(
+    `page reloaded: the installed release is back in charge${ready ? '' : ' - but the world was not ready 60 s later'}`,
+  );
 }
 if (r.refused) console.log('REFUSED', r.refused);
 else if (r.hung) console.log('HUNG', JSON.stringify(r.hung, null, 1));

@@ -35,6 +35,7 @@ export function registerInstall(quench) {
         it('ready ran: the api is published', () => {
           assert.isFunction(mod.api?.open);
           assert.exists(mod.api?.ducking, 'ducking not installed');
+          assert.exists(mod.api?.silentFix, 'silent-start fix not attempted');
           if (game.user.isGM) assert.exists(mod.api?.sceneFix, 'scene fix not attempted');
         });
 
