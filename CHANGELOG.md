@@ -3,7 +3,16 @@
 Versions follow semver **without pre-release labels** - Foundry's `isNewerVersion` does not understand them
 ([Package Best Practices Checklist](https://foundryvtt.wiki/en/development/guides/package-best-practices)).
 
-## 0.2.0 - unreleased
+## 0.3.0 - unreleased
+
+- **Events have a transport**: every cue playing or paused part-way gets a row under the board - pause, resume, stop,
+  and a position slider that seeks. Pause, resume and stop do exactly what Foundry's own playlist sidebar does.
+- **Ducking, on every event** (his ruling): while a cue plays, the bed sits 10 dB lower (x0.316) and fades back by
+  itself when no cue is left. A cue opts out with `flags["sounds-deck"].duck = false` on its sound.
+  **Done locally by every client, never written to the world** - a failure mid-cue cannot leave the table quiet.
+- `tools/live-proof.mjs`: 26 checks, including the bed's measured gain before, during and after a cue.
+
+## 0.2.0
 
 - **The board**: every playlist whose name starts with an emoji is a bank of pads, beside the beds. What a pad does
   comes from the playlist's own core mode:

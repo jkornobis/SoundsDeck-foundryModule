@@ -12,4 +12,21 @@
   {{else}}
   <p class="sd-empty">{{localize "SOUNDS_DECK.NoBanks"}}</p>
   {{/each}}
+  {{#if cues.length}}
+  <section class="sd-transport" aria-label="{{localize 'SOUNDS_DECK.Transport'}}">
+    {{#each cues}}
+    <div class="sd-cue is-{{state}}" data-playlist-id="{{playlistId}}" data-sound-id="{{soundId}}">
+      <span class="sd-cue-name">{{name}}</span>
+      {{#if (eq state "playing")}}
+      <button type="button" data-action="cuePause" aria-label="{{localize 'SOUNDS_DECK.Pause'}}" data-tooltip="{{localize 'SOUNDS_DECK.Pause'}}"><i class="fa-solid fa-pause" inert></i></button>
+      {{else}}
+      <button type="button" data-action="cueResume" aria-label="{{localize 'SOUNDS_DECK.Resume'}}" data-tooltip="{{localize 'SOUNDS_DECK.Resume'}}"><i class="fa-solid fa-play" inert></i></button>
+      {{/if}}
+      <button type="button" data-action="cueStop" aria-label="{{localize 'SOUNDS_DECK.Stop'}}" data-tooltip="{{localize 'SOUNDS_DECK.Stop'}}"><i class="fa-solid fa-stop" inert></i></button>
+      <input type="range" min="0" max="1" step="1" value="0" aria-label="{{localize 'SOUNDS_DECK.Position'}}">
+      <span class="sd-cue-time">{{at}}</span>
+    </div>
+    {{/each}}
+  </section>
+  {{/if}}
 </section>

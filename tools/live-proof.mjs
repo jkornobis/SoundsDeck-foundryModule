@@ -28,6 +28,9 @@ const FILES = [
   'src/core/scene-bed.mjs',
   'src/core/beds.mjs',
   'src/core/banks.mjs',
+  'src/core/cues.mjs',
+  'src/foundry/snapshot.mjs',
+  'src/foundry/ducking.mjs',
   'src/foundry/scene-bed-fix.mjs',
   'src/foundry/deck-app.mjs',
   'src/foundry/setup.mjs',
@@ -84,7 +87,7 @@ const LOAD = `
   const M = CONST.PLAYLIST_MODES;
   const mk = (name, mode) => Playlist.create({ name, mode, folder: folder?.id ?? null,
     sounds: fx.map((s, i) => ({ name: name.slice(3) + ' ' + (i + 1), path: s.path, volume: 0.4, repeat: mode === M.SIMULTANEOUS, fade: 500 })) });
-  const sandbox = [await mk('🔫 __sd one-shots', M.DISABLED), await mk('🌧️ __sd loops', M.SIMULTANEOUS), await mk('🎲 __sd shuffle', M.SHUFFLE)];
+  const sandbox = [await mk('🔫 __sd one-shots', M.DISABLED), await mk('🌧️ __sd loops', M.SIMULTANEOUS), await mk('🎲 __sd shuffle', M.SHUFFLE), await mk('🎞️ __sd cues', M.SEQUENTIAL)];
   const cleanup = async () => {
     for (const p of game.playlists.filter((x) => x.playing)) await p.stopAll();
     for (const p of sandbox) await p.delete();
@@ -178,7 +181,7 @@ const report = await cdp.ev(`(async () => {
 
     // ================= v0.2 - the board
     const bank = (p) => app.element.querySelector('.sd-bank[data-playlist-id="' + p.id + '"]');
-    const [shotsPl, loopsPl, shufflePl] = sandbox;
+    const [shotsPl, loopsPl, shufflePl, cuesPl] = sandbox;
     await until(() => bank(shotsPl) && bank(loopsPl) && bank(shufflePl));
     const bankNames = [...app.element.querySelectorAll('.sd-bank legend')].map((e) => e.textContent.trim());
     // The module's own rule decides what a bank is - one definition, and no regex to escape through a template string.
@@ -237,6 +240,56 @@ const report = await cdp.ev(`(async () => {
     const box = app.element.getBoundingClientRect();
     check('the window reopens at the size it closed at', Math.round(box.width) === 820 && Math.round(box.height) === 560, { saved, reopened: [Math.round(box.width), Math.round(box.height)] });
 
+    // ================= v0.3 - cues and ducking
+    const bedSound = () => board.sounds.find((x) => x.playing);
+    const gain = () => bedSound()?.sound?.volume ?? NaN;
+    click('8 · The Board', 'play');
+    await until(() => bedSound()?.sound?.playing, 10000);
+    await wait(3500); // past the bed's own fade-in
+    const full = gain();
+    const docVol = bedSound()?.volume;
+    const cuePad = (i) => bank(cuesPl).querySelectorAll('.sd-pad')[i];
+    const row = () => app.element.querySelector('.sd-cue[data-sound-id="' + cuesPl.sounds.contents[0].id + '"]');
+    cuePad(0).click();
+    await until(() => row() && cuesPl.sounds.contents[0].sound?.playing, 10000);
+    await wait(1500);
+    const ducked = gain();
+    check('a cue playing ducks the bed about 10 dB (x0.32)', ducked / full > 0.22 && ducked / full < 0.42, { docVol, full: +full.toFixed(3), ducked: +ducked.toFixed(3), ratio: +(ducked / full).toFixed(3) });
+    check('the playing cue appears on the transport, with pause', !!row()?.querySelector('[data-action=cuePause]'));
+
+    row().querySelector('[data-action=cuePause]').click();
+    await until(() => !cuesPl.sounds.contents[0].playing && row()?.querySelector('[data-action=cueResume]'));
+    await wait(2600);
+    const released = gain();
+    check('pause: the cue stays on the transport, and the bed comes back up', row()?.classList.contains('is-paused') && released / full > 0.9, { released: +released.toFixed(3), ratio: +(released / full).toFixed(3) });
+
+    row().querySelector('[data-action=cueResume]').click();
+    await until(() => cuesPl.sounds.contents[0].sound?.playing, 8000);
+    await wait(1500);
+    check('resume: the cue plays again and the bed ducks again', gain() / full < 0.42, +(gain() / full).toFixed(3));
+
+    const range = row().querySelector('input[type=range]');
+    range.value = '30';
+    range.dispatchEvent(new Event('change'));
+    await wait(2500);
+    const at = cuesPl.sounds.contents[0].sound?.currentTime ?? 0;
+    check('seek: the cue jumps to the chosen position', at >= 29 && at <= 36, +at.toFixed(1));
+
+    row().querySelector('[data-action=cueStop]').click();
+    await until(() => !row(), 6000);
+    await wait(2600);
+    check('stop: the cue leaves the transport and the bed returns to full', !row() && gain() / full > 0.9, +(gain() / full).toFixed(3));
+
+    // per-cue override: flags["sounds-deck"].duck === false plays without ducking
+    await cuesPl.sounds.contents[1].update({ 'flags.sounds-deck.duck': false });
+    cuePad(1).click();
+    await until(() => cuesPl.sounds.contents[1].sound?.playing, 10000);
+    await wait(1500);
+    check('a cue marked duck:false leaves the bed at full', gain() / full > 0.9, +(gain() / full).toFixed(3));
+    await cuesPl.stopAll();
+    await board.stopAll();
+    await wait(1000);
+
     // ================= the scene fix, walked for real
     const door = game.scenes.getName(P.DOORWAY);
     if (!door.active) await door.activate();
@@ -258,6 +311,7 @@ const report = await cdp.ev(`(async () => {
   } finally {
     for (const s of shots) s.stop?.();
     api?.sceneFix?.uninstall?.();
+    api?.ducking?.uninstall?.();
     Hooks.off('renderPlaylistDirectory', hookId);
     await app?.close();
     await cleanup();

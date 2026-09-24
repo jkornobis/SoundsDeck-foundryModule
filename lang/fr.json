@@ -11,6 +11,10 @@
     "Board": "Pads",
     "Layout": "Pads à côté ou sous les ambiances",
     "NoBanks": "Aucune banque. Une playlist dont le nom commence par un emoji apparaît ici : Soundboard seulement pour les sons ponctuels, Simultanée pour les boucles d'ambiance, Séquentielle pour les évènements.",
-    "NoPress": "Le mode Aléatoire ne donne rien à faire à ces pads : choisir Soundboard seulement, Simultanée ou Séquentielle."
+    "NoPress": "Le mode Aléatoire ne donne rien à faire à ces pads : choisir Soundboard seulement, Simultanée ou Séquentielle.",
+    "Transport": "Évènements en cours",
+    "Pause": "Pause",
+    "Resume": "Reprendre",
+    "Position": "Position dans la piste"
   }
 }
