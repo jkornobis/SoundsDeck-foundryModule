@@ -3,8 +3,9 @@
  * them to hooks, and the live proof (tools/live-proof.mjs) can call the same functions in a running world.
  */
 import { MODES } from '../core/classify.mjs';
+import { LEVELS_DEFAULT } from '../core/cues.mjs';
 import { SoundsDeckApp } from './deck-app.mjs';
-import { installDucking } from './ducking.mjs';
+import { applyDuck, installDucking } from './ducking.mjs';
 import { installSceneBedFix } from './scene-bed-fix.mjs';
 import { installSilentStartFix } from './silent-start-fix.mjs';
 
@@ -45,6 +46,17 @@ export function onInit() {
     hint: 'SOUNDS_DECK.Journal.Hint',
   });
   game.settings.register(MODULE_ID, 'journalEntries', { scope: 'client', config: false, type: Array, default: [] });
+  // One level per layer (0.6, note 2): the table's mix, so world scope - every browser applies it to its own audio.
+  game.settings.register(MODULE_ID, 'levels', {
+    scope: 'world',
+    config: false,
+    type: Object,
+    default: { ...LEVELS_DEFAULT },
+    onChange: () => {
+      applyDuck();
+      for (const app of foundry.applications.instances.values()) if (app.id === MODULE_ID) app.render();
+    },
+  });
   // Moods are the table's (Auditorium on 0.5.2, note 1): world scope, so a mood saved on one seat is there on the next.
   game.settings.register(MODULE_ID, 'moods', {
     scope: 'world',

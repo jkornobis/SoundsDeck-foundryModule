@@ -30,7 +30,8 @@ const until = async (fn, ms = 8000) => {
 };
 
 // What a sound's audio is doing, as opposed to what its document says (#37): sounding once it really plays - PLAYING,
-// with a position - and quiet once it has fully stopped, or never started.
+// with a position - and quiet once it has fully stopped, or never started. The room loops tests wait on both, so they
+// press rather than race; the race itself has its own test, below.
 const sounding = (s) => s.sound?._state === foundry.audio.Sound.STATES.PLAYING && Number.isFinite(s.sound.currentTime);
 const quiet = (s) => {
   const { NONE, LOADED, STOPPED } = foundry.audio.Sound.STATES;
@@ -72,6 +73,7 @@ export function registerDeck(quench) {
           hideSources: game.settings.get(ID, 'hideSources'),
           journalEntries: game.settings.get(ID, 'journalEntries'),
           moods: game.settings.get(ID, 'moods'),
+          levels: game.settings.get(ID, 'levels'),
         };
         const folder = game.folders.find((f) => f.type === 'Playlist' && f.name === 'GE-Foundry');
         const fx = game.playlists.contents
@@ -117,6 +119,7 @@ export function registerDeck(quench) {
         await game.settings.set(ID, 'hideSources', S.seat.hideSources);
         await game.settings.set(ID, 'journalEntries', S.seat.journalEntries);
         await game.settings.set(ID, 'moods', S.seat.moods);
+        await game.settings.set(ID, 'levels', S.seat.levels);
         if (S.activeBefore && !S.activeBefore.active) await S.activeBefore.activate();
       });
 
@@ -217,6 +220,7 @@ export function registerDeck(quench) {
           await until(() => snd.playing && pad()?.getAttribute('aria-pressed') === 'true');
           assert.isTrue(snd.playing, 'the one-shot did not start');
           assert.isTrue(pad().closest('.sd-pad-cell').classList.contains('is-playing'));
+          await until(() => sounding(snd));
           pad().click();
           await until(() => !snd.playing);
           assert.isFalse(snd.playing, 'a second click did not stop it');
@@ -264,6 +268,7 @@ export function registerDeck(quench) {
           pad(1).click();
           await until(() => l1.playing);
           assert.isTrue(l0.playing && l1.playing);
+          await until(() => sounding(l0) && sounding(l1));
           pad(0).click();
           await until(() => !l0.playing);
           await wait(400);
@@ -271,13 +276,14 @@ export function registerDeck(quench) {
           assert.isTrue(l1.playing);
           assert.strictEqual(pad(0).getAttribute('aria-pressed'), 'false');
           await loops.stopAll();
+          await until(() => quiet(l0) && quiet(l1));
         });
 
         it('Now playing lists what sounds, with a volume slider that sets the sound volume, and stop all', async () => {
           const { loops } = S.sandbox;
           const l0 = loops.sounds.contents[0];
           bank(loops).querySelectorAll('.sd-pad')[0].click();
-          await until(() => l0.playing);
+          await until(() => l0.playing && sounding(l0));
           const row = () => S.app.element.querySelector(`.sd-now-row[data-sound-id="${l0.id}"]`);
           await until(() => row());
           assert.exists(row(), 'the playing loop is not listed');
@@ -289,6 +295,7 @@ export function registerDeck(quench) {
           S.app.element.querySelector('[data-action=stopAll]').click();
           await until(() => !loops.playing);
           assert.isFalse(loops.playing, 'stop all left a loop playing');
+          await until(() => quiet(l0));
         });
 
         it('the dice arms a one-shot to fire at random moments, listed in Now playing, and disarms', async () => {
@@ -522,6 +529,71 @@ export function registerDeck(quench) {
           assert.isTrue(sounding(loop()), `silent on the next press: ${heard()}`);
           await loop().update({ playing: false });
           await until(() => quiet(loop()));
+        });
+      });
+
+      describe('layer levels', function () {
+        this.timeout(30000);
+        const slider = (layer) => S.app.element.querySelector(`.sd-level[data-layer="${layer}"]`);
+        const move = (layer, volume, commit) => {
+          const el = slider(layer);
+          el.value = String(foundry.audio.AudioHelper.volumeToInput(volume));
+          el.dispatchEvent(new Event('input'));
+          if (commit) el.dispatchEvent(new Event('change'));
+        };
+        const gainOf = (s) => s?.sound?.volume ?? Number.NaN;
+
+        it('four sliders, one per kind of sound, in the table language', () => {
+          const rows = [...S.app.element.querySelectorAll('.sd-level')].map((e) => e.dataset.layer);
+          assert.deepEqual(rows, ['bed', 'toggle', 'cue', 'oneshot']);
+          assert.include(slider('bed').getAttribute('aria-label'), game.i18n.localize('SOUNDS_DECK.Layer.bed'));
+        });
+
+        it("the loops slider halves a playing loop's gain, and leaves the loop's own volume alone", async () => {
+          await game.settings.set(ID, 'levels', { bed: 1, toggle: 1, cue: 1, oneshot: 1 });
+          const l0 = S.sandbox.loops.sounds.contents[0];
+          await l0.update({ volume: 0.4, playing: true });
+          await until(() => sounding(l0) && Math.abs(gainOf(l0) - 0.4) < 0.01);
+          const heard = () => `state ${l0.sound?._state}, at ${l0.sound?.currentTime}, gain ${gainOf(l0)}`;
+          assert.isTrue(sounding(l0), `loop 0 never sounded, so no level can be read from it: ${heard()}`);
+          move('toggle', 0.5, true);
+          await until(() => Math.abs(gainOf(l0) - 0.2) < 0.01, 4000);
+          assert.closeTo(gainOf(l0), 0.2, 0.01, heard());
+          assert.strictEqual(l0.volume, 0.4, "the loop's own volume was rewritten");
+          // the slider moves in steps on Foundry's perceptual scale, so the level saved is where the slider landed
+          const landed = foundry.audio.AudioHelper.inputToVolume(slider('toggle').value);
+          await until(() => Math.abs(game.settings.get(ID, 'levels').toggle - landed) < 0.001);
+          assert.closeTo(game.settings.get(ID, 'levels').toggle, landed, 0.001);
+          assert.closeTo(landed, 0.5, 0.05);
+        });
+
+        it('the level holds when the loop is touched again, and full brings it back', async () => {
+          const l0 = S.sandbox.loops.sounds.contents[0];
+          await S.sandbox.loops.update({ fade: 502 }); // Foundry re-syncs the sound to its own volume on this
+          await wait(900);
+          assert.closeTo(gainOf(l0), 0.2, 0.01, 'a playlist update undid the level');
+          move('toggle', 1, true);
+          await until(() => Math.abs(gainOf(l0) - 0.4) < 0.01, 4000);
+          assert.closeTo(gainOf(l0), 0.4, 0.01);
+          await S.sandbox.loops.stopAll();
+        });
+
+        it('the music level and the duck multiply: a bed at half, under an event, sits near 0.16 of its volume', async () => {
+          click('8 · The Board', 'play');
+          const bed = () => S.board.sounds.find((x) => x.playing);
+          await until(() => bed()?.sound?.playing, 10000);
+          await wait(3000); // past the bed's own fade-in
+          move('bed', 0.5, true);
+          await until(() => Math.abs(gainOf(bed()) / bed().volume - 0.5) < 0.03, 4000);
+          assert.closeTo(gainOf(bed()) / bed().volume, 0.5, 0.03);
+          const cue = S.sandbox.cues.sounds.contents[0];
+          await S.sandbox.cues.playSound(cue);
+          await until(() => Math.abs(gainOf(bed()) / bed().volume - 0.158) < 0.03, 5000);
+          assert.closeTo(gainOf(bed()) / bed().volume, 0.158, 0.03);
+          await S.sandbox.cues.stopAll();
+          await S.board.stopAll();
+          await game.settings.set(ID, 'levels', { bed: 1, toggle: 1, cue: 1, oneshot: 1 });
+          await wait(800);
         });
       });
 

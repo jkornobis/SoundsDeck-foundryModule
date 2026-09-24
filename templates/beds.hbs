@@ -6,6 +6,11 @@
       <button type="button" class="sd-stop-all" data-action="stopAll" data-tooltip="{{localize 'SOUNDS_DECK.StopAll'}}" aria-label="{{localize 'SOUNDS_DECK.StopAll'}}"><i class="fa-solid fa-stop" inert></i> {{localize "SOUNDS_DECK.StopAllShort"}}</button>
       {{/if}}
     </header>
+    <div class="sd-levels" role="group" aria-label="{{localize 'SOUNDS_DECK.Levels'}}">
+      {{#each levels}}
+      <label class="sd-level-row"><span>{{label}}</span><input type="range" class="sd-level" data-layer="{{layer}}" min="0" max="1" step="0.05" value="{{input}}" aria-label="{{localize 'SOUNDS_DECK.LevelOf' layer=label}}" data-tooltip="{{localize 'SOUNDS_DECK.LevelOf' layer=label}}"></label>
+      {{/each}}
+    </div>
     {{#each now}}
     <div class="sd-now-row sd-kind-{{kind}} is-{{state}}{{#if isCue}} sd-cue{{/if}}" data-kind="{{kind}}" data-playlist-id="{{playlistId}}" data-sound-id="{{soundId}}">
       <div class="sd-now-text">
