@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import { decideSceneBed } from '../../src/core/scene-bed.mjs';
+import { decideSceneBed, sceneAudioPlan } from '../../src/core/scene-bed.mjs';
 
 const board = { playlistId: 'board', soundId: null };
 
@@ -34,5 +34,34 @@ describe('decideSceneBed', () => {
   });
   it('a state with no playlist id counts as no bed', () => {
     assert.equal(decideSceneBed({ playlistId: '', soundId: null }, board), 'start');
+  });
+});
+
+describe('sceneAudioPlan - manual music survives a scene change (v0.4)', () => {
+  const board = { playlistId: 'board', soundId: null };
+  it('board scene -> doorway, nothing picked by hand: the board stops', () => {
+    assert.deepEqual(sceneAudioPlan(board, null, ['board']), { verdict: 'stop', stop: [board], start: null });
+  });
+  it('board scene, Wrong picked by hand, -> doorway: Wrong plays on', () => {
+    const plan = sceneAudioPlan(board, null, ['wrong']);
+    assert.equal(plan.verdict, 'stop-scene-keep-picked');
+    assert.ok(!plan.stop.some((s) => s.playlistId === 'wrong'));
+  });
+  it('doorway with Wrong picked by hand -> board scene: the board starts and Wrong stops (a bed is exclusive)', () => {
+    const plan = sceneAudioPlan(null, board, ['wrong']);
+    assert.equal(plan.verdict, 'start');
+    assert.deepEqual(plan.stop, [{ playlistId: 'wrong', soundId: null }]);
+    assert.deepEqual(plan.start, board);
+  });
+  it('board -> board keeps, even with another bed picked by hand', () => {
+    assert.deepEqual(sceneAudioPlan(board, { ...board }, ['wrong']), { verdict: 'keep', stop: [], start: null });
+  });
+  it('board -> wrong scene: the board stops once, never twice', () => {
+    const plan = sceneAudioPlan(board, { playlistId: 'wrong', soundId: null }, ['board']);
+    assert.deepEqual(plan.stop, [board]);
+  });
+  it('the bed a scene is about to start is never in its own stop list', () => {
+    const plan = sceneAudioPlan(null, board, ['board', 'wrong']);
+    assert.ok(!plan.stop.some((s) => s.playlistId === 'board'));
   });
 });

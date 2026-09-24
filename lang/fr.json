@@ -15,6 +15,9 @@
     "Transport": "Évènements en cours",
     "Pause": "Pause",
     "Resume": "Reprendre",
-    "Position": "Position dans la piste"
+    "Position": "Position dans la piste",
+    "Ducks": "Baisser la musique sous {name}",
+    "DucksOn": "La musique baisse sous cet évènement - cliquer pour la garder à plein",
+    "DucksOff": "La musique reste à plein sous cet évènement - cliquer pour la baisser"
   }
 }

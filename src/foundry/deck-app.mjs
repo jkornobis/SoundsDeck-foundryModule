@@ -35,6 +35,7 @@ export class SoundsDeckApp extends HandlebarsApplicationMixin(ApplicationV2) {
       skip: SoundsDeckApp.#onSkip,
       stop: SoundsDeckApp.#onStop,
       pad: SoundsDeckApp.#onPad,
+      duckToggle: SoundsDeckApp.#onDuckToggle,
       cuePause: SoundsDeckApp.#onCuePause,
       cueResume: SoundsDeckApp.#onCueResume,
       cueStop: SoundsDeckApp.#onCueStop,
@@ -151,6 +152,15 @@ export class SoundsDeckApp extends HandlebarsApplicationMixin(ApplicationV2) {
       default:
         return undefined; // a bank whose mode gives no press: drawn disabled, and does nothing if reached anyway
     }
+  }
+
+  /** An event's say in ducking, stored on its own sound as flags["sounds-deck"].duck - world data, the GM's to set. */
+  static async #onDuckToggle(_event, target) {
+    const playlist = SoundsDeckApp.#playlistOf(target);
+    const sound = playlist?.sounds.get(target.dataset.soundId);
+    if (!sound) return;
+    const ducks = sound.flags?.['sounds-deck']?.duck !== false;
+    await sound.update({ 'flags.sounds-deck.duck': !ducks });
   }
 
   static #cueOf(target) {

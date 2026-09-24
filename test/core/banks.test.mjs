@@ -59,3 +59,13 @@ describe('nextLayout', () => {
   });
   it('an unknown value starts over at horizontal', () => assert.equal(nextLayout('diagonal'), 'horizontal'));
 });
+
+describe('bankViews - the duck toggle (v0.4)', () => {
+  const ev = (sounds) => bankViews([pl('ev', '🎞️ Évènements longs', MODES.SEQUENTIAL, sounds)])[0];
+  it('an event ducks by default', () => assert.equal(ev([s('a')]).pads[0].ducks, true));
+  it('an event told duck:false does not', () => assert.equal(ev([{ ...s('a'), duck: false }]).pads[0].ducks, false));
+  it('a loop or a one-shot has no say in ducking', () => {
+    const loops = bankViews([pl('lp', '🔁 Fond', MODES.SIMULTANEOUS, [s('rain')])])[0];
+    assert.equal(loops.pads[0].ducks, null);
+  });
+});
