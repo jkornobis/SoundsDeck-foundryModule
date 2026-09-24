@@ -15,7 +15,9 @@ src/
     deck-app.mjs    the window (ApplicationV2 + HandlebarsApplicationMixin)
     scene-bed-fix.mjs  replaces Foundry's scene -> playlist handover while Foundry's defect is present
 tools/
+  cdp.mjs           the connection to the gamemaster session, and the one-key audio unlock
   live-proof.mjs    the module, proven inside a running world without installing it
+  probe-foundry.mjs what the design assumes about Foundry, measured - six verdicts
 test/
   core/             node:test - runs anywhere, in milliseconds, on every change
   quench/           (note 4) tests that need a live Foundry, run inside it with Quench
@@ -39,4 +41,5 @@ future Foundry release cannot silently turn every toggle into a one-shot.
 | lint + format | Biome 2.5.14, pinned | `npm run check` | style, likely bugs, and the purity of `src/core` |
 | unit | `node --test` | `npm run check` | every rule in the core, with the real world's playlist names as fixtures |
 | live | `tools/live-proof.mjs` | by hand, world quiet | the window, the buttons, the scene fix, walked in the real world - 15 checks |
-| integration | Quench, inside Foundry | (note 4) | what only a live Foundry can answer - the five open probes in the spec first |
+| Foundry's behaviour | `tools/probe-foundry.mjs` | by hand, world quiet | the six facts the design relies on (polyphony, loop toggle, fade on stop, player rights, reopened geometry) - red if a Foundry release changes one |
+| integration | Quench, inside Foundry | not installed | see note 4 in the pull request that added the probes |
