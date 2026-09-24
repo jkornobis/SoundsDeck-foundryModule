@@ -1,5 +1,12 @@
 {
   "SOUNDS_DECK": {
-    "Title": "Sounds Deck"
+    "Title": "Sounds Deck",
+    "Open": "Sounds Deck",
+    "Beds": "Beds",
+    "Play": "Play this bed",
+    "Skip": "Next track",
+    "Stop": "Stop",
+    "Tracks": "{count} tracks",
+    "NoBeds": "No bed yet. A playlist whose name starts with a number and a dot (1 · …) appears here."
   }
 }
