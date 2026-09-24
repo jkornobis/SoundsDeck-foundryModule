@@ -28,12 +28,13 @@ npm test           # the pure core, outside Foundry
 npm run check      # what must pass before anything is merged: biome ci + tests
 npm run format     # rewrite formatting
 
-node tools/live-proof.mjs              # load src/ into the live world's GM session, drive it, measure, clean up
+node tools/quench-run.mjs              # every Quench batch in the live world (loads src/ if not installed)
+node tools/player-proof.mjs            # ducking measured in a player's browser (a second session)
 node tools/live-proof.mjs --show x.png # photograph the deck; plays nothing
 ```
 
-`tools/live-proof.mjs` needs the gamemaster session driven through Chrome's debugger on port 9222 and **refuses
-if anyone else is connected or anything is playing** - it starts beds and activates scenes.
+These need the gamemaster session driven through Chrome's debugger on port 9222, and **refuse if anyone else is
+connected or anything is playing** - they start beds and activate scenes.
 
 Structure and the reasons for it: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md). Decisions:
 [`docs/decisions/`](docs/decisions/).
