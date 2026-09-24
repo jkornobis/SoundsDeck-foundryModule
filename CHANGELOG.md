@@ -5,6 +5,9 @@ Versions follow semver **without pre-release labels** - Foundry's `isNewerVersio
 
 ## 0.6.1 - unreleased
 
+- **Preview in your ear** (note 3): the 🎧 on a pad plays it in your browser only, at the level the table would
+  hear, before you play it for everyone. Nothing is sent to the players and the music does not duck. One preview at
+  a time: another pad replaces it, the same one again stops it, and it stops by itself after 20 s.
 - `docs/field-study.md` part 2: what users ask Foundry audio modules for, counted across nine trackers.
 
 ## 0.6.0 - 2026-09-24

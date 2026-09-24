@@ -6,6 +6,7 @@ import { MODES } from '../core/classify.mjs';
 import { LEVELS_DEFAULT } from '../core/cues.mjs';
 import { SoundsDeckApp } from './deck-app.mjs';
 import { applyDuck, installDucking } from './ducking.mjs';
+import { previewing, previewSound, stopPreview, togglePreview } from './preview.mjs';
 import { installSceneBedFix } from './scene-bed-fix.mjs';
 import { installSilentStartFix } from './silent-start-fix.mjs';
 
@@ -77,7 +78,8 @@ export function onInit() {
  * ready: documents exist. Only the gamemaster's client installs the scene fix - Foundry's own method runs only
  * for the user who activated the scene, and only a gamemaster activates scenes.
  * @returns {{ open: () => SoundsDeckApp, sceneFix: ReturnType<typeof installSceneBedFix> | null,
- *   ducking: ReturnType<typeof installDucking>, silentFix: ReturnType<typeof installSilentStartFix> }}
+ *   ducking: ReturnType<typeof installDucking>, silentFix: ReturnType<typeof installSilentStartFix>,
+ *   preview: { previewing: () => string | null, sound: () => object | null, stop: () => void, toggle: Function } }}
  */
 export function onReady() {
   const sceneFix = game.user.isGM
@@ -89,7 +91,9 @@ export function onReady() {
   // Every client again: each browser starts its own copy of a sound, and can leave it silent on its own timing (#37).
   const silentFix = installSilentStartFix(foundry.documents.PlaylistSound);
   if (!silentFix.installed) console.info(`${MODULE_ID} | silent-start fix not installed: ${silentFix.reason}`);
-  return { open: openDeck, sceneFix, ducking, silentFix };
+  // The GM's-ear preview (note 3), reachable from a macro as well as from the pads' headphones.
+  const preview = { previewing, sound: previewSound, stop: stopPreview, toggle: togglePreview };
+  return { open: openDeck, sceneFix, ducking, silentFix, preview };
 }
 
 let deck = null;

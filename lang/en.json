@@ -53,6 +53,10 @@
     "RandomOn": "Firing at random moments - click to stop",
     "RandomOff": "Fire this at random moments (every 10–45 s)",
     "RandomArmed": "at random",
+    "Preview": "Hear {name} in your ear only",
+    "PreviewOn": "In your ear only - click to stop",
+    "PreviewOff": "Hear this in your ear only - the table does not",
+    "PreviewStarted": "In your ear only: {name}",
     "Disarm": "Stop firing at random",
     "HideSources": {
       "Name": "Hide sources on the deck",

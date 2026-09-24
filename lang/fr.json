@@ -53,6 +53,10 @@
     "RandomOn": "Se déclenche au hasard - cliquer pour arrêter",
     "RandomOff": "Déclencher au hasard (toutes les 10 à 45 s)",
     "RandomArmed": "au hasard",
+    "Preview": "Écouter {name} pour vous seul",
+    "PreviewOn": "Pour vous seul - cliquer pour arrêter",
+    "PreviewOff": "L'écouter pour vous seul - la table n'entend rien",
+    "PreviewStarted": "Pour vous seul : {name}",
     "Disarm": "Arrêter le déclenchement au hasard",
     "HideSources": {
       "Name": "Masquer les sources sur le deck",

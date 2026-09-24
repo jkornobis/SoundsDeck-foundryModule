@@ -11,14 +11,15 @@
       {{#each pads}}
       <div class="sd-pad-cell sd-card{{#if playing}} is-playing{{/if}}" data-pad-name="{{name}}">
         <button type="button" class="sd-pad" data-action="pad" data-sound-id="{{id}}" {{#if pressed}}aria-pressed="{{pressed}}"{{/if}} aria-label="{{label}}" data-tooltip="{{label}}{{#if description}}<br>{{description}}{{/if}}" {{#if description}}aria-description="{{description}}"{{/if}}><span class="sd-clamp">{{label}}</span></button>
-        {{#if randomizable}}
+        {{#if previewable}}
         <div class="sd-card-actions">
+          <button type="button" class="sd-preview{{#if previewing}} is-previewing{{/if}}" data-action="preview" data-sound-id="{{id}}" aria-pressed="{{#if previewing}}true{{else}}false{{/if}}" aria-label="{{localize 'SOUNDS_DECK.Preview' name=label}}" data-tooltip="{{#if previewing}}{{localize 'SOUNDS_DECK.PreviewOn'}}{{else}}{{localize 'SOUNDS_DECK.PreviewOff'}}{{/if}}"><i class="fa-solid fa-headphones" inert></i></button>
+          {{#if randomizable}}
           <button type="button" class="sd-random{{#if armed}} is-armed{{/if}}" data-action="randomToggle" data-sound-id="{{id}}" aria-pressed="{{#if armed}}true{{else}}false{{/if}}" aria-label="{{localize 'SOUNDS_DECK.Random' name=name}}" data-tooltip="{{#if armed}}{{localize 'SOUNDS_DECK.RandomOn'}}{{else}}{{localize 'SOUNDS_DECK.RandomOff'}}{{/if}}"><i class="fa-solid fa-dice" inert></i></button>
-        </div>
-        {{/if}}
-        {{#if (ne ducks null)}}
-        <div class="sd-card-actions">
+          {{/if}}
+          {{#if (ne ducks null)}}
           <button type="button" class="sd-duck{{#unless ducks}} is-off{{/unless}}" data-action="duckToggle" data-sound-id="{{id}}" aria-pressed="{{#if ducks}}true{{else}}false{{/if}}" aria-label="{{localize 'SOUNDS_DECK.Ducks' name=name}}" data-tooltip="{{#if ducks}}{{localize 'SOUNDS_DECK.DucksOn'}}{{else}}{{localize 'SOUNDS_DECK.DucksOff'}}{{/if}}"><i class="fa-solid {{#if ducks}}fa-volume-low{{else}}fa-volume-high{{/if}}" inert></i></button>
+          {{/if}}
         </div>
         {{/if}}
       </div>

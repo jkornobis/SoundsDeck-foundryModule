@@ -64,6 +64,8 @@ deck**, on by default; turn it off to see both on the pads. The filter searches 
   Music you picked by hand keeps playing into a scene that has none of its own.
 - **Ducking.** While an event plays, the music drops about 10 dB and comes back by itself - in every player's browser.
   The small speaker on an event's pad turns this off for that event.
+- **Preview in your ear.** The 🎧 on a pad plays it in your browser only, at the level the table would hear, before
+  you play it for everyone. Another pad replaces it, the same one again stops it, and it stops by itself after 20 s.
 - **Random triggering.** The 🎲 on a one-shot's pad fires it at random moments (every 10–45 s) until you switch it off.
   Set your own interval per sound with the flag `flags["sounds-deck"].random = { min, max }` (seconds).
 - **Where a sound comes from** stays in the playlist sidebar by default (see above); with *Hide sources on the deck*
