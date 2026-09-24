@@ -74,7 +74,7 @@ const out = await cdp.ev(`(async () => {
   for (const u of Object.values(urls)) URL.revokeObjectURL(u);
   return JSON.stringify({
     results,
-    passed: `${results.filter((r) => r.ok && !r.skipped).length} passed, ${results.filter((r) => !r.ok).length} failed, ${results.filter((r) => r.skipped).length} skipped`,
+    passed: results.filter((r) => r.ok && !r.skipped).length + ' passed, ' + results.filter((r) => !r.ok).length + ' failed, ' + results.filter((r) => r.skipped).length + ' skipped',
     sandboxLeft: !!game.playlists.getName('__sounds-deck-quench'),
     playing: game.playlists.filter((p) => p.playing).map((p) => p.name),
   });
