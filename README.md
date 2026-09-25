@@ -29,6 +29,26 @@ in your world, then open the deck from the **Sounds Deck** button at the top of 
 
 Elgato's own **Hotkey** action is all it takes: no plugin, and nothing to install in Foundry.
 
+### Ready-made profile (Stream Deck +)
+
+1. Download [Sounds Deck - Stream Deck +.streamDeckProfile](streamdeck/Sounds%20Deck%20-%20Stream%20Deck%20%2B.streamDeckProfile):
+   open the link, then **Download** (or **Raw**) on the file's page.
+2. Double-click the downloaded file. The Stream Deck app opens and imports a profile named **Sounds Deck**.
+   If nothing happens: Stream Deck app → gear icon → **Profiles** → the menu under the list → **Import**, and pick
+   the file.
+3. Choose **Sounds Deck** in the profile list at the top of the Stream Deck app.
+
+| Page (swipe the touch strip) | The 8 keys |
+|---|---|
+| 1 | Beds 1-8 |
+| 2 | Moods 1-6, Stop all, Deck (open or close the window) |
+| 3 | Tracks 1-8 of the bed that plays |
+
+**The four dials, on every page**: Music, Loops, Events, Effects - turn to move the level, press to mute.
+
+The profile uses the shortcuts below; nothing else needs setting up. A profile for the standard Stream Deck (15 keys)
+is coming. To build your own layout instead:
+
 - **Keys**: give a key the shortcut of what it should do - Shift+1 for bed 1, Ctrl+Shift+2 for the second mood, Shift+X
   to stop everything.
 - **Stream Deck + knobs**: in the Stream Deck app, switch to *Dials*, drag *System → Hotkey* onto a knob, and pick its

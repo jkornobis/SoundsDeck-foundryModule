@@ -48,8 +48,8 @@
   </section>
 
   <section class="sd-moods" aria-label="{{localize 'SOUNDS_DECK.Moods'}}">
-    <header class="sd-now-head">
-      <h3>{{localize "SOUNDS_DECK.Moods"}}</h3>
+    <header class="sd-now-head sd-section-head">
+      <h2 class="sd-section-title">{{localize "SOUNDS_DECK.Moods"}}</h2>
       <button type="button" class="sd-mood-save" data-action="moodSave" data-tooltip="{{localize 'SOUNDS_DECK.MoodSave'}}" aria-label="{{localize 'SOUNDS_DECK.MoodSave'}}"><i class="fa-solid fa-floppy-disk" inert></i> {{localize "SOUNDS_DECK.MoodSaveShort"}}</button>
     </header>
     {{#each moods}}
@@ -69,6 +69,7 @@
   </section>
 
   <section class="sounds-deck-beds" aria-label="{{localize 'SOUNDS_DECK.Beds'}}">
+    <header class="sd-section-head"><h2 class="sd-section-title">{{localize "SOUNDS_DECK.Beds"}}</h2></header>
     {{#each beds}}
     <article class="sd-bed sd-card{{#if playing}} is-playing{{/if}}" data-playlist-id="{{id}}">
       <div class="sd-card-body">

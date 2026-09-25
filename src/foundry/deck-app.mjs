@@ -382,11 +382,15 @@ export class SoundsDeckApp extends HandlebarsApplicationMixin(ApplicationV2) {
     const sheet = game.settings.sheet ?? new foundry.applications.settings.SettingsConfig();
     // Chosen before the window draws, so it opens on the deck's section; an open window switches instead. Switching
     // right after render() failed once in the live tests: the window had no element yet.
-    if (sheet.rendered) sheet.changeTab(MODULE_ID, 'categories');
-    else {
-      sheet.tabGroups.categories = MODULE_ID;
-      await sheet.render({ force: true });
+    // A second live run once failed on a window still settling ("reading 'querySelector'" of null): a failed switch
+    // falls back to drawing the window again on the deck's section.
+    try {
+      if (sheet.rendered) return sheet.changeTab(MODULE_ID, 'categories');
+    } catch (error) {
+      console.warn(`${MODULE_ID} | the settings window could not switch section; it is drawn again:`, error);
     }
+    sheet.tabGroups.categories = MODULE_ID;
+    await sheet.render({ force: true });
   }
 
   static async #onJournalExport() {

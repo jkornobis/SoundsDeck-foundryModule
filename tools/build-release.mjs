@@ -27,7 +27,7 @@ if (!/^[\w.-]+\/[\w.-]+$/.test(repo ?? '') || !/^v\d+\.\d+\.\d+$/.test(tag ?? ''
 const ROOT = path.resolve(new URL('..', import.meta.url).pathname);
 const DIST = path.join(ROOT, 'dist');
 const STAGE = path.join(DIST, 'stage');
-const SHIP = ['src', 'templates', 'lang', 'styles', 'test/quench', 'README.md', 'CHANGELOG.md'];
+const SHIP = ['src', 'templates', 'lang', 'styles', 'streamdeck', 'test/quench', 'README.md', 'CHANGELOG.md'];
 
 const manifest = JSON.parse(readFileSync(path.join(ROOT, 'module.json'), 'utf8'));
 if (`v${manifest.version}` !== tag) {

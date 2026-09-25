@@ -5,6 +5,13 @@ Versions follow semver **without pre-release labels** - Foundry's `isNewerVersio
 
 ## 0.6.5 - unreleased
 
+- **A Stream Deck + profile, ready to import** (`streamdeck/`, and the README's Stream Deck section): beds, moods,
+  Stop all, Open deck and tracks on three pages, and the four layer knobs on the dials. Built from a profile exported
+  from a real Stream Deck + (app 7.6), key codes included.
+- **Layout**: the board's tabs are proper tabs on an accent line, clear of the search box; a bank is a title with an
+  accent line instead of a box; Moods, Music and Sounds Pad each have a title; buttons on the cards keep a margin
+  from the edge.
+
 - **Pick a track in a bed.** A ▸ beside a bed's name opens its tracks, numbered in the playlist's own order (by name,
   or as you arranged them - never the shuffle order, which changes each time a bed starts). A click plays that track;
   a bed that was not playing starts on it and crosses over from the one that was. **Ctrl+Alt+1…9** plays that

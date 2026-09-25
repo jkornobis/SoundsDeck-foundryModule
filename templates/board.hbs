@@ -1,4 +1,5 @@
 <section class="sounds-deck-board" aria-label="{{localize 'SOUNDS_DECK.Board'}}">
+  <header class="sd-section-head"><h2 class="sd-section-title">{{localize "SOUNDS_DECK.BoardTitle"}}</h2></header>
   {{#if banks.length}}
   <search class="sd-filter">
     <input type="search" name="filter" placeholder="{{localize 'SOUNDS_DECK.Filter'}}" aria-label="{{localize 'SOUNDS_DECK.Filter'}}" autocomplete="off">
@@ -14,7 +15,7 @@
   {{/if}}
   {{#each banks}}
   <fieldset class="sd-bank sd-press-{{press}}" data-playlist-id="{{id}}" data-shown="{{#if shown}}true{{else}}false{{/if}}" {{#unless shown}}hidden{{/unless}} {{#unless press}}disabled{{/unless}}>
-    <legend>{{name}}</legend>
+    <legend class="sd-bank-title">{{name}}</legend>
     <div class="sd-pads">
       {{#each pads}}
       <div class="sd-pad-cell sd-card{{#if playing}} is-playing{{/if}}{{#if colour}} sd-colour sd-colour-{{colour}}{{/if}}" data-pad-name="{{name}}">
