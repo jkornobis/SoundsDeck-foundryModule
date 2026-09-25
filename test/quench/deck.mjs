@@ -965,6 +965,43 @@ export function registerDeck(quench) {
         });
       });
 
+      describe('trim a track (theme 7)', function () {
+        this.timeout(30000);
+        const pad = () => S.sandbox.shots.sounds.contents[2]; // a 600 s file, loaded whole: the precise path
+
+        it("the sound's settings show Start and End right under Fade, and saving stores them on the sound", async () => {
+          const sheet = pad().sheet;
+          await sheet.render({ force: true });
+          await until(() => sheet.element?.querySelector('[name="flags.sounds-deck.trim.start"]'));
+          const start = sheet.element.querySelector('[name="flags.sounds-deck.trim.start"]');
+          const end = sheet.element.querySelector('[name="flags.sounds-deck.trim.end"]');
+          assert.exists(start, 'no Start field');
+          assert.exists(end, 'no End field');
+          const fade = sheet.element.querySelector('[name="fade"]').closest('.form-group');
+          assert.strictEqual(fade.nextElementSibling, start.closest('.form-group'), 'not right under Fade');
+          start.value = '3';
+          end.value = '5';
+          await sheet.submit();
+          await until(() => pad().getFlag(ID, 'trim')?.end === 5);
+          assert.deepEqual(pad().getFlag(ID, 'trim'), { start: 3, end: 5 });
+          await sheet.close();
+        });
+
+        it('a trimmed pad plays from its Start and ends by itself at its End', async () => {
+          const t0 = performance.now();
+          await S.sandbox.shots.playSound(pad());
+          await until(() => sounding(pad()), 8000);
+          const at = pad().sound.currentTime;
+          assert.isAtLeast(at, 3, `it started at ${at}s, not at its Start`);
+          assert.isBelow(at, 4.5, `it started at ${at}s`);
+          await until(() => !pad().playing, 8000);
+          const took = (performance.now() - t0) / 1000;
+          assert.isFalse(pad().playing, 'it did not end at its End');
+          assert.isBelow(took, 5, `it played ${took.toFixed(1)}s for a 2 s trim`);
+          await pad().unsetFlag(ID, 'trim');
+        });
+      });
+
       describe('the press log', function () {
         this.timeout(20000);
         it('off by default: pressing records nothing, and the export entry is hidden', async () => {

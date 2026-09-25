@@ -135,6 +135,12 @@
       }
     },
     "PadGone": "This pad no longer exists in the world.",
-    "Muted": "Muted - press its knob again to bring it back"
+    "Muted": "Muted - press its knob again to bring it back",
+    "Trim": {
+      "Label": "Trim",
+      "Start": "Start",
+      "End": "End",
+      "Hint": "Play only part of this track: from Start to End, in seconds (Sounds Deck). It ends at End, so a shuffle moves on; a repeating sound repeats that part. Leave empty for the whole file."
+    }
   }
 }

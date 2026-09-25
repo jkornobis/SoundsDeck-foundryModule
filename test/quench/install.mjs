@@ -42,6 +42,7 @@ export function registerInstall(quench) {
           if (game.user.isGM) assert.isTrue(mod.api?.sceneMood?.installed, 'scene moods not installed');
           if (game.user.isGM) assert.isTrue(mod.api?.hotbar?.installed, 'the hotbar drop is not installed');
           assert.isFunction(mod.api?.press, 'press not published for hotbar macros');
+          assert.isTrue(mod.api?.trim?.installed, 'trim not installed');
         });
 
         it('the shortcuts are registered, the Stream Deck + knobs on F13-F24', () => {

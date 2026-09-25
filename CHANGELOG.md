@@ -5,6 +5,10 @@ Versions follow semver **without pre-release labels** - Foundry's `isNewerVersio
 
 ## 0.6.1 - unreleased
 
+- **Trim a track** (theme 7): *Start* and *End*, in seconds, in a sound's own settings under *Fade*. The track
+  plays from its start and ends at its end, so a shuffle bed moves on; a track that does not repeat fades out before
+  its end over its own fade, and a repeating sound repeats the trimmed part. Precise for files up to 10 minutes,
+  which Foundry loads whole; a longer, streamed file is ended at its trim by the gamemaster's browser.
 - **Keyboard shortcuts, the Stream Deck + knobs, and pads on the hotbar** (theme 6). Shift+D opens or closes the
   deck, Shift+X stops everything, Shift+1…8 plays the bed with that number, Ctrl+Shift+1…9 recalls the mood at that
   place. The four knobs of a Stream Deck + drive the four levels on F13-F24: turn for ±5% on the slider, press to mute
