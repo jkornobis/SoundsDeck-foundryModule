@@ -116,13 +116,22 @@ deck**, on by default; turn it off to see both on the pads. The filter searches 
   The small speaker on an event's pad turns this off for that event.
 - **For chosen players only.** The 👤 on a pad sends it to the players you tick - a whisper only one agent hears. It
   plays once, and you hear it quietly.
-- **Colour, icon, fold.** In a pad's sound settings, give it a colour and an icon; click a bank's title to fold it.
+- **Colour, icon, tabs.** In a pad's sound settings, give it a colour and an icon. Each bank has a tab above the
+  board: click its name to show that bank alone (again for all), tick others to show them alongside. A search still
+  looks in every bank.
+- **Combat music.** Choose a *combat mood* with ⚔ on a mood card. When a fight's first round begins, it plays; when the
+  fight ends, what played before comes back, the music resuming where it left off. The ⚔ in the Moods header (or
+  Shift+F) starts or ends it by hand, and its *Follow the tracker* switch turns the automatic part off.
+- **Pick a track.** The ▸ beside a bed's name lists its tracks, numbered in the playlist's own order; a click plays one.
+- **Late joiners hear where the table is.** A player who joins or reloads mid-scene hears the music, loops and events
+  where everyone else is, not from the start; and each bed's next track is loaded as soon as the current one starts.
 - **See what's coming.** A playing bed names its next track and shows its time; anything you press pulses until it's
   heard.
 - **Trim a track.** In a sound's settings, under *Fade*, give a *Start* and an *End* in seconds: it plays only that part,
   and a shuffle moves on at its end.
 - **Keyboard shortcuts.** Shift+D opens or closes the deck, Shift+X stops everything, Shift+1…8 plays the bed with that
-  number, Ctrl+Shift+1…9 recalls the mood at that place in the list. All can be rebound in *Configure Controls*.
+  number, Ctrl+Shift+1…9 recalls the mood at that place in the list, Ctrl+Alt+1…9 plays that track of the bed that plays,
+  Shift+F starts or ends combat music. All can be rebound in *Configure Controls*.
 - **Pads on the hotbar.** Drag a pad onto Foundry's macro hotbar: it becomes a button that presses it, and the hotbar's
   own number keys fire it too.
 - **A scene brings back a mood.** In a scene's settings, under its playlist, pick a *Mood*: opening the scene recalls it,

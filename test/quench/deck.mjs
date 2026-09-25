@@ -89,6 +89,9 @@ export function registerDeck(quench) {
           hiddenBanks: game.settings.get(ID, 'hiddenBanks'),
           levels: game.settings.get(ID, 'levels'),
           accent: game.settings.get(ID, 'accent'),
+          combatMood: game.settings.get(ID, 'combatMood'),
+          combatAuto: game.settings.get(ID, 'combatAuto'),
+          combatReturn: game.settings.get(ID, 'combatReturn'),
           accentCustom: game.settings.get(ID, 'accentCustom'),
         };
         const folder = game.folders.find((f) => f.type === 'Playlist' && f.name === 'GE-Foundry');
@@ -139,6 +142,9 @@ export function registerDeck(quench) {
         await game.settings.set(ID, 'hiddenBanks', S.seat.hiddenBanks);
         await game.settings.set(ID, 'levels', S.seat.levels);
         await game.settings.set(ID, 'accent', S.seat.accent);
+        await game.settings.set(ID, 'combatMood', S.seat.combatMood);
+        await game.settings.set(ID, 'combatAuto', S.seat.combatAuto);
+        await game.settings.set(ID, 'combatReturn', S.seat.combatReturn);
         await game.settings.set(ID, 'accentCustom', S.seat.accentCustom);
         if (S.activeBefore && !S.activeBefore.active) await S.activeBefore.activate();
       });
@@ -1382,6 +1388,83 @@ export function registerDeck(quench) {
           await until(() => !bedCard()?.querySelector('.sd-tracks'));
           await S.wrong.stopAll();
           await until(() => !S.wrong.playing);
+        });
+      });
+
+      describe('combat music', function () {
+        this.timeout(90000);
+        const loop = () => S.sandbox.loops.sounds.contents[0];
+        const boardTrack = () => S.board.sounds.find((s) => s.playing);
+        let fight = null;
+
+        before(async () => {
+          for (const p of game.playlists.filter((x) => x.playing)) await p.stopAll();
+          fight = {
+            id: foundry.utils.randomID(),
+            name: '__sd fight',
+            bed: S.wrong.id,
+            loops: [{ playlistId: S.sandbox.loops.id, soundId: loop().id, volume: 0.3 }],
+            random: [],
+          };
+          await game.settings.set(ID, 'moods', [fight]);
+          await game.settings.set(ID, 'combatReturn', null);
+        });
+
+        after(async () => {
+          await game.settings.set(ID, 'combatReturn', null);
+          for (const p of game.playlists.filter((x) => x.playing)) await p.stopAll();
+          await game.settings.set(ID, 'moods', []);
+        });
+
+        it('⚔ on a mood card makes it the combat mood; pressed again, there is none', async () => {
+          const button = () =>
+            S.app.element.querySelector(`.sd-mood[data-mood-id="${fight.id}"] [data-action=moodCombat]`);
+          await until(() => button());
+          button().click();
+          await until(() => game.settings.get(ID, 'combatMood') === fight.id);
+          await until(() => button()?.getAttribute('aria-pressed') === 'true');
+          assert.strictEqual(button().getAttribute('aria-pressed'), 'true');
+          button().click();
+          await until(() => game.settings.get(ID, 'combatMood') === '');
+          button().click();
+          await until(() => game.settings.get(ID, 'combatMood') === fight.id);
+        });
+
+        it('by hand: the fight brings its mood; its end brings back what played, the bed where it left off', async () => {
+          await S.board.playAll();
+          await until(() => heardNow(S.board), 20000);
+          await wait(6000); // the table is some seconds into the track
+          const track = boardTrack();
+          const at = track.sound.currentTime;
+          assert.isAbove(at, 4, 'the board never got going');
+          assert.isTrue(await S.api.combat.toggle());
+          await until(() => S.wrong.playing && !S.board.playing && loop().playing, 20000);
+          assert.isTrue(S.wrong.playing && loop().playing, 'the combat mood did not play');
+          await until(() => track.pausedTime > 0, 5000);
+          assert.closeTo(track.pausedTime, at, 3, 'the board was not kept where it was');
+          await until(() => S.app.element.querySelector('.sd-combat-toggle.is-active'));
+          assert.isTrue(await S.api.combat.toggle());
+          await until(() => S.board.playing && !S.wrong.playing && !loop().playing, 20000);
+          assert.strictEqual(boardTrack()?.id, track.id, 'another track came back');
+          await until(() => sounding(boardTrack()), 20000);
+          assert.isAtLeast(boardTrack().sound.currentTime, at - 1, 'the board started over instead of resuming');
+          assert.isNull(game.settings.get(ID, 'combatReturn'));
+          await S.board.stopAll();
+          await until(() => !S.board.playing);
+        });
+
+        it("the tracker: a fight's first round starts it, ending the fight ends it; with the switch off, it does not", async () => {
+          await game.settings.set(ID, 'combatAuto', false);
+          Hooks.callAll('updateCombat', {}, { round: 1 });
+          await wait(1500);
+          assert.isFalse(S.wrong.playing, 'the switch was off, yet the tracker started combat music');
+          await game.settings.set(ID, 'combatAuto', true);
+          Hooks.callAll('updateCombat', {}, { round: 1 });
+          await until(() => S.wrong.playing, 20000);
+          assert.isTrue(S.wrong.playing, 'round 1 did not start combat music');
+          Hooks.callAll('deleteCombat', { started: true });
+          await until(() => !S.wrong.playing && !game.settings.get(ID, 'combatReturn'), 20000);
+          assert.isFalse(S.wrong.playing, 'ending the fight did not end its music');
         });
       });
 

@@ -50,6 +50,10 @@
   <section class="sd-moods" aria-label="{{localize 'SOUNDS_DECK.Moods'}}">
     <header class="sd-now-head sd-section-head">
       <h2 class="sd-section-title">{{localize "SOUNDS_DECK.Moods"}}</h2>
+      <div class="sd-combat">
+        <button type="button" class="sd-combat-toggle{{#if combat.active}} is-active{{/if}}" data-action="combatToggle" aria-pressed="{{#if combat.active}}true{{else}}false{{/if}}" aria-label="{{localize 'SOUNDS_DECK.Combat.Button'}}" data-tooltip="{{localize 'SOUNDS_DECK.Combat.Button'}}"><i class="fa-solid fa-khanda" inert></i></button>
+        <label class="sd-combat-auto" data-tooltip="{{localize 'SOUNDS_DECK.Combat.AutoHint'}}"><input type="checkbox" data-action="combatAuto" {{#if combat.auto}}checked{{/if}}> {{localize "SOUNDS_DECK.Combat.Auto"}}</label>
+      </div>
       <button type="button" class="sd-mood-save" data-action="moodSave" data-tooltip="{{localize 'SOUNDS_DECK.MoodSave'}}" aria-label="{{localize 'SOUNDS_DECK.MoodSave'}}"><i class="fa-solid fa-floppy-disk" inert></i> {{localize "SOUNDS_DECK.MoodSaveShort"}}</button>
     </header>
     {{#each moods}}
@@ -60,6 +64,7 @@
       </div>
       <div class="sd-card-actions">
         <button type="button" data-action="moodRecall" aria-pressed="{{#if on}}true{{else}}false{{/if}}" aria-label="{{localize 'SOUNDS_DECK.MoodRecall'}}" data-tooltip="{{localize 'SOUNDS_DECK.MoodRecall'}}"><i class="fa-solid fa-play" inert></i></button>
+        <button type="button" class="sd-mood-combat{{#if combat}} is-combat{{/if}}" data-action="moodCombat" aria-pressed="{{#if combat}}true{{else}}false{{/if}}" aria-label="{{#if combat}}{{localize 'SOUNDS_DECK.Combat.IsCombat'}}{{else}}{{localize 'SOUNDS_DECK.Combat.Use'}}{{/if}}" data-tooltip="{{#if combat}}{{localize 'SOUNDS_DECK.Combat.IsCombat'}}{{else}}{{localize 'SOUNDS_DECK.Combat.Use'}}{{/if}}"><i class="fa-solid fa-khanda" inert></i></button>
         <button type="button" data-action="moodDelete" aria-label="{{localize 'SOUNDS_DECK.MoodDelete'}}" data-tooltip="{{localize 'SOUNDS_DECK.MoodDelete'}}"><i class="fa-solid fa-trash" inert></i></button>
       </div>
     </article>

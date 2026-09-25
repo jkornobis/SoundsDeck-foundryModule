@@ -143,7 +143,8 @@
         "7": "Jouer la piste 7 de la musique en cours",
         "8": "Jouer la piste 8 de la musique en cours",
         "9": "Jouer la piste 9 de la musique en cours"
-      }
+      },
+      "Combat": "Musique de combat : démarrer ou arrêter"
     },
     "PadGone": "Ce pad n'existe plus dans le monde.",
     "Muted": "Coupé - appuyez de nouveau sur sa molette pour le rétablir",
@@ -201,6 +202,15 @@
       "Solo": "Afficher cette banque seule ; recliquer pour toutes les afficher"
     },
     "TrackList": "Pistes de {name}",
-    "BoardTitle": "Sounds Pad"
+    "BoardTitle": "Sounds Pad",
+    "Combat": {
+      "AutoName": "La musique de combat suit le suivi de combat",
+      "AutoHint": "Quand le premier round d'un combat commence, l'ambiance de combat joue (choisie avec ⚔ sur une carte d'ambiance) ; à la fin du combat, ce qui jouait revient, la musique reprenant où elle s'était arrêtée. Désactivé : seuls le bouton ⚔ du deck et Maj+F la démarrent et l'arrêtent.",
+      "NoMood": "Pas encore d'ambiance de combat : choisissez-en une avec ⚔ sur une carte d'ambiance.",
+      "Button": "Musique de combat : démarrer, ou arrêter et revenir à ce qui jouait",
+      "Use": "Utiliser cette ambiance pour les combats",
+      "IsCombat": "C'est l'ambiance de combat - cliquer pour la retirer",
+      "Auto": "Suivre le combat"
+    }
   }
 }

@@ -110,6 +110,7 @@ const out = await cdp.ev(`(async () => {
     inst?.silentFix?.uninstall?.();
     inst?.crossfade?.uninstall?.();
     inst?.hotbar?.uninstall?.();
+    inst?.combat?.uninstall?.();
     inst?.lateJoin?.uninstall?.(); // before the trim: it wraps the trim's play
     inst?.trim?.uninstall?.();
     inst?.look?.uninstall?.();
@@ -159,6 +160,7 @@ const out = await cdp.ev(`(async () => {
     harness.api.silentFix?.uninstall?.();
     harness.api.crossfade?.uninstall?.();
     harness.api.hotbar?.uninstall?.();
+    harness.api.combat?.uninstall?.();
     harness.api.lateJoin?.uninstall?.(); // before the trim: it wraps the trim's play
     harness.api.trim?.uninstall?.();
     harness.api.look?.uninstall?.();

@@ -7,6 +7,7 @@ import { CROSSFADE_DEFAULT_S } from '../core/crossfade.mjs';
 import { LEVELS_DEFAULT } from '../core/cues.mjs';
 import { ACCENT_CHOICES } from '../core/theme.mjs';
 import { muteToggle, nudge, playBedNumber, playTrackNumber, press, recallMoodAt, stopEverything } from './actions.mjs';
+import { endCombatMusic, installCombatMusic, startCombatMusic, toggleCombatMusic } from './combat.mjs';
 import { installCrossfade } from './crossfade.mjs';
 import { SoundsDeckApp } from './deck-app.mjs';
 import { applyDuck, installDucking } from './ducking.mjs';
@@ -22,6 +23,10 @@ import { installSilentStartFix } from './silent-start-fix.mjs';
 import { installTrim } from './trim.mjs';
 
 export const MODULE_ID = 'sounds-deck';
+
+function rerenderDeckLate() {
+  for (const app of foundry.applications.instances.values()) if (app.id === MODULE_ID) app.render();
+}
 
 /** init: before any document exists. */
 export function onInit() {
@@ -45,6 +50,32 @@ export function onInit() {
     onChange: () => {
       for (const app of foundry.applications.instances.values()) if (app.id === MODULE_ID) app.render();
     },
+  });
+  // Combat music (2026-09-25): the table's, so world scope. The combat mood is chosen on a mood card; the switch lets
+  // Foundry's combat tracker start it; what played before a fight is kept until the fight ends, across a reload.
+  game.settings.register(MODULE_ID, 'combatMood', {
+    scope: 'world',
+    config: false,
+    type: String,
+    default: '',
+    onChange: rerenderDeckLate,
+  });
+  game.settings.register(MODULE_ID, 'combatReturn', {
+    scope: 'world',
+    config: false,
+    type: Object,
+    default: null,
+    nullable: true,
+    onChange: rerenderDeckLate,
+  });
+  game.settings.register(MODULE_ID, 'combatAuto', {
+    scope: 'world',
+    config: true,
+    type: Boolean,
+    default: true,
+    name: 'SOUNDS_DECK.Combat.AutoName',
+    hint: 'SOUNDS_DECK.Combat.AutoHint',
+    onChange: rerenderDeckLate,
   });
   // The deck's accent (theming, 2026-09-25): one GM's screen, so client scope. Foundry's own, a pad colour, or custom.
   const rerenderDeck = () => {
@@ -170,8 +201,21 @@ export function onReady() {
   const look = installLookFields();
   // A pad dragged onto the hotbar becomes a button (theme 6) - the gamemaster's, as the deck is.
   const hotbar = game.user.isGM ? installHotbar() : null;
+  // Combat music follows the tracker in the gamemaster's page (it acts only when that page is the active GM's).
+  const combat = game.user.isGM
+    ? { ...installCombatMusic(), start: startCombatMusic, end: endCombatMusic, toggle: toggleCombatMusic }
+    : null;
   // What a key, a knob or a hotbar macro reaches: the same actions the deck's own buttons call.
-  const actions = { playBedNumber, playTrackNumber, recallMoodAt, stopEverything, nudge, muteToggle, toggleDeck };
+  const actions = {
+    playBedNumber,
+    playTrackNumber,
+    recallMoodAt,
+    stopEverything,
+    nudge,
+    muteToggle,
+    toggleDeck,
+    toggleCombatMusic,
+  };
   return {
     open: openDeck,
     press,
@@ -179,6 +223,7 @@ export function onReady() {
     keys,
     actions,
     hotbar,
+    combat,
     trim,
     lateJoin,
     look,

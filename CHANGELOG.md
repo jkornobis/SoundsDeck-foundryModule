@@ -5,6 +5,11 @@ Versions follow semver **without pre-release labels** - Foundry's `isNewerVersio
 
 ## 0.6.6 - unreleased
 
+- **Combat music** (next program, note 1): choose a combat mood with ⚔ on a mood card. A fight's first round brings it;
+  ending the fight brings back what played before, the music resuming where it left off, with the deck's crossfade.
+  The ⚔ in the Moods header and Shift+F start or end it by hand; a *Follow the tracker* switch turns the automatic
+  part off. What to bring back is kept across a reload.
+
 - **Vertical layout**: Now playing, Moods and Music sit side by side, with the pads right under them - stacked, they
   pushed the pads out of sight and stretched the sliders across the window.
 - **Accessibility**, from a UX/UI QA pass measured in both themes: 24 px targets for the track toggle and the tab

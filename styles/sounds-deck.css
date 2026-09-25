@@ -483,6 +483,31 @@
   font-variant-numeric: tabular-nums;
 }
 
+/* Combat music (2026-09-25): the ⚔ in the Moods header lights while a fight's music plays; the ⚔ of the combat mood's
+   card is lit in the accent. */
+.sounds-deck .sd-combat {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-left: auto;
+}
+.sounds-deck .sd-combat-toggle {
+  width: 2rem;
+  flex: 0 0 auto;
+}
+.sounds-deck .sd-combat-toggle.is-active,
+.sounds-deck .sd-card-actions .sd-mood-combat.is-combat {
+  background: var(--sd-accent);
+  color: var(--sd-accent-ink);
+}
+.sounds-deck .sd-combat-auto {
+  display: flex;
+  align-items: center;
+  gap: 0.2rem;
+  font-size: var(--font-size-12, 0.8rem);
+  white-space: nowrap;
+}
+
 /* The player list of a private sound (0.7, note 1): one tick per line. */
 .sounds-deck-private .sd-private-player {
   display: block;
