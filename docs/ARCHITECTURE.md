@@ -66,7 +66,7 @@ future Foundry release cannot silently turn every toggle into a one-shot.
 | the deck | Quench batch `sounds-deck.deck` (`test/quench/deck.mjs`) | `node tools/quench-run.mjs deck`, world quiet | the window, every button, ducking, the scene fix and its fail-safe, walked in the real world - 77 tests |
 | the look | `tools/live-proof.mjs --show x.png [--lit] [--accent red\|#hex]` | by hand, nobody connected | a screenshot of the working copy for the Composer to judge; a look is his call, not a test's |
 | shell coverage | `tools/quench-run.mjs --src --coverage` | by hand, world quiet | which lines of `src/foundry` the live batches ran, from Chrome's own counts - see *What the tests do not reach* |
-| player side | `tools/player-proof.mjs` | by hand, world quiet | what a player's browser does: the bed ducked 10 dB under a GM's event, and back; a private sound heard by the seat alone, quietly by the GM; a late joiner coming in where the gamemaster hears the bed - 9 checks |
+| player side | `tools/player-proof.mjs` | by hand, world quiet | what a player's browser does: the bed ducked 10 dB under a GM's event, and back; a private sound heard by the seat alone, quietly by the GM; the 👤 dialog end to end; a late joiner coming in where the gamemaster hears the bed - 10 checks |
 | Foundry's behaviour | Quench batch `sounds-deck.foundry-facts` (`test/quench/`) | `node tools/quench-run.mjs`, or Quench's own window | the facts the design relies on - polyphony, loop toggle, fade on stop, player rights, window size - 8 tests, red if a Foundry release changes one |
 
 ### What the tests do not reach
@@ -77,7 +77,7 @@ Measured 2026-09-25 with `tools/quench-run.mjs --src --coverage`, every batch: 8
 | Lines | Why no batch runs them | Covered instead by |
 |---|---|---|
 | `keys.mjs` - registering the shortcuts | Foundry accepts shortcuts only during init; the harness loads the working copy after it | the install batch: every shortcut, F13-F24 included, registered by the installed release |
-| `private.mjs` sending, and the 👤 dialog in `deck-app.mjs` | they need a connected player, and the batches refuse to run with one | `tools/player-proof.mjs` sends through `private.mjs` to the test seat. **The dialog itself - ticking a player and pressing Send - is tested nowhere** |
+| `private.mjs` sending, and the 👤 dialog in `deck-app.mjs` | they need a connected player, and the batches refuse to run with one | `tools/player-proof.mjs`: it sends through `private.mjs`, and since 2026-09-25 it also drives the installed deck's 👤 dialog - the seat listed, ticked, Send, heard in the seat |
 | `setup.mjs` - Shift+D, and making the sidebar button | reached by the shortcut and the sidebar render of the installed release | the sidebar test checks the button is there |
 | `trim.mjs` - ending a streamed file at its trim | it needs a file over 10 minutes, which the sandbox does not have | nothing yet |
 | `ducking.mjs` - ducking a sound that is still loading | a timing window the tests do not aim at | nothing yet |
