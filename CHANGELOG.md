@@ -3,6 +3,8 @@
 Versions follow semver **without pre-release labels** - Foundry's `isNewerVersion` does not understand them
 ([Package Best Practices Checklist](https://foundryvtt.wiki/en/development/guides/package-best-practices)).
 
+## 0.6.3 - unreleased
+
 ## 0.6.2 - 2026-09-25
 
 - **A sound for chosen players only** (0.7 program, note 1): the 👤 on a pad lists the players who are connected;
