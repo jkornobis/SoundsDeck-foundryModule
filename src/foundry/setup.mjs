@@ -13,6 +13,7 @@ import { installHotbar } from './hotbar.mjs';
 import { registerKeys } from './keys.mjs';
 import { installLookFields } from './look.mjs';
 import { previewing, previewSound, stopPreview, togglePreview } from './preview.mjs';
+import { sendPrivately } from './private.mjs';
 import { installSceneBedFix } from './scene-bed-fix.mjs';
 import { installSceneMood } from './scene-mood.mjs';
 import { installSilentStartFix } from './silent-start-fix.mjs';
@@ -144,6 +145,7 @@ export function onReady() {
   return {
     open: openDeck,
     press,
+    private: sendPrivately,
     keys,
     actions,
     hotbar,

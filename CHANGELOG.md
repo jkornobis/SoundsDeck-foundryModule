@@ -5,6 +5,9 @@ Versions follow semver **without pre-release labels** - Foundry's `isNewerVersio
 
 ## 0.6.2 - unreleased
 
+- **A sound for chosen players only** (0.7 program, note 1): the 👤 on a pad lists the players who are connected;
+  tick who hears it, and it plays once on their machines only, at the level the table would hear it, and quietly
+  (0.4) in yours. Through Foundry's own private-sound route: once sent, it cannot be stopped or looped.
 - **French: beds are "Musiques"** (#45). Beds and moods were both "Ambiances"; moods keep the name, and the room loops
   are "boucles de fond".
 

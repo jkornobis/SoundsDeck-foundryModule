@@ -158,6 +158,15 @@
       "blue": "Blue",
       "violet": "Violet"
     },
-    "Fold": "Fold or unfold this bank"
+    "Fold": "Fold or unfold this bank",
+    "Private": {
+      "Button": "Send {name} to chosen players only",
+      "Tooltip": "Only the players you choose hear it, once; you hear it quietly",
+      "Title": "Only they hear it",
+      "Intro": "Who hears <b>{name}</b>? It plays once on their machines, and quietly in yours.",
+      "Send": "Send",
+      "NoPlayers": "No player is connected.",
+      "Sent": "Heard only by {name}"
+    }
   }
 }

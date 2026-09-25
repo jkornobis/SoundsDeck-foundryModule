@@ -1115,6 +1115,50 @@ export function registerDeck(quench) {
         });
       });
 
+      describe('a sound for chosen players only (0.7, note 1)', function () {
+        this.timeout(20000);
+
+        it('every pad of a bank that plays has a 👤, labelled in the table language', () => {
+          const { shots, loops, cues, shuffle } = S.sandbox;
+          for (const p of [shots, loops, cues]) assert.lengthOf(bank(p).querySelectorAll('.sd-private'), p.sounds.size);
+          assert.lengthOf(bank(shuffle).querySelectorAll('.sd-private'), 0);
+          const name = bank(shots).querySelector('.sd-pad').getAttribute('aria-label');
+          assert.strictEqual(
+            bank(shots).querySelector('.sd-private').getAttribute('aria-label'),
+            game.i18n.format('SOUNDS_DECK.Private.Button', { name }),
+          );
+        });
+
+        it('with no player connected, the 👤 says so and sends nothing', async () => {
+          const sent = [];
+          const warned = [];
+          const emit = game.socket.emit;
+          const warn = ui.notifications.warn;
+          game.socket.emit = function (event, ...rest) {
+            sent.push(event);
+            return emit.call(this, event, ...rest);
+          };
+          ui.notifications.warn = function (message, ...rest) {
+            warned.push(message);
+            return warn.call(this, message, ...rest);
+          };
+          try {
+            bank(S.sandbox.shots).querySelector('.sd-private').click();
+            await until(() => warned.length);
+          } finally {
+            game.socket.emit = emit;
+            ui.notifications.warn = warn;
+          }
+          assert.include(warned, 'SOUNDS_DECK.Private.NoPlayers');
+          assert.notInclude(sent, 'playAudio');
+          assert.deepEqual(
+            S.api.private(S.sandbox.shots.sounds.contents[0], ['nobody']),
+            [],
+            'sent to a user who is not there',
+          );
+        });
+      });
+
       describe('the press log', function () {
         this.timeout(20000);
         it('off by default: pressing records nothing, and the export entry is hidden', async () => {

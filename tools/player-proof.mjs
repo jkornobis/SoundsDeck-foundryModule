@@ -27,6 +27,8 @@ const require = createRequire('/usr/share/nodejs/');
 const WebSocket = require('ws');
 const ROOT = path.resolve(new URL('..', import.meta.url).pathname);
 const FILES = ['src/core/classify.mjs', 'src/core/cues.mjs', 'src/foundry/snapshot.mjs', 'src/foundry/ducking.mjs'];
+// The private sender (0.7, note 1) runs in the GAMEMASTER's page: its working copy, whatever release is installed.
+const GM_FILES = ['src/core/classify.mjs', 'src/core/cues.mjs', 'src/core/private.mjs', 'src/foundry/private.mjs'];
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 
 const cred = Object.fromEntries(
@@ -38,15 +40,20 @@ const cred = Object.fromEntries(
 );
 if (!cred.user || !cred.password) throw new Error('foundry-test-player.txt has no user= / password= line');
 
-const mods = [];
-for (const file of FILES) {
-  const src = (await readFile(path.join(ROOT, file), 'utf8')).replace(/from '(\.{1,2}\/[^']+)'/g, (_m, spec) => {
-    const target = path.posix.join(path.posix.dirname(file), spec);
-    if (!FILES.includes(target)) throw new Error(`${file} imports ${target}, which is not loaded`);
-    return `from '__MOD__${target}__'`;
-  });
-  mods.push([file, src]);
+async function blobbable(files) {
+  const out = [];
+  for (const file of files) {
+    const src = (await readFile(path.join(ROOT, file), 'utf8')).replace(/from '(\.{1,2}\/[^']+)'/g, (_m, spec) => {
+      const target = path.posix.join(path.posix.dirname(file), spec);
+      if (!files.includes(target)) throw new Error(`${file} imports ${target}, which is not loaded`);
+      return `from '__MOD__${target}__'`;
+    });
+    out.push([file, src]);
+  }
+  return out;
 }
+const mods = await blobbable(FILES);
+const gmMods = await blobbable(GM_FILES);
 
 const getJson = (p) =>
   new Promise((res, rej) =>
@@ -81,6 +88,9 @@ const bsend = (method, params = {}) =>
   });
 
 const gm = await connect();
+// The gamemaster's own ear matters too since 0.7 (a private sound plays there quietly): a page reloaded by a test run
+// keeps its audio locked until a gesture, so it is unlocked like the player's.
+await unlockAudio(gm);
 const R = { checks: [] };
 const check = (name, ok, detail) => R.checks.push({ ok: !!ok, name, detail });
 
@@ -182,12 +192,52 @@ try {
     back,
     ratio: +(back / full).toFixed(3),
   });
+
+  // ---- a sound for chosen players only (0.7, note 1): the seat hears what is sent to it, and nothing sent elsewhere
+  const seatId = await player.ev('game.user.id');
+  const heard = (src) => `[...game.audio.playing.values()].some((s) => s.src === ${JSON.stringify(src)} && s.playing)`;
+  const sentSrc = await gm.ev(`(async () => {
+    const urls = {};
+    for (const [file, src] of ${JSON.stringify(gmMods)}) urls[file] = URL.createObjectURL(new Blob([src.replace(/__MOD__(.+?)__/g, (_m, f) => urls[f])], { type: 'text/javascript' }));
+    const { sendPrivately } = await import(urls['src/foundry/private.mjs']);
+    const cue = globalThis.__sdCues.sounds.contents[0];
+    const sent = sendPrivately(cue, [${JSON.stringify(seatId)}]);
+    return sent.length === 1 ? cue.path : null;
+  })()`);
+  let privateHeard = false;
+  for (let i = 0; i < 20 && sentSrc && !privateHeard; i++) {
+    await wait(300);
+    privateHeard = await player.ev(heard(sentSrc));
+  }
+  check('a sound sent to the seat alone plays in the seat', privateHeard);
+  const monitor = JSON.parse(
+    await gm.ev(
+      `JSON.stringify([...game.audio.playing.values()].filter((s) => s.src === ${JSON.stringify(sentSrc)}).map((s) => +s.volume.toFixed(3)))`,
+    ),
+  );
+  check(
+    "the GM hears it quietly: its copy at 0.4 of the players' level (0.4 x 0.4)",
+    monitor.some((v) => Math.abs(v - 0.16) < 0.02),
+    monitor,
+  );
+  const elsewhere = await gm.ev(`(async () => {
+    const other = game.playlists.contents.flatMap((p) => p.sounds.contents).filter((s) => s.path.startsWith('ge-foundry/fx/'))[1];
+    game.socket.emit('playAudio', { src: other.path, volume: 0.4, loop: false, channel: 'music' }, { recipients: [game.user.id] });
+    return other.path;
+  })()`);
+  let leaked = false;
+  for (let i = 0; i < 10 && !leaked; i++) {
+    await wait(300);
+    leaked = await player.ev(heard(elsewhere));
+  }
+  check('a sound sent to someone else does not reach the seat', !leaked);
 } catch (e) {
   check('no exception', false, String(e?.stack ?? e).slice(0, 400));
 } finally {
   await gm
     .ev(`(async () => {
       for (const p of game.playlists.filter((x) => x.playing)) await p.stopAll();
+      for (const s of game.audio.playing.values()) if (s.src.startsWith('ge-foundry/fx/')) s.stop();
       await globalThis.__sdCues?.delete(); delete globalThis.__sdCues;
       return 1;
     })()`)
