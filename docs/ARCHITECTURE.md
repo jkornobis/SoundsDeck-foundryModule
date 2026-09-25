@@ -23,6 +23,7 @@ src/
     hotbar.mjs      a pad dropped on the hotbar becomes a macro that presses it
     trim.mjs        a sound's Start and End: Sound#play given Foundry's own loopStart/loopEnd, on every client
     look.mjs        a pad's colour and icon fields in its sound's settings (banks only)
+    private.mjs     a pad sent to chosen players only, over Foundry's own playAudio event, and quietly to the GM
     scene-mood.mjs  a scene's Mood field, and its recall when the scene opens, wrapped around the scene handover
     preview.mjs     the GM's-ear preview: a pad played in this browser only
 tools/

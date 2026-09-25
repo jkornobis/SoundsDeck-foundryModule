@@ -158,6 +158,15 @@
       "blue": "Bleu",
       "violet": "Violet"
     },
-    "Fold": "Replier ou déplier cette banque"
+    "Fold": "Replier ou déplier cette banque",
+    "Private": {
+      "Button": "Envoyer {name} aux seuls joueurs choisis",
+      "Tooltip": "Seuls les joueurs choisis l'entendent, une fois ; vous l'entendez doucement",
+      "Title": "Pour eux seuls",
+      "Intro": "Qui entend <b>{name}</b> ? Le son est joué une fois sur leur machine, et doucement sur la vôtre.",
+      "Send": "Envoyer",
+      "NoPlayers": "Aucun joueur n'est connecté.",
+      "Sent": "Entendu seulement par {name}"
+    }
   }
 }

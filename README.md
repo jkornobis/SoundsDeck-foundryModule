@@ -84,6 +84,8 @@ deck**, on by default; turn it off to see both on the pads. The filter searches 
   Music you picked by hand keeps playing into a scene that has none of its own.
 - **Ducking.** While an event plays, the music drops about 10 dB and comes back by itself - in every player's browser.
   The small speaker on an event's pad turns this off for that event.
+- **For chosen players only.** The 👤 on a pad sends it to the players you tick - a whisper only one agent hears. It
+  plays once, and you hear it quietly.
 - **Colour, icon, fold.** In a pad's sound settings, give it a colour and an icon; click a bank's title to fold it.
 - **See what's coming.** A playing bed names its next track and shows its time; anything you press pulses until it's
   heard.

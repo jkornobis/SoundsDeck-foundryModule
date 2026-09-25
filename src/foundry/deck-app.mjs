@@ -28,6 +28,7 @@ import { logPress, playBed, pressPad, stopEverything } from './actions.mjs';
 import { applyDuck } from './ducking.mjs';
 import { recallMood } from './mood-recall.mjs';
 import { previewing, stopPreview, togglePreview } from './preview.mjs';
+import { lastRecipients, sendPrivately } from './private.mjs';
 import { arm, armedList, disarm, isArmed } from './random.mjs';
 import { snapshot } from './snapshot.mjs';
 
@@ -68,6 +69,7 @@ export class SoundsDeckApp extends HandlebarsApplicationMixin(ApplicationV2) {
       pad: SoundsDeckApp.#onPad,
       preview: SoundsDeckApp.#onPreview,
       fold: SoundsDeckApp.#onFold,
+      private: SoundsDeckApp.#onPrivate,
       nowStop: SoundsDeckApp.#onNowStop,
       stopAll: SoundsDeckApp.#onStopAll,
       randomToggle: SoundsDeckApp.#onRandomToggle,
@@ -207,6 +209,7 @@ export class SoundsDeckApp extends HandlebarsApplicationMixin(ApplicationV2) {
       paused: 'SOUNDS_DECK.EventPaused',
       stopped: 'SOUNDS_DECK.EventStopped',
       preview: 'SOUNDS_DECK.PreviewStarted',
+      private: 'SOUNDS_DECK.Private.Sent',
     };
     live.textContent = changes.map((c) => game.i18n.format(key[c.kind], { name: c.name })).join(' · ');
   }
@@ -361,6 +364,42 @@ export class SoundsDeckApp extends HandlebarsApplicationMixin(ApplicationV2) {
     const playlist = SoundsDeckApp.#playlistOf(target);
     const sound = playlist?.sounds.get(target.dataset.soundId);
     if (sound) return pressPad(playlist, sound);
+  }
+
+  /**
+   * The 👤 on a pad (0.7, note 1): tick who hears it, then Send - it plays once on their machines, quietly in this ear.
+   * The players last sent to are ticked again if they are still connected: whispers tend to go to the same agent twice.
+   */
+  static async #onPrivate(_event, target) {
+    const playlist = SoundsDeckApp.#playlistOf(target);
+    const sound = playlist?.sounds.get(target.dataset.soundId);
+    if (!sound) return;
+    const players = game.users.filter((u) => u.active && u.id !== game.user.id);
+    if (!players.length) return ui.notifications.warn('SOUNDS_DECK.Private.NoPlayers', { localize: true });
+    const ticked = new Set(lastRecipients());
+    const name = deckName(sound.name, game.settings.get(MODULE_ID, 'hideSources'));
+    const esc = foundry.utils.escapeHTML;
+    const rows = players.map(
+      (u) =>
+        `<label class="sd-private-player"><input type="checkbox" name="to" value="${u.id}"${ticked.has(u.id) ? ' checked' : ''}> ${esc(u.name)}</label>`,
+    );
+    const chosen = await foundry.applications.api.DialogV2.prompt({
+      window: { title: 'SOUNDS_DECK.Private.Title', icon: 'fa-solid fa-user' },
+      classes: ['sounds-deck-private'],
+      content: `<p>${game.i18n.format('SOUNDS_DECK.Private.Intro', { name: esc(name) })}</p>${rows.join('')}`,
+      ok: {
+        label: 'SOUNDS_DECK.Private.Send',
+        callback: (_e, button) => [...button.form.querySelectorAll('input[name=to]:checked')].map((i) => i.value),
+      },
+      rejectClose: false,
+    });
+    if (!chosen?.length) return undefined;
+    const sent = sendPrivately(sound, chosen);
+    if (!sent.length) return ui.notifications.warn('SOUNDS_DECK.Private.NoPlayers', { localize: true });
+    await logPress('private', sound.name, playlist.name);
+    const names = sent.map((id) => game.users.get(id)?.name).join(', ');
+    // biome-ignore lint/complexity/noThisInStatic: ApplicationV2 calls actions with `this` bound to the instance (see #onLayout).
+    this.#announce([{ kind: 'private', name: `${names} - ${name}` }]);
   }
 
   /** A bank's title folds or unfolds it, on this seat (theme 9). The setting's change redraws the deck. */

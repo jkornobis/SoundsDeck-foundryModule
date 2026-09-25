@@ -354,3 +354,8 @@
 .sounds-deck .sd-fold:focus-visible {
   outline: 2px solid var(--color-warm-2, currentColor);
 }
+/* The player list of a private sound (0.7, note 1): one tick per line. */
+.sounds-deck-private .sd-private-player {
+  display: block;
+  padding: 0.15rem 0;
+}
