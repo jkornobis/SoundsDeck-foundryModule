@@ -211,6 +211,17 @@
       "Use": "Use this mood for combat",
       "IsCombat": "This is the combat mood - click to unset",
       "Auto": "Follow the tracker"
+    },
+    "Events": {
+      "Label": "Plays on",
+      "Weapons": "Only for weapons named",
+      "Hint": "This pad plays by itself on that Delta Green roll, for everyone - never on a roll the players cannot see. Several pads on one event: a random pick. For a weapon, name the weapons it answers (comma-separated), or leave empty for any weapon.",
+      "On": {
+        "critSuccess": "Critical success",
+        "critFailure": "Critical failure",
+        "sanityLoss": "Sanity loss",
+        "weapon": "A weapon's damage or Lethality roll"
+      }
     }
   }
 }
