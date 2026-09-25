@@ -9,15 +9,15 @@
  * every page (turn = level, press = mute). Swiping the touch strip changes page. The keys are exactly the shortcuts in
  * src/foundry/keys.mjs - if one changes there, this must be rebuilt.
  *
- * The format comes from his own export (tools/streamdeck.mjs). The standard Stream Deck profile waits for a second
- * seed: its pages need a "next page" key, and that action's identifier is published nowhere.
+ * The format comes from his own exports (tools/streamdeck.mjs): a Stream Deck + seed, then a standard Stream Deck seed
+ * that gave the device code and the Next / Previous page actions a standard deck needs to reach its second page.
  */
 import { execFileSync } from 'node:child_process';
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { KNOB_KEYS } from '../src/foundry/keys.mjs';
-import { hotkey, hotkeyAction, profileFiles } from './streamdeck.mjs';
+import { hotkey, hotkeyAction, pageAction, profileFiles } from './streamdeck.mjs';
 
 const ROOT = path.resolve(new URL('..', import.meta.url).pathname);
 const OUT = path.join(ROOT, 'streamdeck');
@@ -41,17 +41,46 @@ const dials = Object.fromEntries(
 );
 /** Eight keys, four by two, from a list in reading order. */
 const grid = (actions) => Object.fromEntries(actions.map((a, i) => [`${i % 4},${Math.floor(i / 4)}`, a]));
+/** Fifteen keys, five by three, from a list in reading order. */
+const grid5 = (actions) => Object.fromEntries(actions.map((a, i) => [`${i % 5},${Math.floor(i / 5)}`, a]));
 const range = (n) => Array.from({ length: n }, (_, i) => i + 1);
+
+/** Down, up and mute for each layer, in the knobs' order: the standard Stream Deck's levels page. */
+const levelKeys = Object.entries(KNOB_KEYS).flatMap(([layer, [down, up, mute]]) => [
+  hotkeyAction(`${layer}-down`, `${TITLES[layer]} -`, [hotkey(down)]),
+  hotkeyAction(`${layer}-up`, `${TITLES[layer]} +`, [hotkey(up)]),
+  hotkeyAction(`${layer}-mute`, `${TITLES[layer]} mute`, [hotkey(mute)]),
+]);
 
 const PROFILES = [
   {
     file: 'Sounds Deck - Stream Deck +.streamDeckProfile',
     name: 'Sounds Deck',
     model: '20GBD9901', // his Stream Deck +, from the seed
+    dials: true,
     pages: [
       { id: 'beds', keys: grid(range(8).map(bed)), dials },
       { id: 'moods', keys: grid([...range(6).map(mood), stopAll, deck]), dials },
       { id: 'tracks', keys: grid(range(8).map(track)), dials },
+    ],
+  },
+  {
+    // The standard Stream Deck (15 keys, no dials), from his second seed. Page 1 gives its last key to Next page -
+    // without it the second page cannot be reached (the Composer: "classic stream deck need page previous next") -
+    // so it carries moods 1-4. Page 2: down, up and mute for each layer, and Previous page, where his seed put them.
+    file: 'Sounds Deck - Stream Deck.streamDeckProfile',
+    name: 'Sounds Deck',
+    model: '20GBA9901',
+    pages: [
+      {
+        id: 'beds-moods',
+        keys: grid5([...range(8).map(bed), ...range(4).map(mood), stopAll, deck, pageAction('next')]),
+      },
+      {
+        id: 'levels',
+        // Twelve level keys in reading order, the bottom-left key taken by Previous page, so the last two move right.
+        keys: grid5([...levelKeys.slice(0, 10), pageAction('previous'), ...levelKeys.slice(10)]),
+      },
     ],
   },
 ];
