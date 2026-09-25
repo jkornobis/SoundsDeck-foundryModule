@@ -85,7 +85,7 @@ Measured 2026-09-25 with `tools/quench-run.mjs --src --coverage`, every batch: 8
 
 **Release rule (decision 0004):** a new version waits for the previous one to have been used at the table - waived by
 the Composer for 0.5, whose content came from his own use of 0.4, and for 0.6 (2026-09-24), so the #37 silence fix
-reaches the table, and for 0.6.1 (2026-09-25), which completes his program, and for 0.6.2 (2026-09-25), private sounds.
+reaches the table, and for 0.6.1 (2026-09-25), which completes his program, and for 0.6.2 (2026-09-25), private sounds, and for 0.6.3 (2026-09-25), the new look.
 
 **`npm run check` passes.** It is Biome, then every Node test, then the manifest rules, and it stops at the first
 failure. A pull request is merged only on a green run. **A release additionally needs** the live proof
