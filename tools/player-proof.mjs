@@ -249,6 +249,48 @@ try {
   }
   check('a sound sent to someone else does not reach the seat', !leaked);
 
+  // ---- the 👤 dialog itself, as the gamemaster uses it: the installed deck, its button, the tick, Send
+  // The pad sent above may still play in the seat: stopped there first, so what is heard next can only be the dialog's.
+  await player.ev(
+    `(() => { for (const s of game.audio.playing.values()) if (s.src === ${JSON.stringify(sentSrc)}) s.stop(); return 1; })()`,
+  );
+  await wait(1000);
+  const quietBefore = !(await player.ev(heard(sentSrc)));
+  const viaDialog = JSON.parse(
+    await gm.ev(`(async () => {
+      const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+      const app = game.modules.get('sounds-deck').api.open();
+      for (let i = 0; i < 25 && !app.rendered; i++) await wait(200);
+      const cue = globalThis.__sdCues.sounds.contents[0];
+      const button = app.element.querySelector('.sd-bank[data-playlist-id="' + globalThis.__sdCues.id + '"] .sd-private');
+      if (!button) { await app.close(); return JSON.stringify({ step: 'no 👤 on the pad' }); }
+      button.click();
+      let dialog = null;
+      for (let i = 0; i < 25 && !dialog; i++) {
+        await wait(200);
+        dialog = [...foundry.applications.instances.values()].find((a) => a.options.classes?.includes('sounds-deck-private') && a.rendered);
+      }
+      if (!dialog) { await app.close(); return JSON.stringify({ step: 'no dialog' }); }
+      const listed = [...dialog.element.querySelectorAll('input[name=to]')].map((i) => i.value);
+      const seat = dialog.element.querySelector('input[name=to][value="${seatId}"]');
+      if (seat) seat.checked = true;
+      dialog.element.querySelector('[data-action=ok]').click();
+      await wait(800);
+      await app.close();
+      return JSON.stringify({ listed, src: cue.path });
+    })()`),
+  );
+  let dialogHeard = false;
+  for (let i = 0; i < 20 && viaDialog.src && !dialogHeard; i++) {
+    await wait(300);
+    dialogHeard = await player.ev(heard(viaDialog.src));
+  }
+  check(
+    "the 👤 dialog lists the seat, and a tick and Send play the pad in the seat's browser",
+    quietBefore && viaDialog.listed?.includes(seatId) && dialogHeard,
+    { quietBefore, listed: viaDialog.listed?.length, step: viaDialog.step, heard: dialogHeard },
+  );
+
   // ---- a late joiner (0.7, note 2): the bed starts, the seat reloads 10 s later, and comes in where the table is
   await gm.ev(
     `(async () => { for (const p of game.playlists.filter((x) => x.playing)) await p.stopAll(); return 1; })()`,
