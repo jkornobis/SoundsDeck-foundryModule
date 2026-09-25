@@ -68,6 +68,10 @@ export function installSceneBedFix(Playlists, activeScene) {
   );
   return {
     installed: true,
+    /** Record the bed a scene brought without acting on it - a scene whose mood carried the music (scene-mood.mjs). */
+    remember(bed) {
+      prior = bed?.playlistId ? bed : null;
+    },
     uninstall() {
       proto._onChangeScene = original;
     },

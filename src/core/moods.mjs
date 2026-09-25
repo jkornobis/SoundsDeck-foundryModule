@@ -116,3 +116,15 @@ export function moodIsOn(mood, playlists, armed) {
 function beds(playlists) {
   return new Set(roles(playlists).beds.map((b) => b.id));
 }
+
+/**
+ * The mood a scene brings back when it opens (0.6, note 5), from the id stored on the scene. A mood deleted since is
+ * no mood: the scene falls back to its own playlist, as if nothing were set.
+ * @param {unknown} flag   scene.flags["sounds-deck"].mood
+ * @param {Mood[]} moods
+ * @returns {Mood | null}
+ */
+export function sceneMood(flag, moods) {
+  if (typeof flag !== 'string' || !flag) return null;
+  return moods.find((m) => m.id === flag) ?? null;
+}

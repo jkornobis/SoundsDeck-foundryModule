@@ -92,6 +92,7 @@ const out = await cdp.ev(`(async () => {
   if (installed && P.fromSrc) {
     // Silence the installed release so the working copy can stand in its place; the reload at the end restores it.
     const inst = game.modules.get('sounds-deck').api;
+    inst?.sceneMood?.uninstall?.();
     inst?.sceneFix?.uninstall?.();
     inst?.ducking?.uninstall?.();
     inst?.silentFix?.uninstall?.();
@@ -136,6 +137,7 @@ const out = await cdp.ev(`(async () => {
   let leftAsFound = null;
   if (harness) {
     const Playlists = foundry.documents.collections.Playlists;
+    harness.api.sceneMood?.uninstall?.();
     harness.api.sceneFix?.uninstall?.();
     harness.api.ducking?.uninstall?.();
     harness.api.silentFix?.uninstall?.();

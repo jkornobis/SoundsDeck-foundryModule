@@ -17,6 +17,8 @@ src/
     scene-bed-fix.mjs  replaces Foundry's scene -> playlist handover while Foundry's defect is present
     silent-start-fix.mjs  delays Foundry's stop-on-start while its defect is present, so a sound is never left silent (#37)
     crossfade.mjs   a bed switch: the new bed first, the old once it is heard, both fading over the deck's crossfade
+    mood-recall.mjs  carries a mood's plan out - the same for a mood card and for a scene
+    scene-mood.mjs  a scene's Mood field, and its recall when the scene opens, wrapped around the scene handover
     preview.mjs     the GM's-ear preview: a pad played in this browser only
 tools/
   cdp.mjs           the connection to the gamemaster session, and the one-key audio unlock

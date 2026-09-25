@@ -76,6 +76,10 @@
     "MoodDeleteConfirm": "Delete the mood \"{name}\"? Nothing that plays is stopped.",
     "MoodEmpty": "Nothing to save: start a bed, a room loop or a random effect first.",
     "MoodMissing": "{count} part(s) of this mood no longer exist and were skipped.",
+    "SceneMood": {
+      "Label": "Mood (Sounds Deck)",
+      "Hint": "A saved mood this scene brings back when it opens: its music, loops and random effects, exactly as its card does. It takes the place of the scene playlist above."
+    },
     "MoodNone": "No mood yet. Set up a bed, loops and random effects, then save them here.",
     "MoodSummary": "{loops} loop(s) · {random} random",
     "MoodNoBed": "No music",

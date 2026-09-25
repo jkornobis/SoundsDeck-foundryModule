@@ -790,6 +790,78 @@ export function registerDeck(quench) {
         });
       });
 
+      describe('a scene brings back a mood (note 5)', function () {
+        this.timeout(60000);
+        const MOOD_SCENE = BOARD_SCENES[1]; // it carries 8 · The Board as its own playlist - the mood must win over it
+        const scene = () => game.scenes.getName(MOOD_SCENE);
+        const loop = () => S.sandbox.loops.sounds.contents[0];
+        const activate = async (name) => {
+          await game.scenes.getName(name).activate();
+          await wait(1500);
+        };
+        let mood = null;
+        let hadFlags = false;
+
+        before(async () => {
+          hadFlags = ID in (scene().flags ?? {});
+          mood = {
+            id: foundry.utils.randomID(),
+            name: '__sd scene mood',
+            bed: S.wrong.id,
+            loops: [{ playlistId: S.sandbox.loops.id, soundId: loop().id, volume: 0.25 }],
+            random: [],
+          };
+          await game.settings.set(ID, 'moods', [...game.settings.get(ID, 'moods'), mood]);
+        });
+
+        after(async () => {
+          // unsetFlag leaves an empty "sounds-deck" entry behind (measured); a scene that had none gets none back
+          if (hadFlags) await scene().unsetFlag(ID, 'mood');
+          else await scene().update({ [`flags.-=${ID}`]: null });
+          for (const p of game.playlists.filter((x) => x.playing)) await p.stopAll();
+        });
+
+        it("the scene's settings offer the moods right under its playlist, and saving stores the choice on the scene", async () => {
+          const sheet = scene().sheet;
+          await sheet.render({ force: true });
+          await until(() => sheet.element?.querySelector('[name="flags.sounds-deck.mood"]'));
+          const select = sheet.element.querySelector('[name="flags.sounds-deck.mood"]');
+          assert.exists(select, 'no mood field in the scene settings');
+          const under = sheet.element.querySelector('select[name="playlistSound"]').closest('.form-group');
+          assert.strictEqual(under.nextElementSibling, select.closest('.form-group'), 'not right under the playlist');
+          assert.include(
+            [...select.options].map((o) => o.value),
+            mood.id,
+          );
+          select.value = mood.id;
+          await sheet.submit();
+          await until(() => scene().getFlag(ID, 'mood') === mood.id);
+          assert.strictEqual(scene().getFlag(ID, 'mood'), mood.id);
+          await sheet.close();
+        });
+
+        it("opening it recalls the mood over the scene's own playlist, and its bed crosses over from the one playing", async () => {
+          await activate(BOARD_SCENES[0]); // The Board, brought by that scene
+          await until(() => heardNow(S.board), 20000);
+          const sw = watchSwitch(S.board, S.wrong);
+          await activate(MOOD_SCENE);
+          await until(() => S.wrong.playing && !S.board.playing && loop().playing, 20000);
+          sw.done();
+          assert.isTrue(S.wrong.playing, "the mood's bed did not start");
+          assert.isFalse(S.board.playing, "the scene's own playlist played over the mood");
+          assert.isTrue(loop().playing, "the mood's loop did not start");
+          assert.closeTo(loop().volume, 0.25, 0.001);
+          assert.isTrue(sw.heard, 'The Board stopped before the mood bed was heard - a hole in the music');
+        });
+
+        it('leaving it hands its bed over like any scene: a scene with its own playlist takes over', async () => {
+          await activate(BOARD_SCENES[0]);
+          await until(() => S.board.playing && !S.wrong.playing, 20000);
+          assert.isTrue(S.board.playing && !S.wrong.playing);
+          await activate(DOORWAY);
+        });
+      });
+
       describe('the press log', function () {
         this.timeout(20000);
         it('off by default: pressing records nothing, and the export entry is hidden', async () => {

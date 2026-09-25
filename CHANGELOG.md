@@ -5,6 +5,9 @@ Versions follow semver **without pre-release labels** - Foundry's `isNewerVersio
 
 ## 0.6.1 - unreleased
 
+- **A scene brings back a mood** (note 5): a *Mood* field in a scene's settings, under its playlist. When the scene
+  opens, the mood is recalled exactly as its card does (music, loops, random effects), its bed crossing over from the
+  one playing. The mood wins over the scene's own playlist. A scene with no mood behaves as before.
 - **One crossfade between beds** (note 4): switching beds, from a card or a mood that brings another bed, starts
   the new bed first and stops the old one only once the new one is heard, so the music no longer drops out while a
   large track loads. Both fade over one duration, a world setting (*Crossfade between beds*, 4 s by default), in

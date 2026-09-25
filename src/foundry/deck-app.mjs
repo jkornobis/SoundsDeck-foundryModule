@@ -19,10 +19,11 @@ import {
 } from '../core/cues.mjs';
 import { matches } from '../core/filter.mjs';
 import { appendEntry, summarise } from '../core/journal.mjs';
-import { captureMood, isEmptyMood, moodIsOn, moodPlan } from '../core/moods.mjs';
+import { captureMood, isEmptyMood, moodIsOn } from '../core/moods.mjs';
 import { deckName } from '../core/names.mjs';
 import { switchBed } from './crossfade.mjs';
 import { applyDuck } from './ducking.mjs';
+import { recallMood } from './mood-recall.mjs';
 import { previewing, stopPreview, togglePreview } from './preview.mjs';
 import { arm, armedList, disarm, disarmAll, isArmed } from './random.mjs';
 import { snapshot } from './snapshot.mjs';
@@ -504,25 +505,10 @@ export class SoundsDeckApp extends HandlebarsApplicationMixin(ApplicationV2) {
       .get(MODULE_ID, 'moods')
       .find((m) => m.id === target.closest('[data-mood-id]')?.dataset.moodId);
     if (!mood) return;
-    const plan = moodPlan(mood, snapshot(game.playlists.contents), armedList());
-    const soundOf = ({ playlistId, soundId }) => game.playlists.get(playlistId)?.sounds.get(soundId);
-    for (const r of plan.disarm) disarm(r.playlistId, r.soundId);
-    for (const r of plan.stopLoops) {
-      const s = soundOf(r);
-      if (s) await s.parent.stopSound(s);
-    }
-    for (const r of plan.setVolumes) await soundOf(r)?.update({ volume: r.volume });
-    for (const r of plan.startLoops) {
-      const s = soundOf(r);
-      if (s) await s.update({ volume: r.volume, playing: true });
-    }
-    for (const r of plan.arm) arm(r.playlistId, r.soundId);
-    if (plan.missing) ui.notifications.warn(game.i18n.format('SOUNDS_DECK.MoodMissing', { count: plan.missing }));
     await SoundsDeckApp.#log('mood', mood.name);
-    // The music last, as one crossfade: the mood's bed first, the others once it is heard (note 4).
-    const bed = plan.startBed && game.playlists.get(plan.startBed);
-    if (bed) await switchBed(bed, plan.stopBeds);
-    else for (const id of plan.stopBeds) await game.playlists.get(id)?.stopAll();
+    // The same recall a scene with this mood runs (note 5): loops and random first, the music as one crossfade.
+    const missing = await recallMood(mood);
+    if (missing) ui.notifications.warn(game.i18n.format('SOUNDS_DECK.MoodMissing', { count: missing }));
   }
 
   static async #onMoodDelete(_event, target) {
