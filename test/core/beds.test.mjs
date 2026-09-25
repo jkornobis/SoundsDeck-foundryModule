@@ -35,6 +35,19 @@ describe('bedCards', () => {
       tracks: 2,
     });
   });
+  it('two beds with the same number fall back to their names', () => {
+    const cards = bedCards([pl('z', '3 · Zenith', MODES.SHUFFLE), pl('a', '3 · Attic', MODES.SHUFFLE)]);
+    assert.deepEqual(
+      cards.map((c) => c.id),
+      ['a', 'z'],
+    );
+  });
+  it('a playing track with a description says where it comes from', () => {
+    const [card] = bedCards([
+      pl('b2', '2 · Night', MODES.SHUFFLE, true, [{ id: 't', name: 'Track', playing: true, description: 'Album' }]),
+    ]);
+    assert.equal(card.nowPlayingFrom, 'Album');
+  });
   it('a stopped bed names nothing and counts its tracks', () => {
     assert.deepEqual(cards[0], {
       id: 'b1',

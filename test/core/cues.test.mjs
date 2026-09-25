@@ -124,6 +124,8 @@ describe('nowPlaying - the list above the beds (after first use)', () => {
   it('a playlist that is not on the deck is not listed', () =>
     assert.ok(!now.some((x) => x.from.startsWith('Référence'))));
   it('silence is an empty list', () => assert.deepEqual(nowPlaying([]), []));
+  it('an event never started (no paused time) is not listed', () =>
+    assert.deepEqual(nowPlaying([pl('ev', '🎞️ Events', MODES.SEQUENTIAL, [s('Untouched')])]), []));
 });
 
 describe('layer levels (0.6, note 2)', () => {
@@ -135,6 +137,10 @@ describe('layer levels (0.6, note 2)', () => {
     assert.equal(mixVolume(0.6, 'cue', undefined, false), 0.6);
     assert.equal(mixVolume(0.6, 'cue', { bed: 0.1 }, false), 0.6);
     assert.equal(mixVolume(0.6, 'cue', { cue: 'loud' }, false), 0.6);
+  });
+  it('a sound with no usable volume is silence, not NaN', () => {
+    assert.equal(mixVolume(undefined, 'cue', { cue: 0.5 }, false), 0);
+    assert.equal(mixVolume(Number.NaN, 'bed', undefined, false), 0);
   });
   it('a level is held between 0 and 1', () => {
     assert.equal(mixVolume(0.5, 'oneshot', { oneshot: 3 }, false), 0.5);

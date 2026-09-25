@@ -7,6 +7,8 @@
  *   node tools/quench-run.mjs --src deck test the WORKING COPY even though a release is installed: the installed
  *                                        copy's scene fix, ducking and window are switched off, src/ is loaded in their
  *                                        place, and the page is reloaded at the end so the installed release is back
+ *   node tools/quench-run.mjs --src --coverage
+ *                                        also print how much of src/ the batches ran, line by line (tools/coverage.mjs)
  *
  * INSTALLED: the module registered its batches at quenchReady; this only runs them.
  * NOT INSTALLED: this loads src/ and test/quench/ into the gamemaster's page as blob modules, supplies the templates,
@@ -23,9 +25,12 @@
 import { readdir, readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { connect, unlockAudio } from './cdp.mjs';
+import { lineCoverage, spans } from './coverage.mjs';
 
 const ROOT = path.resolve(new URL('..', import.meta.url).pathname);
 const FROM_SRC = process.argv.includes('--src');
+const COVERAGE = process.argv.includes('--coverage');
+if (COVERAGE && !FROM_SRC) throw new Error('--coverage measures the working copy: add --src');
 const only = process.argv.slice(2).find((a) => !a.startsWith('--'));
 
 async function list(dir) {
@@ -71,6 +76,7 @@ const payload = {
   css: await readFile(path.join(ROOT, 'styles/sounds-deck.css'), 'utf8'),
   only: only ? `sounds-deck.${only}` : 'sounds-deck.**',
   fromSrc: FROM_SRC,
+  coverage: COVERAGE,
 };
 
 const cdp = await connect();
@@ -79,13 +85,19 @@ await cdp.ev(
 );
 const unlocked = await unlockAudio(cdp);
 if (!unlocked) console.log('⚠️ audio contexts not running - the sound tests will fail for that reason, not Foundry');
+if (COVERAGE) {
+  await cdp.send('Profiler.enable');
+  await cdp.send('Profiler.startPreciseCoverage', { callCount: true, detailed: true });
+}
 
 const out = await cdp.ev(`(async () => {
   if (!globalThis.quench) return JSON.stringify({ refused: 'Quench is not active in this world' });
   const P = ${JSON.stringify(payload)};
   const urls = {};
+  const served = {};
   for (const [f, src] of P.mods) {
-    urls[f] = URL.createObjectURL(new Blob([src.replace(/__MOD__(.+?)__/g, (_m, d) => urls[d])], { type: 'text/javascript' }));
+    served[f] = src.replace(/__MOD__(.+?)__/g, (_m, d) => urls[d]);
+    urls[f] = URL.createObjectURL(new Blob([served[f]], { type: 'text/javascript' }));
   }
   const installed = !!game.modules.get('sounds-deck')?.active;
   let harness = null;
@@ -174,9 +186,21 @@ const out = await cdp.ev(`(async () => {
     results,
     passed: results.filter((r) => r.ok && !r.skipped).length + ' passed, ' + results.filter((r) => !r.ok).length + ' failed, ' + results.filter((r) => r.skipped).length + ' skipped',
     leftAsFound,
+    ...(P.coverage && { served: Object.entries(served).map(([f, text]) => [urls[f], f, text]) }),
   });
 })()`);
 const r = JSON.parse(out);
+const coverage = [];
+if (COVERAGE && r.served) {
+  // Taken before the reload below, which would throw the counts away.
+  const { result } = await cdp.send('Profiler.takePreciseCoverage');
+  await cdp.send('Profiler.stopPreciseCoverage');
+  for (const [url, file, text] of r.served) {
+    if (!file.startsWith('src/')) continue;
+    const functions = result.filter((s) => s.url === url).flatMap((s) => s.functions);
+    coverage.push({ file, ...lineCoverage(text, functions) });
+  }
+}
 if (FROM_SRC && r.installed) {
   await cdp.send('Page.reload', {});
   // Leave the world ready for whatever runs next. Measured 2026-09-24: a second run started 1 s after this reload found
@@ -200,6 +224,21 @@ else {
   console.log(
     `${r.passed} | ${r.installed ? 'installed' : 'harness'}${r.leftAsFound ? ` | left as found: ${JSON.stringify(r.leftAsFound)}` : ''}`,
   );
+}
+if (coverage.length) {
+  const pct = (c, l) => (l ? ((100 * c) / l).toFixed(1).padStart(5) : '  -  ');
+  console.log(
+    `\ncoverage of src/ by ${only ? `the ${only} batch` : 'every batch'} (lines with code; tools/coverage.mjs)`,
+  );
+  for (const c of coverage.sort((a, b) => a.file.localeCompare(b.file))) {
+    console.log(`${pct(c.covered, c.lines)}%  ${c.file.padEnd(34)} ${spans(c.uncovered)}`);
+  }
+  const sum = (dir, k) => coverage.filter((c) => c.file.startsWith(dir)).reduce((n, c) => n + c[k], 0);
+  for (const dir of ['src/core/', 'src/foundry/']) {
+    console.log(
+      `${pct(sum(dir, 'covered'), sum(dir, 'lines'))}%  ${dir} (${sum(dir, 'covered')}/${sum(dir, 'lines')} lines)`,
+    );
+  }
 }
 cdp.close();
 process.exit(r.results?.every((t) => t.ok) ? 0 : 1);

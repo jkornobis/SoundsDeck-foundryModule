@@ -78,9 +78,13 @@ export function installTrim(Sound) {
     }
     if (!trim) return original.call(this, options, ...rest);
     const started = original.call(this, { ...options, loopStart: trim.start, loopEnd: trim.end ?? undefined }, ...rest);
+    // A failed start is the caller's to see: it holds `started`. A failure to schedule the end is ours, and is said.
     Promise.resolve(started)
-      .then(() => afterStart(this, ps, trim))
-      .catch(() => {});
+      .then(
+        () => afterStart(this, ps, trim),
+        () => undefined,
+      )
+      .catch((error) => console.error(`${MODULE_ID} | could not schedule a trim's end; the sound plays on:`, error));
     return started;
   };
   proto.play = wrapped;

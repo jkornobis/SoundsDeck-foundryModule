@@ -16,6 +16,7 @@
  */
 import { classify } from '../../src/core/classify.mjs';
 import { deckName } from '../../src/core/names.mjs';
+import { installSceneMood } from '../../src/foundry/scene-mood.mjs';
 
 const ID = 'sounds-deck';
 const DOORWAY = 'Opening Dashboard';
@@ -678,6 +679,29 @@ export function registerDeck(quench) {
           assert.isNull(P().previewing());
           assert.isFalse(played.playing);
         });
+
+        it('pressed on a second pad before the first has loaded, only the second plays', async () => {
+          const { shots, loops } = S.sandbox;
+          const loop = loops.sounds.contents[2];
+          const first = P().toggle(shots.sounds.contents[1]);
+          const second = P().toggle(loop);
+          assert.isNull(await first, 'the replaced preview played anyway');
+          const played = await second;
+          assert.isTrue(Boolean(played?.playing), 'the second preview did not start');
+          assert.strictEqual(P().previewing(), loop.id);
+          P().stop();
+        });
+
+        it('when the file ends by itself, the headphones go off', async () => {
+          const { shots } = S.sandbox;
+          const played = await P().toggle(shots.sounds.contents[0]);
+          await until(() => phones(shots, 0)?.getAttribute('aria-pressed') === 'true');
+          played.dispatchEvent(new Event('end')); // what Foundry's Sound fires at the natural end of a file
+          assert.isNull(P().previewing());
+          await until(() => phones(shots, 0)?.getAttribute('aria-pressed') === 'false');
+          assert.strictEqual(phones(shots, 0).getAttribute('aria-pressed'), 'false');
+          played.stop();
+        });
       });
 
       describe('one crossfade between beds (note 4)', function () {
@@ -861,6 +885,27 @@ export function registerDeck(quench) {
           await until(() => S.board.playing && !S.wrong.playing, 20000);
           assert.isTrue(S.board.playing && !S.wrong.playing);
           await activate(DOORWAY);
+        });
+
+        it('on a Foundry that fixes its own scene handover, the mood bed is shown to it as the scene playlist', async () => {
+          // The day Foundry repairs _onChangeScene the deck's scene fix steps aside, and the mood sits on Foundry's own
+          // handover. That code never runs here (the defect is present), so it stands on a stand-in handover instead.
+          const seen = [];
+          class Handover {
+            async _onChangeScene(s) {
+              seen.push({ playlist: s.playlist?.id ?? null, sound: s.playlistSound, name: s.name });
+            }
+          }
+          const mood = installSceneMood(Handover, null);
+          try {
+            await new Handover()._onChangeScene(scene());
+          } finally {
+            mood.uninstall();
+          }
+          assert.deepEqual(seen, [{ playlist: S.wrong.id, sound: null, name: MOOD_SCENE }]);
+          await until(() => loop().playing, 10000);
+          assert.isTrue(loop().playing, "the mood's loop did not follow the handover");
+          await S.sandbox.loops.stopAll();
         });
       });
 
@@ -1186,6 +1231,35 @@ export function registerDeck(quench) {
           );
           assert.isTrue(log.some((x) => x.kind === 'bed' && x.name === '5 · Wrong'));
           await S.wrong.stopAll();
+        });
+        it('export saves the log as a dated file, with a summary', async () => {
+          // foundry.utils is frozen, so the download is caught where saveDataToFile makes it: the file's Blob, and the
+          // click on the link that would download it (held back, so the test saves nothing on this machine).
+          const blobs = [];
+          const names = [];
+          const createObjectURL = URL.createObjectURL;
+          const dispatch = HTMLAnchorElement.prototype.dispatchEvent;
+          URL.createObjectURL = (blob) => {
+            blobs.push(blob);
+            return createObjectURL.call(URL, blob);
+          };
+          HTMLAnchorElement.prototype.dispatchEvent = function (event) {
+            if (event.type !== 'click' || !this.download) return dispatch.call(this, event);
+            names.push(this.download);
+            return true;
+          };
+          try {
+            await S.app.options.actions.journalExport.call(S.app);
+          } finally {
+            URL.createObjectURL = createObjectURL;
+            HTMLAnchorElement.prototype.dispatchEvent = dispatch;
+          }
+          assert.lengthOf(names, 1, 'nothing was saved');
+          assert.match(names[0], /^sounds-deck-journal-\d{4}-\d\d-\d\d\.json$/);
+          assert.strictEqual(blobs.at(-1).type, 'application/json');
+          const file = JSON.parse(await blobs.at(-1).text());
+          assert.deepEqual(file.entries, game.settings.get(ID, 'journalEntries'));
+          assert.exists(file.summary);
         });
       });
 

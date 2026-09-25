@@ -5,6 +5,12 @@ Versions follow semver **without pre-release labels** - Foundry's `isNewerVersio
 
 ## 0.6.3 - unreleased
 
+- **Quality pass**, nothing you can hear: the event transport's old stop handler, unused since 0.5, is removed; a
+  trimmed sound whose end cannot be scheduled now says so in the console instead of failing in silence. New tests
+  cover the core's last untested branches, a preview replaced while it loads or ending by itself, the press-log
+  export, and a scene's mood on Foundry's own scene handover; `tools/quench-run.mjs --coverage` measures how much of
+  the Foundry layer the live tests run.
+
 ## 0.6.2 - 2026-09-25
 
 - **A sound for chosen players only** (0.7 program, note 1): the 👤 on a pad lists the players who are connected;

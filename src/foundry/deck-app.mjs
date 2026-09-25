@@ -77,7 +77,6 @@ export class SoundsDeckApp extends HandlebarsApplicationMixin(ApplicationV2) {
       duckToggle: SoundsDeckApp.#onDuckToggle,
       cuePause: SoundsDeckApp.#onCuePause,
       cueResume: SoundsDeckApp.#onCueResume,
-      cueStop: SoundsDeckApp.#onCueStop,
       layout: SoundsDeckApp.#onLayout,
       density: SoundsDeckApp.#onDensity,
       help: SoundsDeckApp.#onHelp,
@@ -505,11 +504,6 @@ export class SoundsDeckApp extends HandlebarsApplicationMixin(ApplicationV2) {
   static async #onCueResume(_event, target) {
     const { playlist, sound } = SoundsDeckApp.#cueOf(target);
     if (sound) await playlist.playSound(sound);
-  }
-
-  static async #onCueStop(_event, target) {
-    const { playlist, sound } = SoundsDeckApp.#cueOf(target);
-    if (sound) await playlist.stopSound(sound);
   }
 
   /** Seek = pause at the new position, then play from it: a playing Sound cannot be moved by its document. */
