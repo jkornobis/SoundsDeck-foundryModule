@@ -1351,6 +1351,40 @@ export function registerDeck(quench) {
         });
       });
 
+      describe('picking a track in a bed', function () {
+        this.timeout(60000);
+        const bedCard = () => card('5 · Wrong');
+        const playingId = () => S.wrong.sounds.find((s) => s.playing)?.id ?? null;
+
+        it("a bed's ▾ lists its tracks in the playlist's own order, numbered; a click plays that track", async () => {
+          bedCard().querySelector('[data-action=tracksToggle]').click();
+          await until(() => bedCard()?.querySelector('.sd-tracks'));
+          const rows = [...bedCard().querySelectorAll('.sd-track')];
+          assert.lengthOf(rows, S.wrong.sounds.size);
+          assert.deepEqual(
+            rows.map((r) => r.querySelector('.sd-track-n').textContent),
+            rows.map((_r, i) => String(i + 1)),
+          );
+          const third = rows[2].dataset.soundId;
+          rows[2].click();
+          await until(() => playingId() === third, 20000);
+          assert.strictEqual(playingId(), third, 'the clicked track is not the one playing');
+          await until(() => bedCard()?.querySelector(`.sd-track[data-sound-id="${third}"].is-playing`));
+        });
+
+        it('Ctrl+Alt+2 plays track 2 of the bed that plays', async () => {
+          const second = bedCard().querySelectorAll('.sd-track')[1].dataset.soundId;
+          assert.isTrue(await S.api.actions.playTrackNumber(2));
+          await until(() => playingId() === second, 20000);
+          assert.strictEqual(playingId(), second);
+          assert.isFalse(await S.api.actions.playTrackNumber(99), 'a track past the end did something');
+          bedCard().querySelector('[data-action=tracksToggle]').click();
+          await until(() => !bedCard()?.querySelector('.sd-tracks'));
+          await S.wrong.stopAll();
+          await until(() => !S.wrong.playing);
+        });
+      });
+
       describe('the look (theming)', function () {
         this.timeout(20000);
         const clips = () => S.app.element.querySelectorAll('.sd-ripple-clip').length;

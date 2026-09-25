@@ -16,7 +16,7 @@
  * functions either way (actions.mjs), and the tests call them.
  */
 import { LAYERS } from '../core/cues.mjs';
-import { muteToggle, nudge, playBedNumber, recallMoodAt, stopEverything } from './actions.mjs';
+import { muteToggle, nudge, playBedNumber, playTrackNumber, recallMoodAt, stopEverything } from './actions.mjs';
 
 const MODULE_ID = 'sounds-deck';
 /** The knob keys, per layer, in the deck's order: [turn left, turn right, press]. */
@@ -51,6 +51,11 @@ export function registerKeys({ toggleDeck }) {
   for (let n = 1; n <= 8; n++)
     register(`bed${n}`, `SOUNDS_DECK.Keys.Bed.${n}`, key(`Digit${n}`, ['Shift']), () => playBedNumber(n));
   for (let n = 1; n <= 9; n++) {
+    // Track n of the bed that plays (2026-09-25): Ctrl+Alt, which nothing in Foundry uses; plain and Shift digits are
+    // the hotbar's and the beds'.
+    register(`track${n}`, `SOUNDS_DECK.Keys.Track.${n}`, key(`Digit${n}`, ['Control', 'Alt']), () =>
+      playTrackNumber(n),
+    );
     register(`mood${n}`, `SOUNDS_DECK.Keys.Mood.${n}`, key(`Digit${n}`, ['Control', 'Shift']), () => recallMoodAt(n));
   }
   for (const layer of LAYERS) {

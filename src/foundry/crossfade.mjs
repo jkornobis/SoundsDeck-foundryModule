@@ -69,8 +69,8 @@ export function heard(playlist) {
  * @param {Playlist} playlist
  * @param {string[]} others  bed playlist ids to stop
  */
-export async function switchBed(playlist, others, { waitMs = 15000 } = {}) {
-  await playlist.playAll();
+export async function switchBed(playlist, others, { waitMs = 15000, sound = null } = {}) {
+  await (sound ? playlist.playSound(sound) : playlist.playAll()); // a chosen track, or the bed from its start
   for (let t = 0; others.length && t < waitMs && !heard(playlist); t += 200) {
     await new Promise((r) => setTimeout(r, 200));
   }

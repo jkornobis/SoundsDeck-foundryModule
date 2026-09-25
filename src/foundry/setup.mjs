@@ -6,7 +6,7 @@ import { MODES } from '../core/classify.mjs';
 import { CROSSFADE_DEFAULT_S } from '../core/crossfade.mjs';
 import { LEVELS_DEFAULT } from '../core/cues.mjs';
 import { ACCENT_CHOICES } from '../core/theme.mjs';
-import { muteToggle, nudge, playBedNumber, press, recallMoodAt, stopEverything } from './actions.mjs';
+import { muteToggle, nudge, playBedNumber, playTrackNumber, press, recallMoodAt, stopEverything } from './actions.mjs';
 import { installCrossfade } from './crossfade.mjs';
 import { SoundsDeckApp } from './deck-app.mjs';
 import { applyDuck, installDucking } from './ducking.mjs';
@@ -171,7 +171,7 @@ export function onReady() {
   // A pad dragged onto the hotbar becomes a button (theme 6) - the gamemaster's, as the deck is.
   const hotbar = game.user.isGM ? installHotbar() : null;
   // What a key, a knob or a hotbar macro reaches: the same actions the deck's own buttons call.
-  const actions = { playBedNumber, recallMoodAt, stopEverything, nudge, muteToggle, toggleDeck };
+  const actions = { playBedNumber, playTrackNumber, recallMoodAt, stopEverything, nudge, muteToggle, toggleDeck };
   return {
     open: openDeck,
     press,

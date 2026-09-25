@@ -63,6 +63,24 @@ export function bedNumbered(cards, n) {
  * @param {string | null} currentId
  * @returns {string | null}
  */
+/**
+ * A bed's tracks as numbered for picking one (the Composer, 2026-09-25): the playlist's OWN order - by name, or as
+ * arranged by hand - never the shuffle order, which Foundry redraws each time a bed starts, so "track 3" stays track 3.
+ * @param {Array<{ id: string, name: string, sort?: number }>} sounds
+ * @param {string} sorting  'a' by name, 'm' as arranged (CONST.PLAYLIST_SORT_MODES)
+ * @returns {string[]} ids, track 1 first
+ */
+export function trackOrder(sounds, sorting) {
+  const byName = (a, b) => a.name.localeCompare(b.name, 'en');
+  const bySort = (a, b) => (a.sort ?? 0) - (b.sort ?? 0) || byName(a, b);
+  return [...sounds].sort(sorting === 'm' ? bySort : byName).map((s) => s.id);
+}
+
+/** @returns {string | null} the id of track `n` (1 is the first), or null when there is no such track */
+export function trackNumbered(order, n) {
+  return Number.isInteger(n) && n >= 1 && n <= order.length ? order[n - 1] : null;
+}
+
 export function nextInOrder(order, currentId) {
   if (!currentId || order.length < 2) return null;
   const i = order.indexOf(currentId);

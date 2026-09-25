@@ -132,6 +132,17 @@
         "toggle": "Loops mute, and back (knob 2, press)",
         "cue": "Events mute, and back (knob 3, press)",
         "oneshot": "Effects mute, and back (knob 4, press)"
+      },
+      "Track": {
+        "1": "Play track 1 of the bed that plays",
+        "2": "Play track 2 of the bed that plays",
+        "3": "Play track 3 of the bed that plays",
+        "4": "Play track 4 of the bed that plays",
+        "5": "Play track 5 of the bed that plays",
+        "6": "Play track 6 of the bed that plays",
+        "7": "Play track 7 of the bed that plays",
+        "8": "Play track 8 of the bed that plays",
+        "9": "Play track 9 of the bed that plays"
       }
     },
     "PadGone": "This pad no longer exists in the world.",
@@ -188,6 +199,7 @@
       "Label": "Banks shown on the board",
       "Tick": "Show {name} with the others",
       "Solo": "Show this bank alone; click again to show them all"
-    }
+    },
+    "TrackList": "Tracks of {name}"
   }
 }

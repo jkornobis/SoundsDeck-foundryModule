@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import { bedCards, bedNumbered, bedsToStop, nextInOrder } from '../../src/core/beds.mjs';
+import { bedCards, bedNumbered, bedsToStop, nextInOrder, trackNumbered, trackOrder } from '../../src/core/beds.mjs';
 import { MODES } from '../../src/core/classify.mjs';
 
 const pl = (id, name, mode, playing = false, sounds = []) => ({ id, name, mode, playing, sounds });
@@ -103,5 +103,23 @@ describe('nextInOrder - the track a bed plays next', () => {
     assert.equal(nextInOrder(order, null), null);
     assert.equal(nextInOrder(['a'], 'a'), null);
     assert.equal(nextInOrder(order, 'z'), null);
+  });
+});
+
+describe('trackOrder and trackNumbered - picking a track by its number', () => {
+  const sounds = [
+    { id: 'p', name: 'Potage', sort: 1 },
+    { id: 'c', name: 'Coquilles', sort: 3 },
+    { id: 'h', name: 'The Hall of Souls', sort: 2 },
+  ];
+  it('by name when the playlist sorts by name', () => assert.deepEqual(trackOrder(sounds, 'a'), ['c', 'p', 'h']));
+  it('as arranged when the playlist is arranged by hand', () =>
+    assert.deepEqual(trackOrder(sounds, 'm'), ['p', 'h', 'c']));
+  it('track 2 is the second; no track 0, no track past the end', () => {
+    const order = ['c', 'p', 'h'];
+    assert.equal(trackNumbered(order, 2), 'p');
+    assert.equal(trackNumbered(order, 0), null);
+    assert.equal(trackNumbered(order, 4), null);
+    assert.equal(trackNumbered(order, 1.5), null);
   });
 });

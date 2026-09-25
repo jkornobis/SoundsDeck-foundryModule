@@ -5,6 +5,11 @@ Versions follow semver **without pre-release labels** - Foundry's `isNewerVersio
 
 ## 0.6.5 - unreleased
 
+- **Pick a track in a bed.** A ▸ beside a bed's name opens its tracks, numbered in the playlist's own order (by name,
+  or as you arranged them - never the shuffle order, which changes each time a bed starts). A click plays that track;
+  a bed that was not playing starts on it and crosses over from the one that was. **Ctrl+Alt+1…9** plays that
+  track of the bed that plays - one Stream Deck button per track.
+
 ## 0.6.4 - 2026-09-25
 
 - **Late joiners hear where the table is** (0.7 program, note 2): a player who joins or reloads while a bed, a room

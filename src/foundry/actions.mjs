@@ -4,7 +4,7 @@
  * is reached. The window keeps only what is about the window.
  */
 import { bankViews } from '../core/banks.mjs';
-import { bedCards, bedNumbered, bedsToStop } from '../core/beds.mjs';
+import { bedCards, bedNumbered, bedsToStop, trackNumbered, trackOrder } from '../core/beds.mjs';
 import { appendEntry } from '../core/journal.mjs';
 import { nudgeLevel, toggleMute } from '../core/levels.mjs';
 import { switchBed } from './crossfade.mjs';
@@ -43,6 +43,35 @@ export async function playBedNumber(n) {
   if (!playlist || playlist.playing) return false;
   await playBed(playlist);
   return true;
+}
+
+/** A bed's tracks in their picking order (core/beds.mjs trackOrder). */
+export function tracksOf(playlist) {
+  return trackOrder(
+    playlist.sounds.contents.map((s) => ({ id: s.id, name: s.name, sort: s.sort })),
+    playlist.sorting,
+  );
+}
+
+/**
+ * One track of a bed (the Composer, 2026-09-25): in a bed that plays, that track now; otherwise the bed starts on it,
+ * crossing over from the bed that plays, as a bed card does. @returns {boolean} started
+ */
+export async function playTrack(playlist, sound) {
+  if (!playlist || !sound || sound.playing) return false;
+  pressed('bed', playlist.id);
+  await logPress('bed', `${playlist.name} - ${sound.name}`);
+  if (playlist.playing) await playlist.playSound(sound);
+  else await switchBed(playlist, bedsToStop(bedCards(snapshot(game.playlists.contents)), playlist.id), { sound });
+  return true;
+}
+
+/** Ctrl+Alt+n: track `n` of the bed that plays now. @returns {boolean} started */
+export async function playTrackNumber(n) {
+  const card = bedCards(snapshot(game.playlists.contents)).find((b) => b.playing);
+  const playlist = card && game.playlists.get(card.id);
+  const id = playlist && trackNumbered(tracksOf(playlist), n);
+  return id ? playTrack(playlist, playlist.sounds.get(id)) : false;
 }
 
 /** One pad, three behaviours - chosen by the bank's core mode (classify.mjs), never stored anywhere else. */
