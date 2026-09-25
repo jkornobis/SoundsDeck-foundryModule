@@ -18,6 +18,9 @@ src/
     silent-start-fix.mjs  delays Foundry's stop-on-start while its defect is present, so a sound is never left silent (#37)
     crossfade.mjs   a bed switch: the new bed first, the old once it is heard, both fading over the deck's crossfade
     mood-recall.mjs  carries a mood's plan out - the same for a mood card and for a scene
+    actions.mjs     what a press does - the window, the shortcuts, the knobs and a hotbar pad all call these
+    keys.mjs        the keyboard shortcuts, the Stream Deck + knobs on F13-F24 (registered in init only)
+    hotbar.mjs      a pad dropped on the hotbar becomes a macro that presses it
     scene-mood.mjs  a scene's Mood field, and its recall when the scene opens, wrapped around the scene handover
     preview.mjs     the GM's-ear preview: a pad played in this browser only
 tools/

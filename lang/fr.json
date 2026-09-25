@@ -90,6 +90,51 @@
       "toggle": "Boucles",
       "cue": "Évènements",
       "oneshot": "Effets"
-    }
+    },
+    "Keys": {
+      "Open": "Ouvrir ou fermer le deck",
+      "StopAll": "Tout arrêter",
+      "Bed": {
+        "1": "Lancer la musique 1",
+        "2": "Lancer la musique 2",
+        "3": "Lancer la musique 3",
+        "4": "Lancer la musique 4",
+        "5": "Lancer la musique 5",
+        "6": "Lancer la musique 6",
+        "7": "Lancer la musique 7",
+        "8": "Lancer la musique 8"
+      },
+      "Mood": {
+        "1": "Rappeler l'ambiance enregistrée 1",
+        "2": "Rappeler l'ambiance enregistrée 2",
+        "3": "Rappeler l'ambiance enregistrée 3",
+        "4": "Rappeler l'ambiance enregistrée 4",
+        "5": "Rappeler l'ambiance enregistrée 5",
+        "6": "Rappeler l'ambiance enregistrée 6",
+        "7": "Rappeler l'ambiance enregistrée 7",
+        "8": "Rappeler l'ambiance enregistrée 8",
+        "9": "Rappeler l'ambiance enregistrée 9"
+      },
+      "Down": {
+        "bed": "Musique : niveau moins (Stream Deck +, molette 1, tourner à gauche)",
+        "toggle": "Boucles : niveau moins (Stream Deck +, molette 2, tourner à gauche)",
+        "cue": "Évènements : niveau moins (Stream Deck +, molette 3, tourner à gauche)",
+        "oneshot": "Effets : niveau moins (Stream Deck +, molette 4, tourner à gauche)"
+      },
+      "Up": {
+        "bed": "Musique : niveau plus (molette 1, tourner à droite)",
+        "toggle": "Boucles : niveau plus (molette 2, tourner à droite)",
+        "cue": "Évènements : niveau plus (molette 3, tourner à droite)",
+        "oneshot": "Effets : niveau plus (molette 4, tourner à droite)"
+      },
+      "Mute": {
+        "bed": "Musique : couper, puis rétablir (molette 1, appuyer)",
+        "toggle": "Boucles : couper, puis rétablir (molette 2, appuyer)",
+        "cue": "Évènements : couper, puis rétablir (molette 3, appuyer)",
+        "oneshot": "Effets : couper, puis rétablir (molette 4, appuyer)"
+      }
+    },
+    "PadGone": "Ce pad n'existe plus dans le monde.",
+    "Muted": "Coupé - appuyez de nouveau sur sa molette pour le rétablir"
   }
 }

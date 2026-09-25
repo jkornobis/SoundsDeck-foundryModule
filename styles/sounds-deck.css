@@ -268,3 +268,7 @@
   width: 100%;
   margin: 0;
 }
+/* A layer muted by its knob (theme 6): the slider sits at 0 and says why. */
+.sounds-deck .sd-level-row.is-muted input {
+  opacity: 0.5;
+}

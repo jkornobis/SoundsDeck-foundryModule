@@ -40,6 +40,20 @@ export function registerInstall(quench) {
           assert.isTrue(mod.api?.crossfade?.installed, mod.api?.crossfade?.reason ?? 'crossfade not installed');
           if (game.user.isGM) assert.exists(mod.api?.sceneFix, 'scene fix not attempted');
           if (game.user.isGM) assert.isTrue(mod.api?.sceneMood?.installed, 'scene moods not installed');
+          if (game.user.isGM) assert.isTrue(mod.api?.hotbar?.installed, 'the hotbar drop is not installed');
+          assert.isFunction(mod.api?.press, 'press not published for hotbar macros');
+        });
+
+        it('the shortcuts are registered, the Stream Deck + knobs on F13-F24', () => {
+          assert.isTrue(mod.api?.keys?.registered, mod.api?.keys?.reason);
+          const key = (action) => game.keybindings.actions.get(`${ID}.${action}`)?.editable?.[0];
+          assert.deepEqual(key('open'), { key: 'KeyD', modifiers: ['Shift'] });
+          assert.deepEqual(key('bed5'), { key: 'Digit5', modifiers: ['Shift'] });
+          assert.deepEqual(key('mood1'), { key: 'Digit1', modifiers: ['Control', 'Shift'] });
+          assert.deepEqual(
+            ['bedDown', 'bedUp', 'bedMute', 'oneshotMute'].map((a) => key(a)?.key),
+            ['F13', 'F14', 'F15', 'F24'],
+          );
         });
 
         it('both templates are served from modules/sounds-deck/', async () => {

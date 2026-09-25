@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import { bedCards, bedsToStop } from '../../src/core/beds.mjs';
+import { bedCards, bedNumbered, bedsToStop } from '../../src/core/beds.mjs';
 import { MODES } from '../../src/core/classify.mjs';
 
 const pl = (id, name, mode, playing = false, sounds = []) => ({ id, name, mode, playing, sounds });
@@ -69,4 +69,15 @@ describe('bedCards - where the playing track comes from (v0.4 note 9)', () => {
     ]);
     assert.equal(card.nowPlayingFrom, 'Hannibal — Brian Reitzell');
   });
+});
+
+describe('bedNumbered - the bed a number key reaches', () => {
+  const cards = [
+    { id: 'a', name: '1 · Bureau & Briefing' },
+    { id: 'b', name: '5 · Wrong' },
+    { id: 'c', name: '10 · Far' },
+  ];
+  it('the card whose name starts with the number', () => assert.equal(bedNumbered(cards, 5)?.id, 'b'));
+  it('1 is not 10', () => assert.equal(bedNumbered(cards, 1)?.id, 'a'));
+  it('no bed with that number is nothing', () => assert.equal(bedNumbered(cards, 7), null));
 });

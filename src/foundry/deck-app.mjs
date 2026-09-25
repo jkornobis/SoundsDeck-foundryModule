@@ -6,7 +6,7 @@
  * changes - whoever changed it, from wherever.
  */
 import { bankViews, nextDensity, nextLayout } from '../core/banks.mjs';
-import { bedCards, bedsToStop } from '../core/beds.mjs';
+import { bedCards } from '../core/beds.mjs';
 import {
   clock,
   LAYERS,
@@ -18,14 +18,16 @@ import {
   transportCues,
 } from '../core/cues.mjs';
 import { matches } from '../core/filter.mjs';
-import { appendEntry, summarise } from '../core/journal.mjs';
+import { PAD_DRAG } from '../core/hotbar.mjs';
+import { summarise } from '../core/journal.mjs';
+import { isMuted, setLevel } from '../core/levels.mjs';
 import { captureMood, isEmptyMood, moodIsOn } from '../core/moods.mjs';
 import { deckName } from '../core/names.mjs';
-import { switchBed } from './crossfade.mjs';
+import { logPress, playBed, pressPad, stopEverything } from './actions.mjs';
 import { applyDuck } from './ducking.mjs';
 import { recallMood } from './mood-recall.mjs';
 import { previewing, stopPreview, togglePreview } from './preview.mjs';
-import { arm, armedList, disarm, disarmAll, isArmed } from './random.mjs';
+import { arm, armedList, disarm, isArmed } from './random.mjs';
 import { snapshot } from './snapshot.mjs';
 
 export const TEMPLATE_BEDS = 'modules/sounds-deck/templates/beds.hbs';
@@ -134,6 +136,7 @@ export class SoundsDeckApp extends HandlebarsApplicationMixin(ApplicationV2) {
       layer,
       label: game.i18n.localize(`SOUNDS_DECK.Layer.${layer}`),
       input: foundry.audio.AudioHelper.volumeToInput(levels[layer]),
+      muted: isMuted(levels, layer), // a knob press (theme 6): shown, so the deck says why a layer is silent
     }));
     const armedNow = armedList();
     context.moods = game.settings.get(MODULE_ID, 'moods').map((m) => ({
@@ -248,6 +251,15 @@ export class SoundsDeckApp extends HandlebarsApplicationMixin(ApplicationV2) {
     for (const input of this.element.querySelectorAll('.sd-now-row .sd-volume')) {
       input.addEventListener('input', () => SoundsDeckApp.#volume(input));
     }
+    // A pad of a bank that plays can be dragged onto Foundry's hotbar, where it becomes a button (theme 6, hotbar.mjs).
+    for (const pad of this.element.querySelectorAll('.sd-bank:not([disabled]) .sd-pad')) {
+      pad.draggable = true;
+      pad.addEventListener('dragstart', (event) => {
+        const playlistId = pad.closest('[data-playlist-id]')?.dataset.playlistId;
+        const drag = { type: PAD_DRAG, playlistId, soundId: pad.dataset.soundId };
+        event.dataTransfer.setData('text/plain', JSON.stringify(drag));
+      });
+    }
     this.#ticker ??= setInterval(() => this.#tick(), 500);
   }
 
@@ -275,17 +287,6 @@ export class SoundsDeckApp extends HandlebarsApplicationMixin(ApplicationV2) {
     super._onClose(options);
   }
 
-  /** One press into this seat's log - only when the seat switched the log on. */
-  static async #log(kind, name, bank) {
-    if (!game.settings.get(MODULE_ID, 'journal')) return;
-    const entry = { at: new Date().toISOString(), kind, name, ...(bank ? { bank } : {}) };
-    await game.settings.set(
-      MODULE_ID,
-      'journalEntries',
-      appendEntry(game.settings.get(MODULE_ID, 'journalEntries'), entry),
-    );
-  }
-
   static async #onJournalExport() {
     const entries = game.settings.get(MODULE_ID, 'journalEntries');
     const data = JSON.stringify({ exported: new Date().toISOString(), summary: summarise(entries), entries }, null, 2);
@@ -302,35 +303,24 @@ export class SoundsDeckApp extends HandlebarsApplicationMixin(ApplicationV2) {
 
   static async #onPlay(_event, target) {
     const playlist = SoundsDeckApp.#playlistOf(target);
-    if (!playlist) return;
-    const others = bedsToStop(bedCards(snapshot(game.playlists.contents)), playlist.id);
-    // The new bed first, the old ones once it is heard - one crossfade, never a hole while it loads (note 4).
-    await SoundsDeckApp.#log('bed', playlist.name);
-    await switchBed(playlist, others);
+    if (playlist) await playBed(playlist);
   }
 
   static async #onSkip(_event, target) {
     const playlist = SoundsDeckApp.#playlistOf(target);
     await playlist?.playNext();
-    if (playlist) await SoundsDeckApp.#log('bed-skip', playlist.name);
+    if (playlist) await logPress('bed-skip', playlist.name);
   }
 
   static async #onStop(_event, target) {
     await SoundsDeckApp.#playlistOf(target)?.stopAll();
   }
 
-  /** One pad, three behaviours - chosen by the bank's core mode (classify.mjs), never stored anywhere else. */
+  /** A pad: what a press does is actions.pressPad, the same for a hotbar button or a key. */
   static async #onPad(_event, target) {
     const playlist = SoundsDeckApp.#playlistOf(target);
     const sound = playlist?.sounds.get(target.dataset.soundId);
-    if (!sound) return;
-    const bank = bankViews(snapshot([playlist]))[0];
-    // A bank whose mode gives no press is drawn disabled, and does nothing if reached anyway.
-    if (!bank?.press) return undefined;
-    await SoundsDeckApp.#log(bank.press, sound.name, playlist.name);
-    // Every pad: a click plays, the next click stops (the Composer, after first use - decision 0005). A one-shot is a
-    // PlaylistSound in a Soundboard Only playlist like the others, so its stop reaches every player, not only this one.
-    return sound.playing ? playlist.stopSound(sound) : playlist.playSound(sound);
+    if (sound) return pressPad(playlist, sound);
   }
 
   /** The 🎧 on a pad: hear it in this browser only, before the table does (note 3; the rules are core/preview.mjs). */
@@ -360,8 +350,7 @@ export class SoundsDeckApp extends HandlebarsApplicationMixin(ApplicationV2) {
   }
 
   static async #onStopAll() {
-    disarmAll();
-    for (const p of game.playlists.filter((x) => x.playing)) await p.stopAll();
+    return stopEverything();
   }
 
   /** The 🎲 on a one-shot's strip: arm it to fire at random moments, or disarm it. */
@@ -373,7 +362,7 @@ export class SoundsDeckApp extends HandlebarsApplicationMixin(ApplicationV2) {
     if (isArmed(pid, sid)) disarm(pid, sid);
     else {
       arm(pid, sid);
-      await SoundsDeckApp.#log('random', sound?.name ?? sid, playlist?.name);
+      await logPress('random', sound?.name ?? sid, playlist?.name);
     }
   }
 
@@ -401,13 +390,10 @@ export class SoundsDeckApp extends HandlebarsApplicationMixin(ApplicationV2) {
     return playlist;
   }
 
-  /** The table's levels with one layer moved to where its slider now stands. */
+  /** The table's levels with one layer moved to where its slider now stands - which also ends a mute on it. */
   static #levelsWith(input) {
-    return {
-      ...LEVELS_DEFAULT,
-      ...game.settings.get(MODULE_ID, 'levels'),
-      [input.dataset.layer]: foundry.audio.AudioHelper.inputToVolume(input.value),
-    };
+    const level = foundry.audio.AudioHelper.inputToVolume(input.value);
+    return setLevel(game.settings.get(MODULE_ID, 'levels'), input.dataset.layer, level);
   }
 
   /** An event's say in ducking, stored on its own sound as flags["sounds-deck"].duck - world data, the GM's to set. */
@@ -493,7 +479,7 @@ export class SoundsDeckApp extends HandlebarsApplicationMixin(ApplicationV2) {
     });
     if (name === null || name === undefined) return undefined;
     await game.settings.set(MODULE_ID, 'moods', [...moods, { ...mood, name: name.trim() || fallback }]);
-    await SoundsDeckApp.#log('mood-save', name.trim() || fallback);
+    await logPress('mood-save', name.trim() || fallback);
   }
 
   /**
@@ -505,7 +491,7 @@ export class SoundsDeckApp extends HandlebarsApplicationMixin(ApplicationV2) {
       .get(MODULE_ID, 'moods')
       .find((m) => m.id === target.closest('[data-mood-id]')?.dataset.moodId);
     if (!mood) return;
-    await SoundsDeckApp.#log('mood', mood.name);
+    await logPress('mood', mood.name);
     // The same recall a scene with this mood runs (note 5): loops and random first, the music as one crossfade.
     const missing = await recallMood(mood);
     if (missing) ui.notifications.warn(game.i18n.format('SOUNDS_DECK.MoodMissing', { count: missing }));

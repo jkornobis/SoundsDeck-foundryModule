@@ -862,6 +862,109 @@ export function registerDeck(quench) {
         });
       });
 
+      describe('keys, knobs and the hotbar (theme 6)', function () {
+        this.timeout(60000);
+        const A = () => S.api.actions;
+        const loop = () => S.sandbox.loops.sounds.contents[1];
+        const gain = (s) => s?.sound?.volume ?? Number.NaN;
+        const levels = () => game.settings.get(ID, 'levels');
+        const { volumeToInput } = foundry.audio.AudioHelper;
+
+        it('a knob press mutes its layer for the sounds playing, the deck says so, and a second press brings it back', async () => {
+          await game.settings.set(ID, 'levels', { bed: 1, toggle: 1, cue: 1, oneshot: 1 });
+          await loop().update({ volume: 0.4, playing: true });
+          await until(() => sounding(loop()) && Math.abs(gain(loop()) - 0.4) < 0.01);
+          await A().muteToggle('toggle');
+          await until(() => gain(loop()) < 0.01, 4000);
+          assert.isBelow(gain(loop()), 0.01, 'the loop still sounds with its layer muted');
+          assert.deepEqual(levels().muted, { toggle: 1 });
+          await until(() => S.app.element.querySelector('.sd-level-row.is-muted'));
+          assert.exists(
+            S.app.element.querySelector('.sd-level-row.is-muted [data-layer="toggle"]')?.closest('.is-muted'),
+          );
+          await A().muteToggle('toggle');
+          await until(() => Math.abs(gain(loop()) - 0.4) < 0.01, 4000);
+          assert.closeTo(gain(loop()), 0.4, 0.01, 'the second press did not bring it back');
+          assert.notExists(levels().muted);
+        });
+
+        it('a fast turn of three notches moves three steps on the slider, not one', async () => {
+          A().nudge('toggle', -1);
+          A().nudge('toggle', -1);
+          await A().nudge('toggle', -1);
+          assert.closeTo(volumeToInput(levels().toggle), 0.85, 1e-6);
+          await until(() => Math.abs(gain(loop()) - 0.4 * levels().toggle) < 0.01, 4000);
+          assert.closeTo(gain(loop()), 0.4 * levels().toggle, 0.01, 'the loop did not follow its level');
+          await game.settings.set(ID, 'levels', { bed: 1, toggle: 1, cue: 1, oneshot: 1 });
+          await loop().update({ playing: false });
+          await until(() => quiet(loop()));
+        });
+
+        it('a bed by its number, a mood by its place, and stop everything - the same actions as the deck', async () => {
+          assert.isTrue(await A().playBedNumber(5), 'bed 5 did not start');
+          await until(() => S.wrong.playing && heardNow(S.wrong), 20000);
+          assert.isTrue(S.wrong.playing);
+          assert.isFalse(await A().playBedNumber(5), 'a bed already playing was started again');
+          assert.isFalse(await A().playBedNumber(99), 'a number with no bed did something');
+          const mood = {
+            id: foundry.utils.randomID(),
+            name: '__sd key mood',
+            bed: null,
+            random: [],
+            loops: [{ playlistId: S.sandbox.loops.id, soundId: loop().id, volume: 0.3 }],
+          };
+          await game.settings.set(ID, 'moods', [mood]);
+          assert.isTrue(await A().recallMoodAt(1));
+          await until(() => loop().playing && !S.wrong.playing, 20000);
+          assert.isTrue(loop().playing && !S.wrong.playing, 'the mood at place 1 was not recalled');
+          assert.isFalse(await A().recallMoodAt(2), 'a place with no mood did something');
+          await A().stopEverything();
+          await until(() => !game.playlists.some((p) => p.playing));
+          assert.isFalse(
+            game.playlists.some((p) => p.playing),
+            'something still plays',
+          );
+          await game.settings.set(ID, 'moods', []);
+        });
+
+        it('a pad dragged onto the hotbar becomes a macro that presses it, and is reused when dragged again', async () => {
+          const { shots } = S.sandbox;
+          const snd = shots.sounds.contents[1];
+          const pad = bank(shots).querySelectorAll('.sd-pad')[1];
+          assert.isTrue(pad.draggable, 'the pad cannot be dragged');
+          const dataTransfer = new DataTransfer();
+          pad.dispatchEvent(new DragEvent('dragstart', { dataTransfer, bubbles: true }));
+          const data = JSON.parse(dataTransfer.getData('text/plain'));
+          assert.deepEqual(data, { type: 'SoundsDeckPad', playlistId: shots.id, soundId: snd.id });
+          const slot = Array.from({ length: 50 }, (_, i) => i + 1).find((i) => !game.user.hotbar[i]);
+          // The macro calls the module's PUBLISHED api, as it must at the table. Under tools/quench-run.mjs --src the
+          // published one is still the installed release's, so the working copy's stands in for this test only.
+          const mod = game.modules.get(ID);
+          const published = mod.api;
+          if (globalThis.__soundsDeckHarness) mod.api = S.api;
+          assert.isFalse(Hooks.call('hotbarDrop', ui.hotbar, data, slot), 'Foundry would have handled the drop itself');
+          await until(() => game.user.hotbar[slot]);
+          const macro = game.macros.get(game.user.hotbar[slot]);
+          try {
+            assert.include(macro?.command ?? '', `press("${shots.id}", "${snd.id}")`);
+            await macro.execute();
+            await until(() => snd.playing);
+            assert.isTrue(snd.playing, 'the hotbar button did not press the pad');
+            await macro.execute();
+            await until(() => !snd.playing);
+            assert.isFalse(snd.playing, 'a second press did not stop it');
+            const before = game.macros.size;
+            Hooks.call('hotbarDrop', ui.hotbar, data, slot);
+            await wait(800);
+            assert.strictEqual(game.macros.size, before, 'dragging the same pad again made a second macro');
+          } finally {
+            mod.api = published;
+            await game.user.assignHotbarMacro(null, slot);
+            await macro?.delete();
+          }
+        });
+      });
+
       describe('the press log', function () {
         this.timeout(20000);
         it('off by default: pressing records nothing, and the export entry is hidden', async () => {

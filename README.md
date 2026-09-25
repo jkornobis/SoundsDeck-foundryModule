@@ -25,6 +25,26 @@ https://github.com/jkornobis/SoundsDeck-foundryModule/releases/download/v0.6.0/m
 Each release has its own fixed address, so a world changes version only when you install a new one. Enable the module
 in your world, then open the deck from the **Sounds Deck** button at the top of the Playlists sidebar.
 
+## Stream Deck
+
+Elgato's own **Hotkey** action is all it takes: no plugin, and nothing to install in Foundry.
+
+- **Keys**: give a key the shortcut of what it should do - Shift+1 for bed 1, Ctrl+Shift+2 for the second mood, Shift+X
+  to stop everything.
+- **Stream Deck + knobs**: in the Stream Deck app, switch to *Dials*, drag *System → Hotkey* onto a knob, and pick its
+  three keys from the key menu, one layer per knob in the deck's order:
+
+  | Knob | Layer | Turn left | Turn right | Press |
+  |---|---|---|---|---|
+  | 1 | Music | F13 | F14 | F15 |
+  | 2 | Loops | F16 | F17 | F18 |
+  | 3 | Events | F19 | F20 | F21 |
+  | 4 | Effects | F22 | F23 | F24 |
+
+  A notch moves that layer's slider by 5%; a press mutes the layer for everyone and a second press brings it back.
+  F13-F24 exist on no keyboard, so nothing else reacts to them. The knob's display can show the label you give it,
+  not the live level.
+
 ## Set up your playlists
 
 **The name** places a playlist on the deck:
@@ -64,6 +84,10 @@ deck**, on by default; turn it off to see both on the pads. The filter searches 
   Music you picked by hand keeps playing into a scene that has none of its own.
 - **Ducking.** While an event plays, the music drops about 10 dB and comes back by itself - in every player's browser.
   The small speaker on an event's pad turns this off for that event.
+- **Keyboard shortcuts.** Shift+D opens or closes the deck, Shift+X stops everything, Shift+1…8 plays the bed with that
+  number, Ctrl+Shift+1…9 recalls the mood at that place in the list. All can be rebound in *Configure Controls*.
+- **Pads on the hotbar.** Drag a pad onto Foundry's macro hotbar: it becomes a button that presses it, and the hotbar's
+  own number keys fire it too.
 - **A scene brings back a mood.** In a scene's settings, under its playlist, pick a *Mood*: opening the scene recalls it,
   like its card. It takes the place of the scene's playlist.
 - **One crossfade between beds.** Switching beds starts the new one first and fades the old one out once the new one
