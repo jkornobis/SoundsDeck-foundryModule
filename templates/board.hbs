@@ -19,7 +19,7 @@
     <div class="sd-pads">
       {{#each pads}}
       <div class="sd-pad-cell sd-card{{#if playing}} is-playing{{/if}}{{#if colour}} sd-colour sd-colour-{{colour}}{{/if}}" data-pad-name="{{name}}">
-        <button type="button" class="sd-pad" data-action="pad" data-sound-id="{{id}}" {{#if pressed}}aria-pressed="{{pressed}}"{{/if}} aria-label="{{label}}" data-tooltip="{{label}}{{#if description}}<br>{{description}}{{/if}}" {{#if description}}aria-description="{{description}}"{{/if}}><span class="sd-clamp">{{#if icon}}<span class="sd-pad-icon" aria-hidden="true">{{icon}}</span> {{/if}}{{label}}</span></button>
+        <button type="button" class="sd-pad" data-action="pad" data-sound-id="{{id}}" {{#if pressed}}aria-pressed="{{pressed}}"{{/if}} aria-label="{{label}}" data-tooltip="{{label}}{{#if description}}<br>{{description}}{{/if}}" {{#if description}}aria-description="{{description}}"{{/if}}><span class="sd-clamp">{{#if icon}}<span class="sd-pad-icon" aria-hidden="true">{{icon}}</span> {{/if}}{{label}}</span>{{#if count}}<span class="sd-variants" aria-hidden="true">×{{count}}</span><span class="sd-sr">{{variantsLabel}}</span>{{/if}}</button>
         {{#if previewable}}
         <div class="sd-card-actions">
           <button type="button" class="sd-preview{{#if previewing}} is-previewing{{/if}}" data-action="preview" data-sound-id="{{id}}" aria-pressed="{{#if previewing}}true{{else}}false{{/if}}" aria-label="{{localize 'SOUNDS_DECK.Preview' name=label}}" data-tooltip="{{#if previewing}}{{localize 'SOUNDS_DECK.PreviewOn'}}{{else}}{{localize 'SOUNDS_DECK.PreviewOff'}}{{/if}}"><i class="fa-solid fa-headphones" inert></i></button>

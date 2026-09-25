@@ -222,6 +222,11 @@
         "sanityLoss": "Perte de SAN",
         "weapon": "Jet de dégâts ou de Létalité d'une arme"
       }
+    },
+    "Variants": "{count} variantes : chaque appui en joue une autre",
+    "HideFromPlayers": {
+      "Name": "Masquer les playlists du deck aux joueurs",
+      "Hint": "La barre des playlists d'un joueur liste chaque playlist qui joue : la table peut lire le nom d'une piste dès qu'elle démarre. Activé : musiques et banques ne sont pas listées aux joueurs. Ils entendent toujours tout."
     }
   }
 }

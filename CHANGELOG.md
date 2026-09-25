@@ -5,6 +5,11 @@ Versions follow semver **without pre-release labels** - Foundry's `isNewerVersio
 
 ## 0.6.6 - unreleased
 
+- **Variant pads** (next program, note 4): in a one-shot bank, *Gunshot 1*, *Gunshot 2*, *Gunshot 3* are one pad,
+  *Gunshot ×3*; each press plays one of them, never the same twice in a row.
+- **The deck's playlists hidden from players** (note 5): players' sidebar no longer names what plays; they still hear
+  it all. A module setting, on by default.
+
 - **Sounds on game events** (next program, note 2), for Delta Green: *Plays on* in a bank sound's settings - critical
   success, critical failure, Sanity loss, a weapon's damage or Lethality roll. Everyone hears it; a whispered or blind
   roll plays nothing; several pads on one event are a random pick; a weapon can have its own pad by name.

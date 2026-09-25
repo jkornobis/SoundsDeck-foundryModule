@@ -99,7 +99,7 @@ const LOAD = `
   const fx = game.playlists.contents.flatMap((p) => p.sounds.contents).filter((s) => s.path.startsWith('ge-foundry/fx/')).slice(0, 3);
   const M = CONST.PLAYLIST_MODES;
   const mk = (name, mode) => Playlist.create({ name, mode, folder: folder?.id ?? null,
-    sounds: fx.map((s, i) => ({ name: name.slice(3) + ' ' + (i + 1), path: s.path, volume: 0.4, repeat: mode === M.SIMULTANEOUS, fade: 500 })) });
+    sounds: fx.map((s, i) => ({ name: name.slice(3) + ' ' + 'ABCDEFGH'[i], path: s.path, volume: 0.4, repeat: mode === M.SIMULTANEOUS, fade: 500 })) });
   const sandbox = [await mk('🔫 __sd one-shots', M.DISABLED), await mk('🌧️ __sd loops', M.SIMULTANEOUS), await mk('🎲 __sd shuffle', M.SHUFFLE), await mk('🎞️ __sd cues', M.SEQUENTIAL)];
   const cleanup = async () => {
     for (const p of game.playlists.filter((x) => x.playing)) await p.stopAll();

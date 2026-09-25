@@ -3,7 +3,7 @@
  * knobs and a pad on the hotbar all call these, so a bed, a pad, a mood or a level behaves the same whichever way it
  * is reached. The window keeps only what is about the window.
  */
-import { bankViews } from '../core/banks.mjs';
+import { bankViews, pickVariant } from '../core/banks.mjs';
 import { bedCards, bedNumbered, bedsToStop, trackNumbered, trackOrder } from '../core/beds.mjs';
 import { appendEntry } from '../core/journal.mjs';
 import { nudgeLevel, toggleMute } from '../core/levels.mjs';
@@ -74,11 +74,29 @@ export async function playTrackNumber(n) {
   return id ? playTrack(playlist, playlist.sounds.get(id)) : false;
 }
 
+/** The variant each variant pad played last, so the next press plays another. */
+const lastVariant = new Map();
+
 /** One pad, three behaviours - chosen by the bank's core mode (classify.mjs), never stored anywhere else. */
 export async function pressPad(playlist, sound) {
   const bank = bankViews(snapshot([playlist]))[0];
   // A bank whose mode gives no press is drawn disabled, and does nothing if reached anyway.
   if (!bank?.press) return undefined;
+  // A pad that stands for several variants (note 4): a press plays one of them, never the last one twice; the next
+  // press stops whichever plays.
+  const pad = bank.pads.find((p) => p.variants?.includes(sound.id));
+  if (pad) {
+    pressed('pad', pad.id);
+    await logPress(bank.press, pad.name, playlist.name);
+    const playing = pad.variants.map((id) => playlist.sounds.get(id)).filter((s) => s?.playing);
+    if (playing.length) {
+      for (const s of playing) await playlist.stopSound(s);
+      return undefined;
+    }
+    const pick = pickVariant(pad.variants, lastVariant.get(pad.id) ?? null);
+    lastVariant.set(pad.id, pick);
+    return playlist.playSound(playlist.sounds.get(pick));
+  }
   pressed('pad', sound.id);
   await logPress(bank.press, sound.name, playlist.name);
   // Every pad: a press plays, the next press stops (the Composer, after first use - decision 0005). A one-shot is a

@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import { bankViews, nextDensity, nextLayout } from '../../src/core/banks.mjs';
+import { bankViews, nextDensity, nextLayout, pickVariant, variantBase, variantPads } from '../../src/core/banks.mjs';
 import { MODES } from '../../src/core/classify.mjs';
 
 const pl = (id, name, mode, sounds = []) => ({ id, name, mode, playing: sounds.some((s) => s.playing), sounds });
@@ -73,5 +73,48 @@ describe('bankViews - a pad knows where it comes from (v0.4 note 9)', () => {
       b.pads.map((p) => p.description),
       ['Freesound: ShawnyBoy — CC0', null],
     );
+  });
+});
+
+describe('variants - sounds named alike with a number are one pad (next program, note 4)', () => {
+  it('the base of a variant name', () => {
+    assert.equal(variantBase('Gunshot 1'), 'Gunshot');
+    assert.equal(variantBase('Gunshot #2'), 'Gunshot');
+    assert.equal(variantBase('Gunshot_03'), 'Gunshot');
+    assert.equal(variantBase('Glass'), null);
+    assert.equal(variantBase('42'), null);
+  });
+  it('two or more fold into one pad, at the first one place, playing while any plays; a lone number stays', () => {
+    const pads = variantPads([
+      { id: 'a', name: 'Gunshot 1', playing: false },
+      { id: 'g', name: 'Glass', playing: false },
+      { id: 'b', name: 'gunshot 2', playing: true },
+      { id: 'd', name: 'Door 1', playing: false },
+    ]);
+    assert.deepEqual(
+      pads.map((p) => [p.id, p.name, p.playing, p.variants]),
+      [
+        ['a', 'Gunshot', true, ['a', 'b']],
+        ['g', 'Glass', false, null],
+        ['d', 'Door 1', false, null],
+      ],
+    );
+  });
+  it('a press never plays the same variant twice in a row', () => {
+    for (let i = 0; i < 20; i++)
+      assert.notEqual(
+        pickVariant(['a', 'b', 'c'], 'b', () => i / 20),
+        'b',
+      );
+    assert.equal(pickVariant(['a'], 'a'), 'a');
+  });
+  it('only a one-shot bank folds its variants', () => {
+    const [bank] = bankViews([
+      pl('l', '🔁 Loops', MODES.SIMULTANEOUS, [
+        { id: 'r1', name: 'Rain 1', playing: false },
+        { id: 'r2', name: 'Rain 2', playing: false },
+      ]),
+    ]);
+    assert.equal(bank.pads.length, 2);
   });
 });
