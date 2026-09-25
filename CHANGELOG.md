@@ -3,6 +3,8 @@
 Versions follow semver **without pre-release labels** - Foundry's `isNewerVersion` does not understand them
 ([Package Best Practices Checklist](https://foundryvtt.wiki/en/development/guides/package-best-practices)).
 
+## 0.6.2 - unreleased
+
 ## 0.6.1 - 2026-09-25
 
 - **Organising the board** (theme 9): a pad can have a colour (one of six from Foundry's own theme) and an icon, set
