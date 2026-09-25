@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import { bedCards, bedNumbered, bedsToStop } from '../../src/core/beds.mjs';
+import { bedCards, bedNumbered, bedsToStop, nextInOrder } from '../../src/core/beds.mjs';
 import { MODES } from '../../src/core/classify.mjs';
 
 const pl = (id, name, mode, playing = false, sounds = []) => ({ id, name, mode, playing, sounds });
@@ -80,4 +80,15 @@ describe('bedNumbered - the bed a number key reaches', () => {
   it('the card whose name starts with the number', () => assert.equal(bedNumbered(cards, 5)?.id, 'b'));
   it('1 is not 10', () => assert.equal(bedNumbered(cards, 1)?.id, 'a'));
   it('no bed with that number is nothing', () => assert.equal(bedNumbered(cards, 7), null));
+});
+
+describe('nextInOrder - the track a bed plays next', () => {
+  const order = ['c', 'a', 'd', 'b'];
+  it('the one after it in the playback order', () => assert.equal(nextInOrder(order, 'a'), 'd'));
+  it('the first again after the last', () => assert.equal(nextInOrder(order, 'b'), 'c'));
+  it('nothing playing, one track, or a track not in the order: nothing to show', () => {
+    assert.equal(nextInOrder(order, null), null);
+    assert.equal(nextInOrder(['a'], 'a'), null);
+    assert.equal(nextInOrder(order, 'z'), null);
+  });
 });

@@ -1002,6 +1002,54 @@ export function registerDeck(quench) {
         });
       });
 
+      describe('transport for beds (theme 8)', function () {
+        this.timeout(40000);
+        // A bed no other test plays: its first track is not in this page's cache, so loading takes real seconds.
+        const BUREAU = '1 · Bureau & Briefing';
+        const bureau = () => game.playlists.getName(BUREAU);
+        const bedCard = () => card(BUREAU);
+
+        after(async () => {
+          if (bureau()?.playing) await bureau().stopAll();
+        });
+
+        it('a pressed bed pulses as loading until its track is heard, then stops pulsing', async () => {
+          let sawLoading = false;
+          click(BUREAU, 'play');
+          await until(() => {
+            if (bedCard()?.classList.contains('is-loading') && bedCard().getAttribute('aria-busy') === 'true')
+              sawLoading = true;
+            return heardNow(bureau());
+          }, 25000);
+          assert.isTrue(sawLoading, 'the card never showed it was loading');
+          await until(() => !bedCard()?.classList.contains('is-loading'), 2000);
+          assert.isFalse(bedCard().classList.contains('is-loading'), 'still pulsing once heard');
+          assert.strictEqual(bedCard().getAttribute('aria-busy'), 'false');
+        });
+
+        it("a playing bed names the track after this one, from the playlist's own order", async () => {
+          const current = bureau().sounds.find((s) => s.playing);
+          const order = bureau().playbackOrder;
+          const next = bureau().sounds.get(order[(order.indexOf(current.id) + 1) % order.length]);
+          const expected = game.i18n.format('SOUNDS_DECK.Next', {
+            name: deckName(next.name, game.settings.get(ID, 'hideSources')),
+          });
+          await until(() => bedCard()?.querySelector('.sd-bed-next'));
+          assert.strictEqual(bedCard().querySelector('.sd-bed-next')?.textContent.trim(), expected);
+        });
+
+        it('a playing bed shows its time moving, with a progress line', async () => {
+          const read = () => bedCard()?.querySelector('.sd-bed-clock')?.textContent ?? '';
+          await until(() => /^\d+:\d\d \/ \d+:\d\d$/.test(read()), 3000);
+          const first = read();
+          assert.match(first, /^\d+:\d\d \/ \d+:\d\d$/);
+          await wait(2200);
+          assert.notStrictEqual(read(), first, 'the time did not move');
+          assert.isAbove(Number.parseFloat(bedCard().querySelector('.sd-bed-progress-fill').style.width), 0);
+          await bureau().stopAll();
+        });
+      });
+
       describe('the press log', function () {
         this.timeout(20000);
         it('off by default: pressing records nothing, and the export entry is hidden', async () => {

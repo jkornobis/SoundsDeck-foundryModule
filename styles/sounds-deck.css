@@ -272,3 +272,43 @@
 .sounds-deck .sd-level-row.is-muted input {
   opacity: 0.5;
 }
+/* Pressed but not heard yet (theme 8): outlined, and pulsing unless the system asks for less motion. */
+.sounds-deck .is-loading {
+  outline: 2px dashed var(--color-warm-2, var(--color-border-highlight, currentColor));
+  outline-offset: -2px;
+}
+@keyframes sd-loading {
+  50% {
+    opacity: 0.55;
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .sounds-deck .is-loading {
+    animation: sd-loading 1s ease-in-out infinite;
+  }
+}
+/* A playing bed: what comes next, and where it stands in its track (theme 8). */
+.sounds-deck .sd-bed-next {
+  margin: 0;
+  font-size: var(--font-size-11, 0.72rem);
+  opacity: 0.7;
+}
+.sounds-deck .sd-bed-time {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: var(--font-size-11, 0.72rem);
+  opacity: 0.8;
+}
+.sounds-deck .sd-bed-progress {
+  flex: 1;
+  height: 3px;
+  border-radius: 2px;
+  overflow: hidden;
+  background: var(--color-border, rgba(127, 127, 127, 0.3));
+}
+.sounds-deck .sd-bed-progress-fill {
+  height: 100%;
+  width: 0;
+  background: var(--color-warm-2, var(--color-border-highlight, currentColor));
+}
