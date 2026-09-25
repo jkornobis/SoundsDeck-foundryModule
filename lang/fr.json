@@ -2,15 +2,15 @@
   "SOUNDS_DECK": {
     "Title": "Sounds Deck",
     "Open": "Sounds Deck",
-    "Beds": "Ambiances",
-    "Play": "Lancer cette ambiance",
+    "Beds": "Musiques",
+    "Play": "Lancer cette musique",
     "Skip": "Piste suivante",
     "Stop": "Arrêter",
     "Tracks": "{count} pistes",
-    "NoBeds": "Aucune ambiance. Une playlist dont le nom commence par un nombre et un point (1 · …) apparaît ici.",
+    "NoBeds": "Aucune musique. Une playlist dont le nom commence par un nombre et un point (1 · …) apparaît ici.",
     "Board": "Pads",
-    "Layout": "Pads à côté ou sous les ambiances",
-    "NoBanks": "Aucune banque. Une playlist dont le nom commence par un emoji apparaît ici : Soundboard seulement pour les sons ponctuels, Simultanée pour les boucles d'ambiance, Séquentielle pour les évènements.",
+    "Layout": "Pads à côté ou sous les musiques",
+    "NoBanks": "Aucune banque. Une playlist dont le nom commence par un emoji apparaît ici : Soundboard seulement pour les sons ponctuels, Simultanée pour les boucles de fond, Séquentielle pour les évènements.",
     "NoPress": "Le mode Aléatoire ne donne rien à faire à ces pads : choisir Soundboard seulement, Simultanée ou Séquentielle.",
     "Transport": "Évènements en cours",
     "Pause": "Pause",
@@ -28,7 +28,7 @@
       "Title": "Comment le deck lit vos playlists",
       "Ok": "Compris",
       "Intro": "Sounds Deck joue les playlists de Foundry. Deux choses décident de tout : le <b>nom</b> de la playlist et son <b>mode</b>.",
-      "Bed": "Un nom qui commence par un <b>nombre et un point</b> (<code>1 · Calme</code>) est une <b>ambiance</b> : une carte, une seule à la fois.",
+      "Bed": "Un nom qui commence par un <b>nombre et un point</b> (<code>1 · Calme</code>) est une <b>musique</b> : une carte, une seule à la fois.",
       "Bank": "Un nom qui commence par un <b>emoji</b> (<code>💥 Effets</code>) est une <b>banque de pads</b>. Son mode décide de ce que fait un pad :",
       "OneShot": "<b>Soundboard seulement</b> : un son ponctuel, entendu par tous, qui peut se superposer à lui-même.",
       "Toggle": "<b>Simultanée</b> : une boucle qu'on allume et éteint ; les autres continuent.",
@@ -41,7 +41,7 @@
     },
     "Journal": {
       "Name": "Sounds Deck : tenir un journal des appuis sur ce poste",
-      "Hint": "Désactivé par défaut. Enregistre chaque appui sur le deck (ambiances, pads, évènements) avec l'heure, dans ce navigateur seulement, pour revoir une séance ensuite. Export depuis le menu du deck.",
+      "Hint": "Désactivé par défaut. Enregistre chaque appui sur le deck (musiques, pads, évènements) avec l'heure, dans ce navigateur seulement, pour revoir une séance ensuite. Export depuis le menu du deck.",
       "Export": "Exporter le journal des appuis"
     },
     "NowPlaying": "En cours",
@@ -60,7 +60,7 @@
     "Disarm": "Arrêter le déclenchement au hasard",
     "Crossfade": {
       "Name": "Fondu enchaîné entre deux musiques (secondes)",
-      "Hint": "Quand la musique passe d'une ambiance à une autre - depuis sa carte, ou par une ambiance enregistrée qui en apporte une autre - la nouvelle démarre d'abord et l'ancienne s'éteint une fois la nouvelle entendue. Les deux fondent sur cette durée, dans chaque navigateur. 0 coupe net."
+      "Hint": "Quand on passe d'une musique à une autre - depuis sa carte, ou par une ambiance qui en apporte une autre - la nouvelle démarre d'abord et l'ancienne s'éteint une fois la nouvelle entendue. Les deux fondent sur cette durée, dans chaque navigateur. 0 coupe net."
     },
     "HideSources": {
       "Name": "Masquer les sources sur le deck",
@@ -77,8 +77,8 @@
     "MoodEmpty": "Rien à enregistrer : lancez d'abord une musique, une boucle ou un effet au hasard.",
     "MoodMissing": "{count} élément(s) de cette ambiance n'existent plus et ont été ignorés.",
     "SceneMood": {
-      "Label": "Ambiance enregistrée (Sounds Deck)",
-      "Hint": "Une ambiance enregistrée que cette scène rappelle à son ouverture : sa musique, ses boucles et ses effets au hasard, exactement comme sa carte. Elle remplace la playlist de la scène ci-dessus."
+      "Label": "Ambiance (Sounds Deck)",
+      "Hint": "Une ambiance que cette scène rappelle à son ouverture : sa musique, ses boucles et ses effets au hasard, exactement comme sa carte. Elle remplace la playlist de la scène ci-dessus."
     },
     "MoodNone": "Aucune ambiance. Réglez musique, boucles et effets au hasard, puis enregistrez-les ici.",
     "MoodSummary": "{loops} boucle(s) · {random} au hasard",
@@ -105,15 +105,15 @@
         "8": "Lancer la musique 8"
       },
       "Mood": {
-        "1": "Rappeler l'ambiance enregistrée 1",
-        "2": "Rappeler l'ambiance enregistrée 2",
-        "3": "Rappeler l'ambiance enregistrée 3",
-        "4": "Rappeler l'ambiance enregistrée 4",
-        "5": "Rappeler l'ambiance enregistrée 5",
-        "6": "Rappeler l'ambiance enregistrée 6",
-        "7": "Rappeler l'ambiance enregistrée 7",
-        "8": "Rappeler l'ambiance enregistrée 8",
-        "9": "Rappeler l'ambiance enregistrée 9"
+        "1": "Rappeler l'ambiance 1",
+        "2": "Rappeler l'ambiance 2",
+        "3": "Rappeler l'ambiance 3",
+        "4": "Rappeler l'ambiance 4",
+        "5": "Rappeler l'ambiance 5",
+        "6": "Rappeler l'ambiance 6",
+        "7": "Rappeler l'ambiance 7",
+        "8": "Rappeler l'ambiance 8",
+        "9": "Rappeler l'ambiance 9"
       },
       "Down": {
         "bed": "Musique : niveau moins (Stream Deck +, molette 1, tourner à gauche)",
