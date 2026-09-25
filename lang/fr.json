@@ -143,6 +143,21 @@
       "Hint": "Ne jouer qu'une partie de cette piste : du Début à la Fin, en secondes (Sounds Deck). Elle s'arrête à la Fin, donc une lecture aléatoire passe à la suivante ; un son en boucle répète cette partie. Vide pour le fichier entier."
     },
     "Next": "Ensuite : {name}",
-    "Progress": "Position dans la piste"
+    "Progress": "Position dans la piste",
+    "Look": {
+      "Label": "Pad",
+      "Colour": "Couleur",
+      "Icon": "Icône",
+      "Hint": "L'apparence du pad de ce son dans le Sounds Deck : une couleur parmi six, et une icône (un emoji) devant son nom."
+    },
+    "Colours": {
+      "red": "Rouge",
+      "orange": "Orange",
+      "yellow": "Jaune",
+      "green": "Vert",
+      "blue": "Bleu",
+      "violet": "Violet"
+    },
+    "Fold": "Replier ou déplier cette banque"
   }
 }

@@ -21,6 +21,7 @@ import { matches } from '../core/filter.mjs';
 import { PAD_DRAG } from '../core/hotbar.mjs';
 import { summarise } from '../core/journal.mjs';
 import { isMuted, setLevel } from '../core/levels.mjs';
+import { toggleFold } from '../core/look.mjs';
 import { captureMood, isEmptyMood, moodIsOn } from '../core/moods.mjs';
 import { deckName } from '../core/names.mjs';
 import { logPress, playBed, pressPad, stopEverything } from './actions.mjs';
@@ -66,6 +67,7 @@ export class SoundsDeckApp extends HandlebarsApplicationMixin(ApplicationV2) {
       stop: SoundsDeckApp.#onStop,
       pad: SoundsDeckApp.#onPad,
       preview: SoundsDeckApp.#onPreview,
+      fold: SoundsDeckApp.#onFold,
       nowStop: SoundsDeckApp.#onNowStop,
       stopAll: SoundsDeckApp.#onStopAll,
       randomToggle: SoundsDeckApp.#onRandomToggle,
@@ -119,8 +121,10 @@ export class SoundsDeckApp extends HandlebarsApplicationMixin(ApplicationV2) {
         next: next ? shown(next.name) : null,
       };
     });
+    const folded = game.settings.get(MODULE_ID, 'folded');
     context.banks = bankViews(snaps).map((b) => ({
       ...b,
+      folded: folded.includes(b.id), // this seat folded it from its title (theme 9)
       pads: b.pads.map((p) => ({
         ...p,
         label: shown(p.name), // what the pad shows; the filter still searches the full name (data-pad-name)
@@ -213,6 +217,9 @@ export class SoundsDeckApp extends HandlebarsApplicationMixin(ApplicationV2) {
   /** Hide the pads and banks the filter does not match. Pure matching in core/filter.mjs; this only shows and hides. */
   #applyFilter() {
     for (const bank of this.element?.querySelectorAll('.sd-bank') ?? []) {
+      // A search looks everywhere, folded banks included; clearing it folds them again (theme 9).
+      const pads = bank.querySelector('.sd-pads');
+      if (pads) pads.hidden = bank.dataset.folded === 'true' && !this.#filter;
       const bankName = bank.querySelector('legend')?.textContent ?? '';
       let shown = 0;
       for (const cell of bank.querySelectorAll('.sd-pad-cell')) {
@@ -354,6 +361,12 @@ export class SoundsDeckApp extends HandlebarsApplicationMixin(ApplicationV2) {
     const playlist = SoundsDeckApp.#playlistOf(target);
     const sound = playlist?.sounds.get(target.dataset.soundId);
     if (sound) return pressPad(playlist, sound);
+  }
+
+  /** A bank's title folds or unfolds it, on this seat (theme 9). The setting's change redraws the deck. */
+  static async #onFold(_event, target) {
+    const id = target.closest('[data-playlist-id]')?.dataset.playlistId;
+    if (id) await game.settings.set(MODULE_ID, 'folded', toggleFold(game.settings.get(MODULE_ID, 'folded'), id));
   }
 
   /** The 🎧 on a pad: hear it in this browser only, before the table does (note 3; the rules are core/preview.mjs). */

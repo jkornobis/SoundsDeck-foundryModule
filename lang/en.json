@@ -143,6 +143,21 @@
       "Hint": "Play only part of this track: from Start to End, in seconds (Sounds Deck). It ends at End, so a shuffle moves on; a repeating sound repeats that part. Leave empty for the whole file."
     },
     "Next": "Next: {name}",
-    "Progress": "Position in the track"
+    "Progress": "Position in the track",
+    "Look": {
+      "Label": "Pad",
+      "Colour": "Colour",
+      "Icon": "Icon",
+      "Hint": "How this sound's pad looks on the Sounds Deck: a colour from six, and an icon (an emoji) before its name."
+    },
+    "Colours": {
+      "red": "Red",
+      "orange": "Orange",
+      "yellow": "Yellow",
+      "green": "Green",
+      "blue": "Blue",
+      "violet": "Violet"
+    },
+    "Fold": "Fold or unfold this bank"
   }
 }

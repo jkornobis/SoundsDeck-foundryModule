@@ -19,6 +19,8 @@ export function snapshot(playlists) {
       // Per-cue opt-out of ducking: flags["sounds-deck"].duck === false. Read as plain data - getFlag throws for a
       // scope that is not an installed package, which is exactly the live proof's situation.
       duck: s.flags?.['sounds-deck']?.duck,
+      // A pad's colour and icon (theme 9), set in the sound's settings.
+      look: s.flags?.['sounds-deck']?.look ?? null,
     })),
   }));
 }

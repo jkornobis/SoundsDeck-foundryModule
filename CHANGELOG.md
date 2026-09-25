@@ -5,6 +5,9 @@ Versions follow semver **without pre-release labels** - Foundry's `isNewerVersio
 
 ## 0.6.1 - unreleased
 
+- **Organising the board** (theme 9): a pad can have a colour (one of six from Foundry's own theme) and an icon, set
+  in its sound's settings; a coloured pad keeps its text readable in both themes. A bank folds and unfolds from its
+  title, remembered on your seat, and a search still finds pads inside a folded bank.
 - **Transport for beds** (theme 8): a pressed bed or pad pulses until it is actually heard, so a large track
   loading no longer looks like a press that was ignored (a still outline instead, when the system asks for less
   motion). A playing bed names the track that comes next, from the playlist's own order, and shows its elapsed and

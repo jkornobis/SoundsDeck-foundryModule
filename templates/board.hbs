@@ -5,12 +5,12 @@
   </search>
   {{/if}}
   {{#each banks}}
-  <fieldset class="sd-bank sd-press-{{press}}" data-playlist-id="{{id}}" {{#unless press}}disabled{{/unless}}>
-    <legend>{{name}}</legend>
-    <div class="sd-pads">
+  <fieldset class="sd-bank sd-press-{{press}}" data-playlist-id="{{id}}" data-folded="{{#if folded}}true{{else}}false{{/if}}" {{#unless press}}disabled{{/unless}}>
+    <legend><button type="button" class="sd-fold" data-action="fold" aria-expanded="{{#if folded}}false{{else}}true{{/if}}" data-tooltip="{{localize 'SOUNDS_DECK.Fold'}}">{{name}}</button></legend>
+    <div class="sd-pads"{{#if folded}} hidden{{/if}}>
       {{#each pads}}
-      <div class="sd-pad-cell sd-card{{#if playing}} is-playing{{/if}}" data-pad-name="{{name}}">
-        <button type="button" class="sd-pad" data-action="pad" data-sound-id="{{id}}" {{#if pressed}}aria-pressed="{{pressed}}"{{/if}} aria-label="{{label}}" data-tooltip="{{label}}{{#if description}}<br>{{description}}{{/if}}" {{#if description}}aria-description="{{description}}"{{/if}}><span class="sd-clamp">{{label}}</span></button>
+      <div class="sd-pad-cell sd-card{{#if playing}} is-playing{{/if}}{{#if colour}} sd-colour sd-colour-{{colour}}{{/if}}" data-pad-name="{{name}}">
+        <button type="button" class="sd-pad" data-action="pad" data-sound-id="{{id}}" {{#if pressed}}aria-pressed="{{pressed}}"{{/if}} aria-label="{{label}}" data-tooltip="{{label}}{{#if description}}<br>{{description}}{{/if}}" {{#if description}}aria-description="{{description}}"{{/if}}><span class="sd-clamp">{{#if icon}}<span class="sd-pad-icon" aria-hidden="true">{{icon}}</span> {{/if}}{{label}}</span></button>
         {{#if previewable}}
         <div class="sd-card-actions">
           <button type="button" class="sd-preview{{#if previewing}} is-previewing{{/if}}" data-action="preview" data-sound-id="{{id}}" aria-pressed="{{#if previewing}}true{{else}}false{{/if}}" aria-label="{{localize 'SOUNDS_DECK.Preview' name=label}}" data-tooltip="{{#if previewing}}{{localize 'SOUNDS_DECK.PreviewOn'}}{{else}}{{localize 'SOUNDS_DECK.PreviewOff'}}{{/if}}"><i class="fa-solid fa-headphones" inert></i></button>

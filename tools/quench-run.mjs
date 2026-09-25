@@ -99,6 +99,7 @@ const out = await cdp.ev(`(async () => {
     inst?.crossfade?.uninstall?.();
     inst?.hotbar?.uninstall?.();
     inst?.trim?.uninstall?.();
+    inst?.look?.uninstall?.();
     for (const app of foundry.applications.instances.values()) if (app.id === 'sounds-deck') await app.close();
   }
   if (!installed || P.fromSrc) {
@@ -146,6 +147,7 @@ const out = await cdp.ev(`(async () => {
     harness.api.crossfade?.uninstall?.();
     harness.api.hotbar?.uninstall?.();
     harness.api.trim?.uninstall?.();
+    harness.api.look?.uninstall?.();
     Hooks.off('renderPlaylistDirectory', harness.hookId);
     harness.style.remove();
     delete globalThis.__soundsDeckHarness;
