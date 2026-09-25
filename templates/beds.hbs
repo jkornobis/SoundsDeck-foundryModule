@@ -1,7 +1,7 @@
 <section class="sounds-deck-left">
   <section class="sd-now" aria-label="{{localize 'SOUNDS_DECK.NowPlaying'}}">
     <header class="sd-now-head">
-      <h3>{{localize "SOUNDS_DECK.NowPlaying"}}</h3>
+      <h2 class="sd-section-title">{{localize "SOUNDS_DECK.NowPlaying"}}</h2>
       {{#if (or now.length armed.length)}}
       <button type="button" class="sd-stop-all" data-action="stopAll" data-tooltip="{{localize 'SOUNDS_DECK.StopAll'}}" aria-label="{{localize 'SOUNDS_DECK.StopAll'}}"><i class="fa-solid fa-stop" inert></i> {{localize "SOUNDS_DECK.StopAllShort"}}</button>
       {{/if}}

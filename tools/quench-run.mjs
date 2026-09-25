@@ -189,6 +189,9 @@ const out = await cdp.ev(`(async () => {
     results,
     passed: results.filter((r) => r.ok && !r.skipped).length + ' passed, ' + results.filter((r) => !r.ok).length + ' failed, ' + results.filter((r) => r.skipped).length + ' skipped',
     leftAsFound,
+    // Errors the page raised in the background during the run - Mocha blames them on whichever test was running, so
+    // a failure with no stack of its own (the Settings test, three times in ten runs, 2026-09-25) is read against these.
+    pageErrors,
     ...(P.coverage && { served: Object.entries(served).map(([f, text]) => [urls[f], f, text]) }),
   });
 })()`);
@@ -223,6 +226,10 @@ else {
   for (const t of r.results) {
     const tag = t.skipped ? 'SKIP' : t.ok ? 'PASS' : 'FAIL';
     console.log(`${tag} ${t.test.replace(/sounds-deck\.[a-z-]+_root /, '')}${t.ok ? '' : `  -> ${t.error}`}`);
+  }
+  if (r.results.some((t) => !t.ok) && r.pageErrors?.length) {
+    console.log(`page errors during the run (${r.pageErrors.length}):`);
+    for (const e of r.pageErrors) console.log(`  ${e}`);
   }
   console.log(
     `${r.passed} | ${r.installed ? 'installed' : 'harness'}${r.leftAsFound ? ` | left as found: ${JSON.stringify(r.leftAsFound)}` : ''}`,
