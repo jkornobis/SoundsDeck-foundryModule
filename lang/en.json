@@ -143,7 +143,8 @@
         "7": "Play track 7 of the bed that plays",
         "8": "Play track 8 of the bed that plays",
         "9": "Play track 9 of the bed that plays"
-      }
+      },
+      "Combat": "Combat music: start, or end"
     },
     "PadGone": "This pad no longer exists in the world.",
     "Muted": "Muted - press its knob again to bring it back",
@@ -201,6 +202,15 @@
       "Solo": "Show this bank alone; click again to show them all"
     },
     "TrackList": "Tracks of {name}",
-    "BoardTitle": "Sounds Pad"
+    "BoardTitle": "Sounds Pad",
+    "Combat": {
+      "AutoName": "Combat music follows the combat tracker",
+      "AutoHint": "When a fight's first round begins, the combat mood plays (chosen with ⚔ on a mood card); when the fight ends, what played before comes back, the music resuming where it left off. Off: only the deck's ⚔ button and Shift+F start and end it.",
+      "NoMood": "No combat mood yet: choose one with ⚔ on a mood card.",
+      "Button": "Combat music: start, or end and bring back what played",
+      "Use": "Use this mood for combat",
+      "IsCombat": "This is the combat mood - click to unset",
+      "Auto": "Follow the tracker"
+    }
   }
 }

@@ -17,6 +17,7 @@
  */
 import { LAYERS } from '../core/cues.mjs';
 import { muteToggle, nudge, playBedNumber, playTrackNumber, recallMoodAt, stopEverything } from './actions.mjs';
+import { toggleCombatMusic } from './combat.mjs';
 
 const MODULE_ID = 'sounds-deck';
 /** The knob keys, per layer, in the deck's order: [turn left, turn right, press]. */
@@ -48,6 +49,8 @@ export function registerKeys({ toggleDeck }) {
     });
   register('open', 'SOUNDS_DECK.Keys.Open', key('KeyD', ['Shift']), toggleDeck);
   register('stopAll', 'SOUNDS_DECK.Keys.StopAll', key('KeyX', ['Shift']), stopEverything);
+  // Shift+F, "fight": Shift+C is Foundry's own focus-chat key (read from the live bindings, 2026-09-25).
+  register('combat', 'SOUNDS_DECK.Keys.Combat', key('KeyF', ['Shift']), toggleCombatMusic);
   for (let n = 1; n <= 8; n++)
     register(`bed${n}`, `SOUNDS_DECK.Keys.Bed.${n}`, key(`Digit${n}`, ['Shift']), () => playBedNumber(n));
   for (let n = 1; n <= 9; n++) {

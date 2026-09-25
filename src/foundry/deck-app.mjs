@@ -26,6 +26,7 @@ import { bankTabs, soloBank, tickBank } from '../core/look.mjs';
 import { captureMood, isEmptyMood, moodIsOn } from '../core/moods.mjs';
 import { deckName } from '../core/names.mjs';
 import { logPress, playBed, playTrack, pressPad, stopEverything, tracksOf } from './actions.mjs';
+import { inCombatMusic, toggleCombatMusic } from './combat.mjs';
 import { applyDuck } from './ducking.mjs';
 import { recallMood } from './mood-recall.mjs';
 import { previewing, stopPreview, togglePreview } from './preview.mjs';
@@ -93,6 +94,9 @@ export class SoundsDeckApp extends HandlebarsApplicationMixin(ApplicationV2) {
       moodSave: SoundsDeckApp.#onMoodSave,
       moodRecall: SoundsDeckApp.#onMoodRecall,
       moodDelete: SoundsDeckApp.#onMoodDelete,
+      moodCombat: SoundsDeckApp.#onMoodCombat,
+      combatToggle: SoundsDeckApp.#onCombatToggle,
+      combatAuto: SoundsDeckApp.#onCombatAuto,
     },
   };
 
@@ -171,8 +175,11 @@ export class SoundsDeckApp extends HandlebarsApplicationMixin(ApplicationV2) {
       muted: isMuted(levels, layer), // a knob press (theme 6): shown, so the deck says why a layer is silent
     }));
     const armedNow = armedList();
+    const combatMood = game.settings.get(MODULE_ID, 'combatMood');
+    context.combat = { active: inCombatMusic(), auto: game.settings.get(MODULE_ID, 'combatAuto') };
     context.moods = game.settings.get(MODULE_ID, 'moods').map((m) => ({
       ...m,
+      combat: m.id === combatMood, // the mood a fight brings (combat music)
       on: moodIsOn(m, snaps, armedNow),
       bedName: (m.bed && game.playlists.get(m.bed)?.name) || game.i18n.localize('SOUNDS_DECK.MoodNoBed'),
       summary: game.i18n.format('SOUNDS_DECK.MoodSummary', { loops: m.loops.length, random: m.random.length }),
@@ -463,6 +470,23 @@ export class SoundsDeckApp extends HandlebarsApplicationMixin(ApplicationV2) {
     const names = sent.map((id) => game.users.get(id)?.name).join(', ');
     // biome-ignore lint/complexity/noThisInStatic: ApplicationV2 calls actions with `this` bound to the instance (see #onLayout).
     this.#announce([{ kind: 'private', name: `${names} - ${name}` }]);
+  }
+
+  /** ⚔ on a mood card: this mood is what a fight brings - or, pressed again, no combat mood. One at most. */
+  static async #onMoodCombat(_event, target) {
+    const id = target.closest('[data-mood-id]')?.dataset.moodId;
+    const now = game.settings.get(MODULE_ID, 'combatMood');
+    if (id) await game.settings.set(MODULE_ID, 'combatMood', now === id ? '' : id);
+  }
+
+  /** ⚔ in the Moods header: combat music by hand - start it, or end it and bring back what played. */
+  static async #onCombatToggle() {
+    await toggleCombatMusic();
+  }
+
+  /** The switch beside it: whether Foundry's combat tracker starts and ends combat music. */
+  static async #onCombatAuto(_event, target) {
+    await game.settings.set(MODULE_ID, 'combatAuto', Boolean(target.checked));
   }
 
   /** The beds whose track list is open - this window's, not a setting: a list is opened to pick, then closed. */
