@@ -26,7 +26,13 @@ import { connect, unlockAudio } from './cdp.mjs';
 const require = createRequire('/usr/share/nodejs/');
 const WebSocket = require('ws');
 const ROOT = path.resolve(new URL('..', import.meta.url).pathname);
-const FILES = ['src/core/classify.mjs', 'src/core/cues.mjs', 'src/foundry/snapshot.mjs', 'src/foundry/ducking.mjs'];
+const FILES = [
+  'src/core/classify.mjs',
+  'src/core/cues.mjs',
+  'src/foundry/snapshot.mjs',
+  'src/foundry/ducking.mjs',
+  'src/foundry/hide.mjs',
+];
 // The private sender (0.7, note 1) runs in the GAMEMASTER's page: its working copy, whatever release is installed.
 const GM_FILES = ['src/core/classify.mjs', 'src/core/cues.mjs', 'src/core/private.mjs', 'src/foundry/private.mjs'];
 // Late joiners (0.7, note 2): the gamemaster marks a start, the player's page catches up - both the working copy.
@@ -171,6 +177,8 @@ try {
     for (const [file, src] of ${JSON.stringify(mods)}) urls[file] = URL.createObjectURL(new Blob([src.replace(/__MOD__(.+?)__/g, (_m, f) => urls[f])], { type: 'text/javascript' }));
     const { installDucking } = await import(urls['src/foundry/ducking.mjs']);
     globalThis.__sdPlayerDucking = installDucking();
+    const { installHideFromPlayers } = await import(urls['src/foundry/hide.mjs']);
+    globalThis.__sdPlayerHide = installHideFromPlayers(foundry.documents.Playlist, { enabled: () => true });
     return 1;
   })()`);
 
@@ -192,6 +200,21 @@ try {
   await wait(3500); // past the bed's own fade-in, in the player's browser
   full = await player.ev(bedGain);
   check('the bed plays in the player browser', full > 0, full);
+  // Hidden from players (note 5): the working copy's rule is on in this page since the ducking was loaded.
+  const listed = JSON.parse(
+    await player.ev(`(async () => {
+      await ui.playlists.render({ force: true });
+      await new Promise((r) => setTimeout(r, 800));
+      const board = game.playlists.getName('8 · The Board');
+      return JSON.stringify({ visible: board.visible, inSidebar: (document.querySelector('#playlists')?.textContent ?? '').includes(board.name) });
+    })()`),
+  );
+  const stillHeard = await player.ev(bedGain);
+  check(
+    "the deck's playlists are hidden from the player's sidebar, and the bed is still heard",
+    listed.visible === false && !listed.inSidebar && stillHeard > 0,
+    { ...listed, stillHeard },
+  );
 
   await gm.ev(`(async () => { const p = globalThis.__sdCues; await p.playSound(p.sounds.contents[0]); return 1; })()`);
   await wait(2500);

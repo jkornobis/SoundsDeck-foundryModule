@@ -106,7 +106,8 @@ export function registerDeck(quench) {
             mode,
             folder: folder?.id ?? null,
             sounds: fx.map((s, i) => ({
-              name: `${name.split(' ').pop()} ${i + 1}`,
+              // Letters, not numbers: "Name 1, Name 2" in a one-shot bank are variants of ONE pad (note 4).
+              name: `${name.split(' ').pop()} ${'ABCDEFGH'[i]}`,
               path: s.path,
               volume: 0.4,
               repeat: mode === M.SIMULTANEOUS,
@@ -1531,6 +1532,48 @@ export function registerDeck(quench) {
           await glock().setFlag(ID, 'event', { on: 'weapon', weapons: 'Glock 17' });
           assert.deepEqual(await E().handle({ rolls: [damage()] }), [generic().id]);
           await shots().stopAll();
+        });
+      });
+
+      describe('a variant pad', function () {
+        this.timeout(40000);
+        let bankOf = null;
+        before(async () => {
+          const folder = game.folders.find((f) => f.type === 'Playlist' && f.name === 'GE-Foundry');
+          const fx = S.sandbox.shots.sounds.contents.map((s) => s.path);
+          bankOf = await Playlist.create({
+            name: '💥 __sd variants',
+            mode: CONST.PLAYLIST_MODES.DISABLED,
+            folder: folder?.id ?? null,
+            sounds: ['Shot 1', 'Shot 2', 'Shot 3'].map((name, i) => ({ name, path: fx[i % fx.length], volume: 0.4 })),
+          });
+          await until(() => bank(bankOf));
+        });
+        after(async () => {
+          await bankOf?.delete();
+        });
+
+        it('three sounds named "Shot 1-3" are one pad "Shot ×3"', () => {
+          const pads = bank(bankOf).querySelectorAll('.sd-pad');
+          assert.lengthOf(pads, 1);
+          assert.include(pads[0].textContent, 'Shot');
+          assert.include(pads[0].textContent, '×3');
+        });
+
+        it('each press plays one of them, never the same twice in a row; the next press stops it', async () => {
+          const pad = () => bank(bankOf).querySelector('.sd-pad');
+          const playing = () => bankOf.sounds.find((s) => s.playing)?.id ?? null;
+          const heard = [];
+          for (let i = 0; i < 4; i++) {
+            pad().click();
+            await until(() => playing());
+            heard.push(playing());
+            pad().click();
+            await until(() => !playing());
+            assert.isNull(playing(), 'the second press did not stop it');
+          }
+          for (let i = 1; i < heard.length; i++)
+            assert.notStrictEqual(heard[i], heard[i - 1], `twice in a row: ${heard}`);
         });
       });
 

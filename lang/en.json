@@ -222,6 +222,11 @@
         "sanityLoss": "Sanity loss",
         "weapon": "A weapon's damage or Lethality roll"
       }
+    },
+    "Variants": "{count} variants: each press plays another",
+    "HideFromPlayers": {
+      "Name": "Hide the deck's playlists from players",
+      "Hint": "A player's playlist sidebar lists every playlist that plays, so the table can read a track's name as it starts. On: beds and banks are not listed to players. They still hear everything."
     }
   }
 }

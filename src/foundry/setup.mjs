@@ -12,6 +12,7 @@ import { installCrossfade } from './crossfade.mjs';
 import { SoundsDeckApp } from './deck-app.mjs';
 import { applyDuck, installDucking } from './ducking.mjs';
 import { installGameEvents } from './events.mjs';
+import { installHideFromPlayers } from './hide.mjs';
 import { installHotbar } from './hotbar.mjs';
 import { registerKeys } from './keys.mjs';
 import { installLateJoin } from './late-join.mjs';
@@ -77,6 +78,16 @@ export function onInit() {
     name: 'SOUNDS_DECK.Combat.AutoName',
     hint: 'SOUNDS_DECK.Combat.AutoHint',
     onChange: rerenderDeckLate,
+  });
+  // The deck's playlists hidden from players (next program, note 5): the table's, so world scope; on by default.
+  game.settings.register(MODULE_ID, 'hideFromPlayers', {
+    scope: 'world',
+    config: true,
+    type: Boolean,
+    default: true,
+    name: 'SOUNDS_DECK.HideFromPlayers.Name',
+    hint: 'SOUNDS_DECK.HideFromPlayers.Hint',
+    onChange: () => ui.playlists?.render(),
   });
   // The deck's accent (theming, 2026-09-25): one GM's screen, so client scope. Foundry's own, a pad colour, or custom.
   const rerenderDeck = () => {
@@ -205,6 +216,8 @@ export function onReady() {
   // Combat music follows the tracker in the gamemaster's page (it acts only when that page is the active GM's).
   // Game-event sounds (next program, note 2): the "Plays on" field for the gamemaster; only the active GM's page plays.
   const events = game.user.isGM ? installGameEvents() : null;
+  // Every client: what a player's sidebar lists is decided in that player's page.
+  const hide = installHideFromPlayers(foundry.documents.Playlist);
   const combat = game.user.isGM
     ? { ...installCombatMusic(), start: startCombatMusic, end: endCombatMusic, toggle: toggleCombatMusic }
     : null;
@@ -228,6 +241,7 @@ export function onReady() {
     hotbar,
     combat,
     events,
+    hide,
     trim,
     lateJoin,
     look,

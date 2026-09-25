@@ -153,6 +153,8 @@ export class SoundsDeckApp extends HandlebarsApplicationMixin(ApplicationV2) {
       pads: b.pads.map((p) => ({
         ...p,
         label: shown(p.name), // what the pad shows; the filter still searches the full name (data-pad-name)
+        // A variant pad says how many it stands for, to a screen reader as well (note 4).
+        variantsLabel: p.count ? game.i18n.format('SOUNDS_DECK.Variants', { count: p.count }) : null,
         description: hide ? null : p.description,
         armed: p.randomizable && isArmed(b.id, p.id),
         // Every pad of a bank that plays can be heard in the GM's ear first (note 3); a disabled bank cannot.

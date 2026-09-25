@@ -126,6 +126,10 @@ deck**, on by default; turn it off to see both on the pads. The filter searches 
   failure, a Sanity loss, or a weapon's damage or Lethality roll - the pad then plays by itself on that roll, for
   everyone, never on a roll the players cannot see. Several pads on one event: a random pick. A weapon can have its own
   pad by name (*Only for weapons named*).
+- **Variant pads.** In a one-shot bank, sounds named alike with a number - *Gunshot 1*, *Gunshot 2*, *Gunshot 3* -
+  are one pad, *Gunshot ×3*: each press plays one of them, never the same twice in a row.
+- **Hidden from players.** Players' playlist sidebar no longer lists the deck's beds and banks while they play, so the
+  table cannot read a track's name as it starts; they still hear everything. A module setting, on by default.
 - **Pick a track.** The ▸ beside a bed's name lists its tracks, numbered in the playlist's own order; a click plays one.
 - **Late joiners hear where the table is.** A player who joins or reloads mid-scene hears the music, loops and events
   where everyone else is, not from the start; and each bed's next track is loaded as soon as the current one starts.
