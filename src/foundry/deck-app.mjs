@@ -31,10 +31,13 @@ import { previewing, stopPreview, togglePreview } from './preview.mjs';
 import { lastRecipients, sendPrivately } from './private.mjs';
 import { arm, armedList, disarm, isArmed } from './random.mjs';
 import { snapshot } from './snapshot.mjs';
+import { applyAccent, cardFor, cardKey, ripple } from './theme.mjs';
 
 export const TEMPLATE_BEDS = 'modules/sounds-deck/templates/beds.hbs';
 export const TEMPLATE_BOARD = 'modules/sounds-deck/templates/board.hbs';
 const MODULE_ID = 'sounds-deck';
+/** The presses that ripple their card: a pad, a bed's play, skip and stop, a mood's recall - not the small switches. */
+const RIPPLE_ACTIONS = new Set(['pad', 'play', 'skip', 'stop', 'moodRecall']);
 
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
 
@@ -185,7 +188,35 @@ export class SoundsDeckApp extends HandlebarsApplicationMixin(ApplicationV2) {
     ]) {
       this.#hooks.push([hook, Hooks.on(hook, rerender)]);
     }
+    // The ripple (theming): a click ripples its card from where it landed - or from the centre, for Enter or Space.
+    // A key, a knob or the hotbar reaches the same card through the press hook, from the centre. The click came first
+    // for the same press, so the hook leaves a card that has just rippled alone.
+    this.element.addEventListener(
+      'click',
+      (event) => {
+        const button = event.target.closest?.('[data-action]');
+        if (!RIPPLE_ACTIONS.has(button?.dataset.action)) return;
+        const card = button.closest('.sd-card');
+        if (!card) return;
+        ripple(this.element, card, event.detail ? { x: event.clientX, y: event.clientY } : null);
+        this.#rippled = { key: cardKey(card), at: performance.now() };
+        // Capture: this runs before the window's own action handler, whose press fires the hook below.
+      },
+      { capture: true },
+    );
+    this.#hooks.push([
+      'soundsDeckPress',
+      Hooks.on('soundsDeckPress', (press) => {
+        const card = cardFor(this.element, press);
+        const recent = this.#rippled && performance.now() - this.#rippled.at < 800;
+        if (!card || (recent && this.#rippled.key === cardKey(card))) return;
+        ripple(this.element, card, null);
+      }),
+    ]);
   }
+
+  /** The card a click just rippled, so the press hook for that same press does not ripple it twice. */
+  #rippled = null;
 
   /** The transport as last drawn, to tell a screen reader what changed since. */
   #lastCues = null;
@@ -238,6 +269,7 @@ export class SoundsDeckApp extends HandlebarsApplicationMixin(ApplicationV2) {
 
   _onRender(context, options) {
     super._onRender(context, options);
+    applyAccent(this.element);
     this.element.classList.toggle('is-vertical', game.settings.get(MODULE_ID, 'layout') === 'vertical');
     this.element.classList.toggle('is-compact', game.settings.get(MODULE_ID, 'density') === 'compact');
     const box = this.element.querySelector('.sd-filter input');

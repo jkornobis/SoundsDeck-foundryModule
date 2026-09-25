@@ -88,6 +88,8 @@ export function registerDeck(quench) {
           crossfade: game.settings.get(ID, 'crossfade'),
           folded: game.settings.get(ID, 'folded'),
           levels: game.settings.get(ID, 'levels'),
+          accent: game.settings.get(ID, 'accent'),
+          accentCustom: game.settings.get(ID, 'accentCustom'),
         };
         const folder = game.folders.find((f) => f.type === 'Playlist' && f.name === 'GE-Foundry');
         const fx = game.playlists.contents
@@ -136,6 +138,8 @@ export function registerDeck(quench) {
         await game.settings.set(ID, 'crossfade', S.seat.crossfade);
         await game.settings.set(ID, 'folded', S.seat.folded);
         await game.settings.set(ID, 'levels', S.seat.levels);
+        await game.settings.set(ID, 'accent', S.seat.accent);
+        await game.settings.set(ID, 'accentCustom', S.seat.accentCustom);
         if (S.activeBefore && !S.activeBefore.active) await S.activeBefore.activate();
       });
 
@@ -1282,6 +1286,55 @@ export function registerDeck(quench) {
             assert.exists(example, key);
             assert.include(text, example);
           }
+        });
+      });
+
+      describe('the look (theming)', function () {
+        this.timeout(20000);
+        const clips = () => S.app.element.querySelectorAll('.sd-ripple-clip').length;
+
+        it("the accent follows the seat: a pad colour, a custom colour with readable text on it, or Foundry's own", async () => {
+          await game.settings.set(ID, 'accent', 'violet');
+          await until(() => S.app.element.dataset.accent === 'violet');
+          assert.strictEqual(S.app.element.dataset.accent, 'violet');
+          await game.settings.set(ID, 'accentCustom', '#1a1a40');
+          await game.settings.set(ID, 'accent', 'custom');
+          await until(() => S.app.element.style.getPropertyValue('--sd-accent') === '#1a1a40');
+          assert.notExists(S.app.element.dataset.accent);
+          assert.strictEqual(S.app.element.style.getPropertyValue('--sd-accent-ink'), '#ffffff');
+          await game.settings.set(ID, 'accent', '');
+          await until(() => !S.app.element.style.getPropertyValue('--sd-accent'));
+          assert.strictEqual(S.app.element.style.getPropertyValue('--sd-accent'), '');
+        });
+
+        it('the window is frosted glass over the scene', () => {
+          assert.include(getComputedStyle(S.app.element).backdropFilter, 'blur');
+        });
+
+        it('a click ripples the card it pressed, once; a key press ripples its card from the centre', async () => {
+          const { shots } = S.sandbox;
+          const snd = shots.sounds.contents[0];
+          const pad = bank(shots).querySelector('.sd-pad');
+          await until(() => clips() === 0, 3000);
+          const r = pad.getBoundingClientRect();
+          pad.dispatchEvent(
+            new MouseEvent('click', { bubbles: true, detail: 1, clientX: r.left + 5, clientY: r.top + 5 }),
+          );
+          await wait(50);
+          assert.strictEqual(clips(), 1, 'a click drew no ripple, or two');
+          await until(() => snd.playing);
+          await until(() => clips() === 0, 3000);
+          assert.strictEqual(clips(), 0, 'the ripple was left behind');
+          // From silence: an earlier test's bed switch can still be settling, and a bed already playing is not pressed.
+          await S.api.actions.stopEverything();
+          await until(() => !game.playlists.some((p) => p.playing));
+          await until(() => clips() === 0, 3000);
+          assert.isTrue(await S.api.actions.playBedNumber(5), 'bed 5 was not pressed');
+          await wait(50);
+          assert.strictEqual(clips(), 1, 'a key press drew no ripple');
+          await S.wrong.stopAll();
+          await shots.stopAll();
+          await until(() => !snd.playing && !S.wrong.playing);
         });
       });
 
