@@ -29,10 +29,37 @@ export function padLook(flag) {
   return { colour, icon };
 }
 
-/** @returns {string[]} the folded banks after one press on a bank's title */
-export function toggleFold(folded, playlistId) {
-  const set = new Set(Array.isArray(folded) ? folded : []);
-  if (set.has(playlistId)) set.delete(playlistId);
-  else set.add(playlistId);
-  return [...set];
+/*
+ * The board's tabs (the Composer, 2026-09-25, replacing the folding of theme 9): one tab per bank. A click on its name
+ * shows that bank alone; its tick adds or removes it, so two or more show at once. The seat stores the banks it HID,
+ * so a bank created later shows by itself. The board is never left empty.
+ */
+
+/** @returns {Array<{ id: string, name: string, shown: boolean }>} */
+export function bankTabs(banks, hidden) {
+  const off = new Set(Array.isArray(hidden) ? hidden : []);
+  const none = banks.every((b) => off.has(b.id)); // everything hidden (a stale list): show everything
+  return banks.map((b) => ({ id: b.id, name: b.name, shown: none || !off.has(b.id) }));
+}
+
+/**
+ * A click on a tab's name: that bank alone - or, when it already shows alone, every bank again.
+ * @returns {string[]} the banks hidden after the click
+ */
+export function soloBank(allIds, hidden, id) {
+  const shown = bankTabs(
+    allIds.map((x) => ({ id: x })),
+    hidden,
+  ).filter((t) => t.shown);
+  if (shown.length === 1 && shown[0].id === id) return [];
+  return allIds.filter((x) => x !== id);
+}
+
+/** A tab's tick: that bank shown or hidden, the others untouched; the last bank showing stays. @returns {string[]} */
+export function tickBank(allIds, hidden, id) {
+  const off = new Set((Array.isArray(hidden) ? hidden : []).filter((x) => allIds.includes(x)));
+  if (off.has(id)) off.delete(id);
+  else off.add(id);
+  if (allIds.every((x) => off.has(x))) return [...(Array.isArray(hidden) ? hidden : [])];
+  return allIds.filter((x) => off.has(x));
 }

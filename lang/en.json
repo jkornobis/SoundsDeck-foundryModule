@@ -158,7 +158,6 @@
       "blue": "Blue",
       "violet": "Violet"
     },
-    "Fold": "Fold or unfold this bank",
     "Private": {
       "Button": "Send {name} to chosen players only",
       "Tooltip": "Only the players you choose hear it, once; you hear it quietly",
@@ -183,6 +182,12 @@
         "violet": "Violet",
         "custom": "Custom"
       }
+    },
+    "Settings": "Settings",
+    "Tabs": {
+      "Label": "Banks shown on the board",
+      "Tick": "Show {name} with the others",
+      "Solo": "Show this bank alone; click again to show them all"
     }
   }
 }

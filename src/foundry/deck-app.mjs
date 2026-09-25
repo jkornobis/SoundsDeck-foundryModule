@@ -20,8 +20,9 @@ import {
 import { matches } from '../core/filter.mjs';
 import { PAD_DRAG } from '../core/hotbar.mjs';
 import { summarise } from '../core/journal.mjs';
+import { onlyStartMark } from '../core/late-join.mjs';
 import { isMuted, setLevel } from '../core/levels.mjs';
-import { toggleFold } from '../core/look.mjs';
+import { bankTabs, soloBank, tickBank } from '../core/look.mjs';
 import { captureMood, isEmptyMood, moodIsOn } from '../core/moods.mjs';
 import { deckName } from '../core/names.mjs';
 import { logPress, playBed, pressPad, stopEverything } from './actions.mjs';
@@ -53,6 +54,7 @@ export class SoundsDeckApp extends HandlebarsApplicationMixin(ApplicationV2) {
         { icon: 'fa-solid fa-table-columns', label: 'SOUNDS_DECK.Layout', action: 'layout' },
         { icon: 'fa-solid fa-table-cells', label: 'SOUNDS_DECK.Density', action: 'density' },
         { icon: 'fa-solid fa-circle-question', label: 'SOUNDS_DECK.Help.Title', action: 'help' },
+        { icon: 'fa-solid fa-gear', label: 'SOUNDS_DECK.Settings', action: 'settings' },
         {
           icon: 'fa-solid fa-file-export',
           label: 'SOUNDS_DECK.Journal.Export',
@@ -71,7 +73,8 @@ export class SoundsDeckApp extends HandlebarsApplicationMixin(ApplicationV2) {
       stop: SoundsDeckApp.#onStop,
       pad: SoundsDeckApp.#onPad,
       preview: SoundsDeckApp.#onPreview,
-      fold: SoundsDeckApp.#onFold,
+      bankSolo: SoundsDeckApp.#onBankSolo,
+      bankTick: SoundsDeckApp.#onBankTick,
       private: SoundsDeckApp.#onPrivate,
       nowStop: SoundsDeckApp.#onNowStop,
       stopAll: SoundsDeckApp.#onStopAll,
@@ -84,6 +87,7 @@ export class SoundsDeckApp extends HandlebarsApplicationMixin(ApplicationV2) {
       density: SoundsDeckApp.#onDensity,
       help: SoundsDeckApp.#onHelp,
       journalExport: SoundsDeckApp.#onJournalExport,
+      settings: SoundsDeckApp.#onSettings,
       moodSave: SoundsDeckApp.#onMoodSave,
       moodRecall: SoundsDeckApp.#onMoodRecall,
       moodDelete: SoundsDeckApp.#onMoodDelete,
@@ -125,10 +129,12 @@ export class SoundsDeckApp extends HandlebarsApplicationMixin(ApplicationV2) {
         next: next ? shown(next.name) : null,
       };
     });
-    const folded = game.settings.get(MODULE_ID, 'folded');
-    context.banks = bankViews(snaps).map((b) => ({
+    const views = bankViews(snaps);
+    context.tabs = bankTabs(views, game.settings.get(MODULE_ID, 'hiddenBanks'));
+    const shownBank = new Set(context.tabs.filter((t) => t.shown).map((t) => t.id));
+    context.banks = views.map((b) => ({
       ...b,
-      folded: folded.includes(b.id), // this seat folded it from its title (theme 9)
+      shown: shownBank.has(b.id), // this seat's tabs show it
       pads: b.pads.map((p) => ({
         ...p,
         label: shown(p.name), // what the pad shows; the filter still searches the full name (data-pad-name)
@@ -177,7 +183,8 @@ export class SoundsDeckApp extends HandlebarsApplicationMixin(ApplicationV2) {
 
   _onFirstRender(context, options) {
     super._onFirstRender(context, options);
-    const rerender = () => this.render({ parts: ['beds', 'board'] });
+    // A start mark (note 2) changes nothing on screen: redrawing for it restarted a loading card's pulse mid-way.
+    const rerender = (_doc, change) => !onlyStartMark(change) && this.render({ parts: ['beds', 'board'] });
     for (const hook of [
       'createPlaylist',
       'updatePlaylist',
@@ -250,9 +257,7 @@ export class SoundsDeckApp extends HandlebarsApplicationMixin(ApplicationV2) {
   /** Hide the pads and banks the filter does not match. Pure matching in core/filter.mjs; this only shows and hides. */
   #applyFilter() {
     for (const bank of this.element?.querySelectorAll('.sd-bank') ?? []) {
-      // A search looks everywhere, folded banks included; clearing it folds them again (theme 9).
-      const pads = bank.querySelector('.sd-pads');
-      if (pads) pads.hidden = bank.dataset.folded === 'true' && !this.#filter;
+      // A search looks in every bank, hidden tabs included; clearing it brings the seat's tabs back.
       const bankName = bank.querySelector('legend')?.textContent ?? '';
       let shown = 0;
       for (const cell of bank.querySelectorAll('.sd-pad-cell')) {
@@ -260,7 +265,7 @@ export class SoundsDeckApp extends HandlebarsApplicationMixin(ApplicationV2) {
         cell.hidden = !hit;
         if (hit) shown++;
       }
-      bank.hidden = shown === 0;
+      bank.hidden = this.#filter ? shown === 0 : bank.dataset.shown !== 'true';
     }
   }
 
@@ -361,6 +366,18 @@ export class SoundsDeckApp extends HandlebarsApplicationMixin(ApplicationV2) {
     super._onClose(options);
   }
 
+  /** The ⋮ menu's Settings: Foundry's own settings window, opened on the deck's section. */
+  static async #onSettings() {
+    const sheet = game.settings.sheet ?? new foundry.applications.settings.SettingsConfig();
+    // Chosen before the window draws, so it opens on the deck's section; an open window switches instead. Switching
+    // right after render() failed once in the live tests: the window had no element yet.
+    if (sheet.rendered) sheet.changeTab(MODULE_ID, 'categories');
+    else {
+      sheet.tabGroups.categories = MODULE_ID;
+      await sheet.render({ force: true });
+    }
+  }
+
   static async #onJournalExport() {
     const entries = game.settings.get(MODULE_ID, 'journalEntries');
     const data = JSON.stringify({ exported: new Date().toISOString(), summary: summarise(entries), entries }, null, 2);
@@ -433,10 +450,25 @@ export class SoundsDeckApp extends HandlebarsApplicationMixin(ApplicationV2) {
     this.#announce([{ kind: 'private', name: `${names} - ${name}` }]);
   }
 
-  /** A bank's title folds or unfolds it, on this seat (theme 9). The setting's change redraws the deck. */
-  static async #onFold(_event, target) {
-    const id = target.closest('[data-playlist-id]')?.dataset.playlistId;
-    if (id) await game.settings.set(MODULE_ID, 'folded', toggleFold(game.settings.get(MODULE_ID, 'folded'), id));
+  /** The board's tabs, on this seat: the ids of every bank a tab stands for. */
+  static #tabIds(target) {
+    return [...target.closest('.sd-tabs').querySelectorAll('.sd-tab')].map((t) => t.dataset.playlistId);
+  }
+
+  /** A tab's name: that bank alone, or every bank again when it already shows alone. The setting redraws the deck. */
+  static async #onBankSolo(_event, target) {
+    const id = target.closest('.sd-tab')?.dataset.playlistId;
+    const hidden = game.settings.get(MODULE_ID, 'hiddenBanks');
+    if (id) await game.settings.set(MODULE_ID, 'hiddenBanks', soloBank(SoundsDeckApp.#tabIds(target), hidden, id));
+  }
+
+  /** A tab's tick: that bank added to what shows, or taken away; the last one showing stays. */
+  static async #onBankTick(_event, target) {
+    const id = target.closest('.sd-tab')?.dataset.playlistId;
+    const hidden = game.settings.get(MODULE_ID, 'hiddenBanks');
+    const next = tickBank(SoundsDeckApp.#tabIds(target), hidden, id);
+    if (id) await game.settings.set(MODULE_ID, 'hiddenBanks', next);
+    target.checked = !next.includes(id); // the last bank showing: the tick does not go off
   }
 
   /** The 🎧 on a pad: hear it in this browser only, before the table does (note 3; the rules are core/preview.mjs). */

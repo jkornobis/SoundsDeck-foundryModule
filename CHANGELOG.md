@@ -5,6 +5,16 @@ Versions follow semver **without pre-release labels** - Foundry's `isNewerVersio
 
 ## 0.6.4 - unreleased
 
+- **Late joiners hear where the table is** (0.7 program, note 2): a player who joins or reloads while a bed, a room
+  loop or an event plays hears it from where everyone else is, not from the start of the track. One-shots, over in
+  seconds, start as usual. **A bed's next track is loaded as soon as the current one starts**, on every machine,
+  instead of Foundry's 20 s before the end, so a track change or a skip does not wait on a slow connection.
+- **The board as tabs**, replacing folding: a tab per bank; its name shows that bank alone (click it again for all),
+  its tick adds or removes it so two or more show at once. Remembered on your seat. A search still looks in every bank.
+- **Settings in the ⋮ menu** of the deck, opening Foundry's settings on the Sounds Deck section.
+- **The accent colour reaches everything**: a button's hover, focus and pressed states and a dragged card now follow
+  it too, where Foundry's own theme colour showed through.
+
 ## 0.6.3 - 2026-09-25
 
 - **A new look.** The deck is frosted glass over the scene, and follows Foundry's light and dark themes. Cards are

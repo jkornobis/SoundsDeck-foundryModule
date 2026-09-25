@@ -86,7 +86,7 @@ export function registerDeck(quench) {
           journalEntries: game.settings.get(ID, 'journalEntries'),
           moods: game.settings.get(ID, 'moods'),
           crossfade: game.settings.get(ID, 'crossfade'),
-          folded: game.settings.get(ID, 'folded'),
+          hiddenBanks: game.settings.get(ID, 'hiddenBanks'),
           levels: game.settings.get(ID, 'levels'),
           accent: game.settings.get(ID, 'accent'),
           accentCustom: game.settings.get(ID, 'accentCustom'),
@@ -136,7 +136,7 @@ export function registerDeck(quench) {
         await game.settings.set(ID, 'journalEntries', S.seat.journalEntries);
         await game.settings.set(ID, 'moods', S.seat.moods);
         await game.settings.set(ID, 'crossfade', S.seat.crossfade);
-        await game.settings.set(ID, 'folded', S.seat.folded);
+        await game.settings.set(ID, 'hiddenBanks', S.seat.hiddenBanks);
         await game.settings.set(ID, 'levels', S.seat.levels);
         await game.settings.set(ID, 'accent', S.seat.accent);
         await game.settings.set(ID, 'accentCustom', S.seat.accentCustom);
@@ -1141,26 +1141,31 @@ export function registerDeck(quench) {
           await pad().unsetFlag(ID, 'look');
         });
 
-        it('a bank folds and unfolds from its title, on this seat; a search still finds pads inside it', async () => {
-          const { cues } = S.sandbox;
-          const pads = () => bank(cues)?.querySelector('.sd-pads');
-          const title = () => bank(cues)?.querySelector('.sd-fold');
-          title().click();
-          await until(() => pads()?.hidden);
-          assert.isTrue(pads().hidden, 'the bank did not fold');
-          assert.strictEqual(title().getAttribute('aria-expanded'), 'false');
-          assert.include(game.settings.get(ID, 'folded'), cues.id);
+        it("a tab's name shows its bank alone, a tick adds another, a search still looks in every bank", async () => {
+          const { cues, loops, shots } = S.sandbox;
+          const tab = (p) => S.app.element.querySelector(`.sd-tab[data-playlist-id="${p.id}"]`);
+          const showing = () =>
+            [...S.app.element.querySelectorAll('.sd-bank')].filter((b) => !b.hidden).map((b) => b.dataset.playlistId);
+          assert.exists(tab(cues), 'no tab for a bank');
+          tab(cues).querySelector('[data-action=bankSolo]').click();
+          await until(() => showing().length === 1);
+          assert.deepEqual(showing(), [cues.id], 'the bank did not show alone');
+          tab(loops).querySelector('[data-action=bankTick]').click();
+          await until(() => showing().length === 2);
+          assert.sameMembers(showing(), [cues.id, loops.id], 'the tick did not add the bank');
           const box = S.app.element.querySelector('.sd-filter input');
-          box.value = 'cues 2';
+          box.value = shots.sounds.contents[0].name;
           box.dispatchEvent(new Event('input'));
-          assert.isFalse(pads().hidden, 'a search did not look inside the folded bank');
+          assert.include(showing(), shots.id, 'a search did not look in a hidden bank');
           box.value = '';
           box.dispatchEvent(new Event('input'));
-          assert.isTrue(pads().hidden, 'clearing the search did not fold it again');
-          title().click();
-          await until(() => pads() && !pads().hidden);
-          assert.isFalse(pads().hidden, 'the bank did not unfold');
-          assert.notInclude(game.settings.get(ID, 'folded'), cues.id);
+          assert.sameMembers(showing(), [cues.id, loops.id], 'clearing the search did not bring the tabs back');
+          tab(cues).querySelector('[data-action=bankTick]').click(); // untick: loops shows alone
+          await until(() => showing().length === 1);
+          assert.deepEqual(showing(), [loops.id]);
+          tab(loops).querySelector('[data-action=bankSolo]').click(); // the name of the bank alone: every bank again
+          await until(() => showing().length > 2);
+          assert.lengthOf(game.settings.get(ID, 'hiddenBanks'), 0, 'a second click did not show every bank');
         });
       });
 
@@ -1289,6 +1294,63 @@ export function registerDeck(quench) {
         });
       });
 
+      describe('late joiners and the next track (0.7, note 2)', function () {
+        this.timeout(60000);
+        const L = () => S.api.lateJoin;
+        const long = () => S.sandbox.cues.sounds.contents[2]; // a 600 s file, loaded whole
+        const marked = (s) => s.getFlag(ID, 'startedAt');
+
+        it('a start records its moment on the sound, in the same update', async () => {
+          const before = game.time.serverTime;
+          await S.sandbox.cues.playSound(long());
+          await until(() => long().playing);
+          assert.isAtLeast(marked(long()), before - 50);
+          assert.isAtMost(marked(long()), game.time.serverTime);
+          await until(() => sounding(long()), 10000);
+        });
+
+        it('a browser that joined after it started comes in where the table is, not at the start', async () => {
+          await wait(5000); // the table is 5 s in
+          const joinedAt = L().joinedAt;
+          L().joinedAt = game.time.serverTime; // this browser "joins" now
+          try {
+            long().sound.stop(); // what a joining browser has: the document playing, no sound of its own
+            await until(() => quiet(long()), 4000);
+            long().sync(); // what Foundry does for it: start the sound
+            await until(() => sounding(long()), 10000);
+            const expected = (game.time.serverTime - marked(long())) / 1000;
+            assert.isAbove(expected, 4.5);
+            assert.closeTo(long().sound.currentTime, expected, 1, 'the late joiner did not come in where the table is');
+          } finally {
+            L().joinedAt = joinedAt;
+          }
+        });
+
+        it('a sound started after this browser joined starts at its beginning, as always', async () => {
+          await S.sandbox.cues.stopAll();
+          await until(() => quiet(long()), 4000);
+          await S.sandbox.cues.playSound(long());
+          await until(() => sounding(long()), 10000);
+          assert.isBelow(long().sound.currentTime, 2);
+          await S.sandbox.cues.stopAll();
+          await until(() => quiet(long()), 4000);
+        });
+
+        it("a bed's next track is loaded as soon as the current one starts, not 20 s before it ends", async () => {
+          await S.board.playAll();
+          await until(() => heardNow(S.board), 20000);
+          const current = S.board.sounds.find((s) => s.playing);
+          const next = S.board._getNextSound(current.id);
+          assert.notStrictEqual(next, current, 'The Board has one track: nothing to load ahead');
+          await until(() => next.sound?.loaded, 20000);
+          assert.isTrue(Boolean(next.sound?.loaded), 'the next track was not loaded ahead');
+          const left = current.sound.duration - current.sound.currentTime;
+          assert.isAbove(left, 25, `only ${left.toFixed(0)} s left: Foundry's own preload could have done it`);
+          await S.board.stopAll();
+          await until(() => !S.board.playing);
+        });
+      });
+
       describe('the look (theming)', function () {
         this.timeout(20000);
         const clips = () => S.app.element.querySelectorAll('.sd-ripple-clip').length;
@@ -1305,6 +1367,37 @@ export function registerDeck(quench) {
           await game.settings.set(ID, 'accent', '');
           await until(() => !S.app.element.style.getPropertyValue('--sd-accent'));
           assert.strictEqual(S.app.element.style.getPropertyValue('--sd-accent'), '');
+        });
+
+        it("with an accent chosen, Foundry's own hover and focus colours follow it: no theme colour left behind", async () => {
+          await game.settings.set(ID, 'accentCustom', '#2060ff');
+          await game.settings.set(ID, 'accent', 'custom');
+          await until(() => S.app.element.classList.contains('sd-accented'));
+          const pad = bank(S.sandbox.shots).querySelector('.sd-pad');
+          const probe = document.createElement('span');
+          pad.append(probe);
+          const resolved = (v) => {
+            probe.style.color = `var(${v})`;
+            return getComputedStyle(probe).color;
+          };
+          try {
+            for (const v of ['--button-hover-background-color', '--button-focus-outline-color', '--color-warm-1']) {
+              assert.strictEqual(resolved(v), 'rgb(32, 96, 255)', `${v} is not the accent`);
+            }
+          } finally {
+            probe.remove();
+            await game.settings.set(ID, 'accent', '');
+          }
+          await until(() => !S.app.element.classList.contains('sd-accented'));
+        });
+
+        it("the ⋮ menu's Settings opens Foundry's settings on the deck's section", async () => {
+          assert.exists(S.app._getHeaderControls().find((c) => c.action === 'settings'));
+          await S.app.options.actions.settings.call(S.app);
+          const sheet = game.settings.sheet;
+          await until(() => sheet.rendered);
+          assert.strictEqual(sheet.tabGroups.categories, ID);
+          await sheet.close();
         });
 
         it('the window is frosted glass over the scene', () => {

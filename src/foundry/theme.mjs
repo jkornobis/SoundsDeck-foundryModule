@@ -19,6 +19,9 @@ export function applyAccent(element) {
   } catch {
     accent = null; // a setting that cannot be read leaves Foundry's own accent
   }
+  // Foundry paints its own hover, focus and pressed states from its theme's accent variables; with an accent chosen,
+  // the stylesheet points those at the deck's accent too (the Composer, 2026-09-25: "I still see some green").
+  element.classList.toggle('sd-accented', Boolean(accent));
   if (accent?.preset) element.dataset.accent = accent.preset;
   else delete element.dataset.accent;
   if (accent?.custom) {

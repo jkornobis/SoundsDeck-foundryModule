@@ -339,20 +339,36 @@
 .sounds-deck .sd-pad-icon {
   font-size: 1.1em;
 }
-/* A bank's title folds it (theme 9): a plain-looking button, with a chevron that turns. */
-.sounds-deck .sd-fold {
-  all: unset;
-  cursor: pointer;
-  font-weight: bold;
+/* The board's tabs (2026-09-25): a name that shows its bank alone, and a tick that adds it. A shown tab is lit in the
+   accent; the strip wraps rather than scrolls, so every bank stays one click away. */
+.sounds-deck .sd-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin: 0 0 0.6rem;
 }
-.sounds-deck .sd-fold::before {
-  content: "▾ ";
+.sounds-deck .sd-tab {
+  display: flex;
+  align-items: center;
+  gap: 0.1rem;
+  padding: 0 0.15rem 0 0.35rem;
+  border: 1px solid color-mix(in srgb, var(--color-border, #36303b) 70%, transparent);
+  border-radius: 999px;
+  background: var(--sd-glass-tint);
 }
-.sounds-deck .sd-fold[aria-expanded="false"]::before {
-  content: "▸ ";
+.sounds-deck .sd-tab input {
+  margin: 0;
 }
-.sounds-deck .sd-fold:focus-visible {
-  outline: 2px solid var(--sd-accent);
+.sounds-deck .sd-tab button {
+  width: auto;
+  border: none;
+  background: transparent;
+  padding: 0 0.5rem 0 0.15rem;
+  white-space: nowrap;
+}
+.sounds-deck .sd-tab.is-shown {
+  border-color: var(--sd-accent);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--sd-accent) 35%, transparent);
 }
 /* The player list of a private sound (0.7, note 1): one tick per line. */
 .sounds-deck-private .sd-private-player {
@@ -389,6 +405,22 @@
 .sounds-deck[data-accent="violet"] {
   --sd-accent: color-mix(in srgb, var(--color-cool-3, #53476b), white 30%);
 }
+/* With an accent chosen, Foundry's own accent variables follow it inside the deck: a button's hover, focus and pressed
+   states, and a dragged card, are painted from these (read from a pad's computed style, 14.368 - they were Foundry's
+   theme green behind a blue accent). Only when chosen: --sd-accent's default IS --color-warm-2, and pointing that back
+   at --sd-accent would be a cycle. The hover text follows the accent's ink, so it stays readable. */
+.sounds-deck.sd-accented {
+  --color-warm-1: var(--sd-accent);
+  --color-warm-2: var(--sd-accent);
+  --color-border-highlight: var(--sd-accent);
+  --color-text-accent: var(--sd-accent);
+}
+.sounds-deck.sd-accented button {
+  --button-hover-background-color: var(--sd-accent);
+  --button-hover-text-color: var(--sd-accent-ink);
+  --button-focus-outline-color: var(--sd-accent);
+}
+
 /* Sliders and ticks take the accent too: Foundry draws its own slider thumb from these two variables. */
 .sounds-deck input[type="range"] {
   --range-thumb-background-color: var(--sd-accent);
