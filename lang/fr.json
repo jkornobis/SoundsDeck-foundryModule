@@ -132,6 +132,17 @@
         "toggle": "Boucles : couper, puis rétablir (molette 2, appuyer)",
         "cue": "Évènements : couper, puis rétablir (molette 3, appuyer)",
         "oneshot": "Effets : couper, puis rétablir (molette 4, appuyer)"
+      },
+      "Track": {
+        "1": "Jouer la piste 1 de la musique en cours",
+        "2": "Jouer la piste 2 de la musique en cours",
+        "3": "Jouer la piste 3 de la musique en cours",
+        "4": "Jouer la piste 4 de la musique en cours",
+        "5": "Jouer la piste 5 de la musique en cours",
+        "6": "Jouer la piste 6 de la musique en cours",
+        "7": "Jouer la piste 7 de la musique en cours",
+        "8": "Jouer la piste 8 de la musique en cours",
+        "9": "Jouer la piste 9 de la musique en cours"
       }
     },
     "PadGone": "Ce pad n'existe plus dans le monde.",
@@ -188,6 +199,7 @@
       "Label": "Banques affichées sur le tableau",
       "Tick": "Afficher {name} avec les autres",
       "Solo": "Afficher cette banque seule ; recliquer pour toutes les afficher"
-    }
+    },
+    "TrackList": "Pistes de {name}"
   }
 }

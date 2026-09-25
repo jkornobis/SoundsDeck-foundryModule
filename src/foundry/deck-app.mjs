@@ -25,7 +25,7 @@ import { isMuted, setLevel } from '../core/levels.mjs';
 import { bankTabs, soloBank, tickBank } from '../core/look.mjs';
 import { captureMood, isEmptyMood, moodIsOn } from '../core/moods.mjs';
 import { deckName } from '../core/names.mjs';
-import { logPress, playBed, pressPad, stopEverything } from './actions.mjs';
+import { logPress, playBed, playTrack, pressPad, stopEverything, tracksOf } from './actions.mjs';
 import { applyDuck } from './ducking.mjs';
 import { recallMood } from './mood-recall.mjs';
 import { previewing, stopPreview, togglePreview } from './preview.mjs';
@@ -38,7 +38,7 @@ export const TEMPLATE_BEDS = 'modules/sounds-deck/templates/beds.hbs';
 export const TEMPLATE_BOARD = 'modules/sounds-deck/templates/board.hbs';
 const MODULE_ID = 'sounds-deck';
 /** The presses that ripple their card: a pad, a bed's play, skip and stop, a mood's recall - not the small switches. */
-const RIPPLE_ACTIONS = new Set(['pad', 'play', 'skip', 'stop', 'moodRecall']);
+const RIPPLE_ACTIONS = new Set(['pad', 'play', 'skip', 'stop', 'moodRecall', 'track']);
 
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
 
@@ -74,6 +74,8 @@ export class SoundsDeckApp extends HandlebarsApplicationMixin(ApplicationV2) {
       pad: SoundsDeckApp.#onPad,
       preview: SoundsDeckApp.#onPreview,
       bankSolo: SoundsDeckApp.#onBankSolo,
+      tracksToggle: SoundsDeckApp.#onTracksToggle,
+      track: SoundsDeckApp.#onTrack,
       bankTick: SoundsDeckApp.#onBankTick,
       private: SoundsDeckApp.#onPrivate,
       nowStop: SoundsDeckApp.#onNowStop,
@@ -122,8 +124,17 @@ export class SoundsDeckApp extends HandlebarsApplicationMixin(ApplicationV2) {
       const playlist = game.playlists.get(b.id);
       const current = b.playing ? playlist?.sounds.find((s) => s.playing)?.id : null;
       const next = current && playlist.sounds.get(nextInOrder(playlist.playbackOrder ?? [], current));
+      const open = this.#openTracks.has(b.id);
       return {
         ...b,
+        tracksOpen: open,
+        // The bed's tracks, numbered as Ctrl+Alt+1...9 reach them - drawn only while the list is open.
+        trackList: open
+          ? tracksOf(playlist).map((id, i) => {
+              const s = playlist.sounds.get(id);
+              return { id, n: i + 1, name: shown(s.name), playing: s.playing };
+            })
+          : null,
         nowPlaying: b.nowPlaying && shown(b.nowPlaying),
         nowPlayingFrom: hide ? null : b.nowPlayingFrom,
         next: next ? shown(next.name) : null,
@@ -448,6 +459,25 @@ export class SoundsDeckApp extends HandlebarsApplicationMixin(ApplicationV2) {
     const names = sent.map((id) => game.users.get(id)?.name).join(', ');
     // biome-ignore lint/complexity/noThisInStatic: ApplicationV2 calls actions with `this` bound to the instance (see #onLayout).
     this.#announce([{ kind: 'private', name: `${names} - ${name}` }]);
+  }
+
+  /** The beds whose track list is open - this window's, not a setting: a list is opened to pick, then closed. */
+  #openTracks = new Set();
+
+  /** The ▾ on a bed: its tracks, numbered, or closed again. */
+  static #onTracksToggle(_event, target) {
+    const id = target.closest('[data-playlist-id]')?.dataset.playlistId;
+    if (!id) return;
+    // biome-ignore lint/complexity/noThisInStatic: ApplicationV2 calls actions with `this` bound to the instance (see #onLayout).
+    if (!this.#openTracks.delete(id)) this.#openTracks.add(id);
+    // biome-ignore lint/complexity/noThisInStatic: as above.
+    this.render({ parts: ['beds'] });
+  }
+
+  /** A track in a bed's list: that track now, crossing over from the bed that plays. */
+  static async #onTrack(_event, target) {
+    const playlist = SoundsDeckApp.#playlistOf(target);
+    await playTrack(playlist, playlist?.sounds.get(target.dataset.soundId));
   }
 
   /** The board's tabs, on this seat: the ids of every bank a tab stands for. */

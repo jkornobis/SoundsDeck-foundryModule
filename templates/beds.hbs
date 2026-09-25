@@ -72,11 +72,21 @@
     {{#each beds}}
     <article class="sd-bed sd-card{{#if playing}} is-playing{{/if}}" data-playlist-id="{{id}}">
       <div class="sd-card-body">
-        <header class="sd-bed-name sd-clamp" data-tooltip="{{name}}">{{name}}</header>
+        <div class="sd-bed-head">
+          <button type="button" class="sd-tracks-toggle" data-action="tracksToggle" aria-expanded="{{#if tracksOpen}}true{{else}}false{{/if}}" aria-label="{{localize 'SOUNDS_DECK.TrackList' name=name}}" data-tooltip="{{localize 'SOUNDS_DECK.TrackList' name=name}}"></button>
+          <header class="sd-bed-name sd-clamp" data-tooltip="{{name}}">{{name}}</header>
+        </div>
         <p class="sd-bed-now sd-clamp" {{#if nowPlayingFrom}}data-tooltip="{{nowPlayingFrom}}"{{/if}}>{{#if playing}}{{nowPlaying}}{{else}}{{localize "SOUNDS_DECK.Tracks" count=tracks}}{{/if}}</p>
         {{#if playing}}
         {{#if next}}<p class="sd-bed-next sd-clamp">{{localize "SOUNDS_DECK.Next" name=next}}</p>{{/if}}
         <div class="sd-bed-time"><span class="sd-bed-clock"></span><div class="sd-bed-progress" role="progressbar" aria-label="{{localize 'SOUNDS_DECK.Progress'}}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><div class="sd-bed-progress-fill"></div></div></div>
+        {{/if}}
+        {{#if tracksOpen}}
+        <ol class="sd-tracks">
+          {{#each trackList}}
+          <li><button type="button" class="sd-track{{#if playing}} is-playing{{/if}}" data-action="track" data-sound-id="{{id}}" {{#if playing}}aria-current="true"{{/if}}><span class="sd-track-n">{{n}}</span> <span class="sd-clamp">{{name}}</span></button></li>
+          {{/each}}
+        </ol>
         {{/if}}
       </div>
       <div class="sd-card-actions">
