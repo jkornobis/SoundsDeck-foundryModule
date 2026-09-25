@@ -13,6 +13,9 @@
  *   Foundry sees as a different key from Digit3 (KeyboardEvent.code), so recording by hand can silently miss;
  * - a dial is a hotkey action holding four key commands: turn left, turn right, press, and one left empty.
  *
+ * A second seed (a standard Stream Deck, 2026-09-25) gave that device's code, 20GBA9901, the Next / Previous page actions
+ * (plugin com.elgato.streamdeck.page, which package.json must then list) and a default page with no dial controller.
+ *
  * PURE: the codes and the manifests. Writing the zip is tools/build-streamdeck.mjs.
  */
 import { createHash } from 'node:crypto';
@@ -94,11 +97,32 @@ export function hotkeyAction(id, title, keys, { dial = false } = {}) {
 }
 
 /**
- * A profile's files, as { path: json }.
- * @param {{ name: string, model: string, pages: Array<{ id: string, keys: Record<string, object>,
- *   dials?: Record<string, object> }> }} p   keys and dials keyed "column,row"
+ * A page key, as a standard Stream Deck needs to reach its other pages (a Stream Deck + swipes its touch strip).
+ * From his second seed (a standard Stream Deck profile, app 7.6): plugin com.elgato.streamdeck.page.
+ * @param {'next' | 'previous'} direction
  */
-export function profileFiles({ name, model, pages }) {
+export function pageAction(direction) {
+  return {
+    ActionID: uuidOf(`action/page-${direction}`),
+    LinkedTitle: true,
+    Name: direction === 'next' ? 'Next Page' : 'Previous Page',
+    Plugin: { Name: 'Pages', UUID: 'com.elgato.streamdeck.page', Version: '1.0' },
+    Resources: null,
+    Settings: {},
+    State: 0,
+    States: [{}],
+    UUID: `com.elgato.streamdeck.page.${direction}`,
+  };
+}
+
+/**
+ * A profile's files, as { path: json }.
+ * @param {{ name: string, model: string, dials?: boolean, pages: Array<{ id: string, keys: Record<string, object>,
+ *   dials?: Record<string, object> }> }} p   keys and dials keyed "column,row"; dials: the device has them
+ */
+export function profileFiles({ name, model, dials = false, pages }) {
+  const used = new Set(pages.flatMap((p) => [...Object.values(p.keys), ...Object.values(p.dials ?? {})]));
+  const plugins = [...new Set([...used].map((a) => a.Plugin.UUID))].sort();
   const profile = uuidOf(`profile/${name}`);
   const blank = uuidOf(`page/${name}/default`);
   const root = `Profiles/${profile.toUpperCase()}.sdProfile`;
@@ -110,7 +134,7 @@ export function profileFiles({ name, model, pages }) {
       FormatVersion: 1,
       OSType: 'Windows',
       OSVersion: '10.0.26200',
-      RequiredPlugins: ['com.elgato.streamdeck.system.hotkey'],
+      RequiredPlugins: plugins,
     },
     [`${root}/manifest.json`]: {
       Device: { Model: model, UUID: '' },
@@ -123,10 +147,7 @@ export function profileFiles({ name, model, pages }) {
       Version: '3.0',
     },
     [`${root}/Profiles/${blank.toUpperCase()}/manifest.json`]: {
-      Controllers: [
-        { Actions: null, Type: 'Keypad' },
-        { Actions: null, Type: 'Encoder' },
-      ],
+      Controllers: [{ Actions: null, Type: 'Keypad' }, ...(dials ? [{ Actions: null, Type: 'Encoder' }] : [])],
       Icon: '',
       Name: '',
     },

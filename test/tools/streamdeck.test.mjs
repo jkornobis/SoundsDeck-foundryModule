@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import { hotkey, hotkeyAction, NO_KEY, profileFiles, uuidOf } from '../../tools/streamdeck.mjs';
+import { hotkey, hotkeyAction, NO_KEY, pageAction, profileFiles, uuidOf } from '../../tools/streamdeck.mjs';
 
 // Copied from the seed profile the Composer exported from his Stream Deck app 7.6 on 2026-09-25.
 const SEED = {
@@ -83,5 +83,23 @@ describe('hotkeyAction and profileFiles - the seed layout', () => {
     assert.equal(files[root].Version, '3.0');
     assert.equal(files[root].Pages.Pages.length, 1);
     assert.ok(paths.every((p) => p === 'package.json' || p.startsWith('Profiles/')));
+  });
+});
+
+describe('pages on a standard Stream Deck - from the second seed', () => {
+  it('Next and Previous page are the page plugin, as his app writes them', () => {
+    assert.equal(pageAction('next').UUID, 'com.elgato.streamdeck.page.next');
+    assert.equal(pageAction('previous').UUID, 'com.elgato.streamdeck.page.previous');
+    assert.deepEqual(pageAction('next').Plugin, { Name: 'Pages', UUID: 'com.elgato.streamdeck.page', Version: '1.0' });
+  });
+  it('a profile that uses page keys requires the page plugin; a device without dials has no dial controller', () => {
+    const files = profileFiles({
+      name: 'S',
+      model: '20GBA9901',
+      pages: [{ id: 'a', keys: { '4,2': pageAction('next') } }],
+    });
+    assert.deepEqual(files['package.json'].RequiredPlugins, ['com.elgato.streamdeck.page']);
+    const blank = Object.entries(files).find(([, j]) => j.Controllers && j.Controllers[0].Actions === null)[1];
+    assert.deepEqual(blank.Controllers, [{ Actions: null, Type: 'Keypad' }]);
   });
 });

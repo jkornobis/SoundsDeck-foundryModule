@@ -5,6 +5,8 @@ Versions follow semver **without pre-release labels** - Foundry's `isNewerVersio
 
 ## 0.6.5 - unreleased
 
+- **A standard Stream Deck profile** (15 keys): beds, moods 1-4, Stop all and Open deck on page 1, the four layers'
+  down, up and mute on page 2, with Next and Previous page keys - built from a second profile exported from the app.
 - **A Stream Deck + profile, ready to import** (`streamdeck/`, and the README's Stream Deck section): beds, moods,
   Stop all, Open deck and tracks on three pages, and the four layer knobs on the dials. Built from a profile exported
   from a real Stream Deck + (app 7.6), key codes included.
