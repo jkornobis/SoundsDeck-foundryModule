@@ -3,6 +3,8 @@
 Versions follow semver **without pre-release labels** - Foundry's `isNewerVersion` does not understand them
 ([Package Best Practices Checklist](https://foundryvtt.wiki/en/development/guides/package-best-practices)).
 
+## 0.6.4 - unreleased
+
 ## 0.6.3 - 2026-09-25
 
 - **A new look.** The deck is frosted glass over the scene, and follows Foundry's light and dark themes. Cards are
