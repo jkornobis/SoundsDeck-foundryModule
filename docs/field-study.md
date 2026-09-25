@@ -135,3 +135,39 @@ its fade-out is stopped when the old fade ends - and **C14763** (open) - `Sound#
 - Late joiner: C8720
 
 137 requests in all. A code like MAE18 is issue 18 on Maestro's tracker; C is Foundry's.
+
+---
+
+# Part 3 - each module's own headline features, against Sounds Deck 0.6.1, 2026-09-25
+
+Part 2 counted what users ASK these modules for. The Composer then asked the other half: *"did we do the key features
+of each?"* This part reads each module's own README - what it says it is for - and sets it against 0.6.1, released the
+same day. Read on GitHub around 12:25 CEST; **nothing was installed**. Soundscape's README points to a wiki for detail,
+which was not read.
+
+✅ the deck does it · ⚠️ partly · ❌ not · ➖ not the deck's job (Foundry's own panel does it, or it is not a board)
+
+| Module | Its headline features | Sounds Deck 0.6.1 |
+|---|---|---|
+| [Maestro](https://github.com/death-save/maestro) | a track per character's combat turn (Hype) · a track when an item is rolled · a combat playlist at the start of a fight · critical and fumble sounds | ❌ all four: the deck is played by hand and never listens to the game |
+| [Monk's Sound Enhancements](https://github.com/ironmonk108/monks-sound-enhancements) | hear a sound privately · a character's sound from the Token HUD, and on its turn · a sound on an item's use · hide sound or playlist names from players · a sound-effects volume · a playlist's sounds listed, dragged, imported selectively | ✅ private preview (note 3) · ❌ character and item sounds · ❌ names hidden from PLAYERS (the deck hides sources on the GM's screen only) · ✅ layer levels · ➖ playlist management |
+| [SoundBoard by Blitz](https://github.com/BlitzKraig/fvtt-SoundBoard) | folders become categories · a "wildcard" button plays a random file of a folder · loop per sound · detune (random pitch) · stop one or all · macros | ✅ banks, loops, stop, hotbar · ❌ **one button, a random pick among variants** · ❌ random pitch |
+| [Soundscape](https://github.com/MaterialFoundry/Soundscape) | several tracks mixed into one scene, volumes on the fly · effects on each channel · a soundboard · several soundscapes to move between · import and export | ✅ loops at their levels, soundboard, moods to move between · ❌ **channel effects (reverb, EQ, pan)** · ❌ exporting moods |
+| [The Sound of Silence](https://github.com/GnollStack/The-Sound-of-Silence) | up to 16 loop sections in a track, broken out of live · equal-power crossfade as a playlist moves from track to track · silence gaps, fixed or random · Soundscape mode: a bed plus occasional sounds with timing, stereo position, overlap cap and groups · GM-only preview · shuffle modes, fade curves, volume normalisation | ⚠️ one trim, no loop sections (theme 7) · ⚠️ crossfade when the BED changes (note 4), **not between tracks inside a bed** · ❌ silence gaps (offered, not chosen) · ⚠️ random one-shots on a timer, **no stereo position, overlap cap or groups** · ✅ preview · ❌ shuffle modes, curves, normalisation |
+| [Moulinette Sounds](https://github.com/SvenWerlen/moulinette-sounds) | index and search a large sound library · play on the fly · build playlists and soundboards from it | ➖ library management · ✅ soundboard |
+| [Maru's Playlist Enhancements](https://github.com/marutypes/FoundryVTT-Maru-Playlist-Enhancements) | play exclusively · stop all | ✅ both |
+| [Soundbrett](https://github.com/xFeirefizx/soundbrett) | folder library · playback kept in sync, **late-joining players catch up** · pause, loop, volume, stop all · favourites, search, tags · **route a sound to everyone, the GM only, or chosen players** · **preload players' buffers** · hotbar drag and drop | ⚠️ playlists as the library · ❌ **late joiners** (Foundry restarts the track, its own C8720) · ✅ controls, search, hotbar · ❌ favourites, tags · ❌ **routing** · ❌ **preloading** |
+| [SoundBard](https://github.com/ongoingpast/Campendium-SoundBard) (he used it, then removed it) | banks of up to 8×8 · a hotkey per slot · search across banks · master volume and reverb · stop all · emoji labels · an open() macro | ✅ banks, search, levels, stop all, icons, Shift+D and api.open · ⚠️ keys for beds, moods and knobs, and number keys for pads put on the hotbar, not one per pad · ❌ reverb |
+
+## What Part 1's tools do that is still open
+
+From Part 1's table, after 0.6.1: **intensity layers** (the same music at low, middle and high tension - Pocket Bard,
+TableTone) ❌ · **stings and transition cues** between moods (Tabletop Audio SoundPad, Audio Forge) ❌ - the crossfade
+exists, a musical sting does not · **fades per category** (Audio Forge) ⚠️ one crossfade setting · **MQTT lighting**
+(Audio Forge) ❌.
+
+## Still open
+
+- **The Auditorium's Nice-to-have list was never written down.** The session log records the five Musts, all built.
+  What remains is rebuilt here from the studies' own tables, not from that list.
+- **READMEs describe; they were not tried.** A module may do less, or more, than its page says.
