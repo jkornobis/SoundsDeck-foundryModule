@@ -3,6 +3,8 @@
 Versions follow semver **without pre-release labels** - Foundry's `isNewerVersion` does not understand them
 ([Package Best Practices Checklist](https://foundryvtt.wiki/en/development/guides/package-best-practices)).
 
+## 0.6.6 - unreleased
+
 ## 0.6.5 - 2026-09-25
 
 - **A standard Stream Deck profile** (15 keys): beds, moods 1-4, Stop all and Open deck on page 1, the four layers'
