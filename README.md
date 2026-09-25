@@ -84,6 +84,8 @@ deck**, on by default; turn it off to see both on the pads. The filter searches 
   Music you picked by hand keeps playing into a scene that has none of its own.
 - **Ducking.** While an event plays, the music drops about 10 dB and comes back by itself - in every player's browser.
   The small speaker on an event's pad turns this off for that event.
+- **See what's coming.** A playing bed names its next track and shows its time; anything you press pulses until it's
+  heard.
 - **Trim a track.** In a sound's settings, under *Fade*, give a *Start* and an *End* in seconds: it plays only that part,
   and a shuffle moves on at its end.
 - **Keyboard shortcuts.** Shift+D opens or closes the deck, Shift+X stops everything, Shift+1…8 plays the bed with that

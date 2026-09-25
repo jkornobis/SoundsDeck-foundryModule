@@ -141,6 +141,8 @@
       "Start": "Début",
       "End": "Fin",
       "Hint": "Ne jouer qu'une partie de cette piste : du Début à la Fin, en secondes (Sounds Deck). Elle s'arrête à la Fin, donc une lecture aléatoire passe à la suivante ; un son en boucle répète cette partie. Vide pour le fichier entier."
-    }
+    },
+    "Next": "Ensuite : {name}",
+    "Progress": "Position dans la piste"
   }
 }

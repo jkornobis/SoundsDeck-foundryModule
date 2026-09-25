@@ -6,7 +6,7 @@
  * changes - whoever changed it, from wherever.
  */
 import { bankViews, nextDensity, nextLayout } from '../core/banks.mjs';
-import { bedCards } from '../core/beds.mjs';
+import { bedCards, nextInOrder } from '../core/beds.mjs';
 import {
   clock,
   LAYERS,
@@ -107,11 +107,18 @@ export class SoundsDeckApp extends HandlebarsApplicationMixin(ApplicationV2) {
     // What the deck shows: with "hide sources" on, no trailing "(…)" and no description - those stay in the sidebar.
     const hide = game.settings.get(MODULE_ID, 'hideSources');
     const shown = (n) => deckName(n, hide);
-    context.beds = bedCards(snaps).map((b) => ({
-      ...b,
-      nowPlaying: b.nowPlaying && shown(b.nowPlaying),
-      nowPlayingFrom: hide ? null : b.nowPlayingFrom,
-    }));
+    context.beds = bedCards(snaps).map((b) => {
+      // What comes after this track (theme 8): the playlist's own playback order, which a playNext follows.
+      const playlist = game.playlists.get(b.id);
+      const current = b.playing ? playlist?.sounds.find((s) => s.playing)?.id : null;
+      const next = current && playlist.sounds.get(nextInOrder(playlist.playbackOrder ?? [], current));
+      return {
+        ...b,
+        nowPlaying: b.nowPlaying && shown(b.nowPlaying),
+        nowPlayingFrom: hide ? null : b.nowPlayingFrom,
+        next: next ? shown(next.name) : null,
+      };
+    });
     context.banks = bankViews(snaps).map((b) => ({
       ...b,
       pads: b.pads.map((p) => ({
@@ -264,6 +271,32 @@ export class SoundsDeckApp extends HandlebarsApplicationMixin(ApplicationV2) {
   }
 
   #tick() {
+    // Pressed but not heard yet (theme 8): a bed card or a pad pulses from the press until its sound is actually
+    // playing - the seconds a large file takes to load, when a press used to look ignored.
+    const heard = (s) => s.sound?.playing && Number.isFinite(s.sound.currentTime);
+    for (const card of this.element?.querySelectorAll('.sd-bed') ?? []) {
+      const playlist = game.playlists.get(card.dataset.playlistId);
+      const loading = Boolean(playlist?.playing) && !playlist.sounds.some((s) => s.playing && heard(s));
+      card.classList.toggle('is-loading', loading);
+      card.setAttribute('aria-busy', String(loading));
+      const sound = playlist?.sounds.find((s) => s.playing && heard(s));
+      const time = card.querySelector('.sd-bed-clock');
+      if (!time) continue;
+      const live = sound?.sound;
+      const at = live ? live.currentTime : 0;
+      const total = live?.duration;
+      time.textContent = live ? `${clock(at)} / ${clock(total)}` : '';
+      const share = live && Number.isFinite(total) && total > 0 ? Math.min(100, (100 * at) / total) : 0;
+      card.querySelector('.sd-bed-progress-fill').style.width = `${share}%`;
+      card.querySelector('.sd-bed-progress').setAttribute('aria-valuenow', String(Math.round(share)));
+    }
+    for (const pad of this.element?.querySelectorAll('.sd-pad[data-sound-id]') ?? []) {
+      const playlist = game.playlists.get(pad.closest('[data-playlist-id]')?.dataset.playlistId);
+      const sound = playlist?.sounds.get(pad.dataset.soundId);
+      const loading = Boolean(sound?.playing) && !heard(sound);
+      pad.classList.toggle('is-loading', loading);
+      pad.setAttribute('aria-busy', String(loading));
+    }
     for (const row of this.element?.querySelectorAll('.sd-cue') ?? []) {
       const sound = game.playlists.get(row.dataset.playlistId)?.sounds.get(row.dataset.soundId);
       const live = sound?.sound;

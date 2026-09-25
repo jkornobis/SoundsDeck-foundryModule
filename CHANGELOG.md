@@ -5,6 +5,10 @@ Versions follow semver **without pre-release labels** - Foundry's `isNewerVersio
 
 ## 0.6.1 - unreleased
 
+- **Transport for beds** (theme 8): a pressed bed or pad pulses until it is actually heard, so a large track
+  loading no longer looks like a press that was ignored (a still outline instead, when the system asks for less
+  motion). A playing bed names the track that comes next, from the playlist's own order, and shows its elapsed and
+  total time with a thin progress line.
 - **Trim a track** (theme 7): *Start* and *End*, in seconds, in a sound's own settings under *Fade*. The track
   plays from its start and ends at its end, so a shuffle bed moves on; a track that does not repeat fades out before
   its end over its own fade, and a repeating sound repeats the trimmed part. Precise for files up to 10 minutes,

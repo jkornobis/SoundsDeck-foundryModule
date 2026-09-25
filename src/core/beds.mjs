@@ -54,3 +54,17 @@ function leadingNumber(name) {
 export function bedNumbered(cards, n) {
   return cards.find((c) => leadingNumber(c.name) === n) ?? null;
 }
+
+/**
+ * The track a playing bed moves to next (0.6, theme 8): the one after it in the playlist's own playback order - which
+ * Foundry keeps for a shuffle until the playlist is started or stopped again (playlists-and-audio.md) - and the first
+ * again after the last.
+ * @param {string[]} order  sound ids, in playback order
+ * @param {string | null} currentId
+ * @returns {string | null}
+ */
+export function nextInOrder(order, currentId) {
+  if (!currentId || order.length < 2) return null;
+  const i = order.indexOf(currentId);
+  return i < 0 ? null : order[(i + 1) % order.length];
+}
