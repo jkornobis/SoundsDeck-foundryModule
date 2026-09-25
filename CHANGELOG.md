@@ -5,6 +5,11 @@ Versions follow semver **without pre-release labels** - Foundry's `isNewerVersio
 
 ## 0.6.6 - unreleased
 
+- **Vertical layout**: Now playing, Moods and Music sit side by side, with the pads right under them - stacked, they
+  pushed the pads out of sight and stretched the sliders across the window.
+- **Accessibility**, from a UX/UI QA pass measured in both themes: 24 px targets for the track toggle and the tab
+  ticks, a focus ring on the level sliders and the ticks, a readable search hint, and headings in order.
+
 ## 0.6.5 - 2026-09-25
 
 - **A standard Stream Deck profile** (15 keys): beds, moods 1-4, Stop all and Open deck on page 1, the four layers'
