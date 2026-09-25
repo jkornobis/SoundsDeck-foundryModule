@@ -15,7 +15,7 @@
   {{/if}}
   {{#each banks}}
   <fieldset class="sd-bank sd-press-{{press}}" data-playlist-id="{{id}}" data-shown="{{#if shown}}true{{else}}false{{/if}}" {{#unless shown}}hidden{{/unless}} {{#unless press}}disabled{{/unless}}>
-    <legend class="sd-bank-title">{{name}}</legend>
+    <legend class="sd-bank-title" role="heading" aria-level="3">{{name}}</legend>
     <div class="sd-pads">
       {{#each pads}}
       <div class="sd-pad-cell sd-card{{#if playing}} is-playing{{/if}}{{#if colour}} sd-colour sd-colour-{{colour}}{{/if}}" data-pad-name="{{name}}">

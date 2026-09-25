@@ -157,11 +157,6 @@
   align-items: center;
   justify-content: space-between;
 }
-.sounds-deck .sd-now-head h3 {
-  margin: 0;
-  border: none;
-  font-size: var(--font-size-14, 0.9rem);
-}
 .sounds-deck .sd-stop-all {
   width: auto;
   flex: 0 0 auto;
@@ -363,6 +358,8 @@
 }
 .sounds-deck .sd-tab input {
   margin: 0;
+  width: 24px; /* measured 18 x 18 in the UX/UI QA pass; WCAG 2.2 asks 24 */
+  height: 24px;
 }
 .sounds-deck .sd-tab button {
   width: auto;
@@ -423,7 +420,14 @@
 .sounds-deck .sd-tracks-toggle {
   all: unset;
   cursor: pointer;
-  width: 1em;
+  /* 24 px: the smallest target WCAG 2.2 (2.5.8) allows - it measured 14 x 18 in the UX/UI QA pass */
+  flex: 0 0 24px;
+  width: 24px;
+  height: 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin: -4px 0 -4px -6px;
 }
 .sounds-deck .sd-tracks-toggle::before {
   content: "▸";
@@ -598,4 +602,18 @@
   .sounds-deck .sd-ripple-clip {
     display: none;
   }
+}
+
+/* UX/UI QA pass (2026-09-25), measured in the live page:
+   - a keyboard user saw no focus ring on the four level sliders and the tabs' ticks - Foundry removes the outline of
+     a range input on focus (input[type="range"]:focus { outline: none }, core stylesheet);
+   - the search box's placeholder measured 3.9:1 in the dark theme and 2.3:1 in the light one, under the 4.5:1 minimum. */
+.sounds-deck input[type="range"]:focus-visible,
+.sounds-deck .sd-tab input:focus-visible {
+  outline: 2px solid var(--sd-accent);
+  outline-offset: 2px;
+}
+.sounds-deck .sd-filter input::placeholder {
+  color: color-mix(in srgb, currentColor 82%, transparent);
+  opacity: 1;
 }
