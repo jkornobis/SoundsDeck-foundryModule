@@ -3,6 +3,8 @@
 Versions follow semver **without pre-release labels** - Foundry's `isNewerVersion` does not understand them
 ([Package Best Practices Checklist](https://foundryvtt.wiki/en/development/guides/package-best-practices)).
 
+## 0.6.7 - unreleased
+
 ## 0.6.6 - 2026-09-25
 
 - **Variant pads** (next program, note 4): in a one-shot bank, *Gunshot 1*, *Gunshot 2*, *Gunshot 3* are one pad,

@@ -2,7 +2,7 @@
   "id": "sounds-deck",
   "title": "Sounds Deck",
   "description": "A deck over Foundry's own playlists: numbered playlists are music, playlists whose name starts with an emoji are banks of pads (one-shots, loops, events). The music ducks under events and follows the scene. No second store: every sound stays a core PlaylistSound.",
-  "version": "0.6.6",
+  "version": "0.6.7",
   "compatibility": {
     "minimum": "14",
     "verified": "14.368"
