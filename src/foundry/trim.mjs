@@ -18,7 +18,7 @@ import { trimOf } from '../core/trim.mjs';
 const MODULE_ID = 'sounds-deck';
 
 /** The PlaylistSound a Sound plays for, if any. */
-function ownerOf(sound) {
+export function ownerOf(sound) {
   for (const playlist of game.playlists) for (const s of playlist.sounds) if (s.sound === sound) return s;
   return null;
 }

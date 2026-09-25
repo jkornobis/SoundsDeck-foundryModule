@@ -29,6 +29,15 @@ const ROOT = path.resolve(new URL('..', import.meta.url).pathname);
 const FILES = ['src/core/classify.mjs', 'src/core/cues.mjs', 'src/foundry/snapshot.mjs', 'src/foundry/ducking.mjs'];
 // The private sender (0.7, note 1) runs in the GAMEMASTER's page: its working copy, whatever release is installed.
 const GM_FILES = ['src/core/classify.mjs', 'src/core/cues.mjs', 'src/core/private.mjs', 'src/foundry/private.mjs'];
+// Late joiners (0.7, note 2): the gamemaster marks a start, the player's page catches up - both the working copy.
+const LATE_FILES = [
+  'src/core/classify.mjs',
+  'src/core/cues.mjs',
+  'src/core/late-join.mjs',
+  'src/core/trim.mjs',
+  'src/foundry/trim.mjs',
+  'src/foundry/late-join.mjs',
+];
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 
 const cred = Object.fromEntries(
@@ -54,6 +63,14 @@ async function blobbable(files) {
 }
 const mods = await blobbable(FILES);
 const gmMods = await blobbable(GM_FILES);
+const lateMods = await blobbable(LATE_FILES);
+const loadLateJoin = (global) => `(async () => {
+  const urls = {};
+  for (const [file, src] of ${JSON.stringify(lateMods)}) urls[file] = URL.createObjectURL(new Blob([src.replace(/__MOD__(.+?)__/g, (_m, f) => urls[f])], { type: 'text/javascript' }));
+  const { installLateJoin } = await import(urls['src/foundry/late-join.mjs']);
+  globalThis.${global} = installLateJoin({ Sound: foundry.audio.Sound, Playlist: foundry.documents.Playlist });
+  return globalThis.${global}.installed;
+})()`;
 
 const getJson = (p) =>
   new Promise((res, rej) =>
@@ -231,6 +248,41 @@ try {
     leaked = await player.ev(heard(elsewhere));
   }
   check('a sound sent to someone else does not reach the seat', !leaked);
+
+  // ---- a late joiner (0.7, note 2): the bed starts, the seat reloads 10 s later, and comes in where the table is
+  await gm.ev(
+    `(async () => { for (const p of game.playlists.filter((x) => x.playing)) await p.stopAll(); return 1; })()`,
+  );
+  await wait(1500);
+  await gm.ev(loadLateJoin('__sdGmLateJoin'));
+  await gm.ev(`(async () => { await game.playlists.getName('8 · The Board').playAll(); return 1; })()`);
+  const bedAt = `(() => { const s = game.playlists.getName('8 · The Board').sounds.find((x) => x.playing); return s?.sound?.playing && Number.isFinite(s.sound.currentTime) ? +s.sound.currentTime.toFixed(2) : null; })()`;
+  let gmAt = null;
+  for (let i = 0; i < 40 && gmAt === null; i++) {
+    await wait(500);
+    gmAt = await gm.ev(bedAt);
+  }
+  await wait(10000); // the table is 10 s into the track
+  await player.send('Page.reload', {});
+  let rejoined = false;
+  for (let i = 0; i < 60 && !rejoined; i++) {
+    await wait(1000);
+    rejoined = await player.ev('!!globalThis.game?.ready').catch(() => false);
+  }
+  const silentBefore = (await player.ev(bedAt)) === null; // locked until a gesture: nothing plays yet
+  const installed = rejoined && (await player.ev(loadLateJoin('__sdLateJoin')));
+  await unlockAudio(player);
+  let seatAt = null;
+  for (let i = 0; i < 40 && seatAt === null; i++) {
+    await wait(500);
+    seatAt = await player.ev(bedAt);
+  }
+  const tableAt = await gm.ev(bedAt);
+  check(
+    'a player who joins late hears the bed where the table is, not from its start',
+    installed && silentBefore && seatAt !== null && tableAt !== null && seatAt > 8 && Math.abs(seatAt - tableAt) < 1.5,
+    { tableAt, seatAt, silentBefore, installed },
+  );
 } catch (e) {
   check('no exception', false, String(e?.stack ?? e).slice(0, 400));
 } finally {
@@ -238,6 +290,7 @@ try {
     .ev(`(async () => {
       for (const p of game.playlists.filter((x) => x.playing)) await p.stopAll();
       for (const s of game.audio.playing.values()) if (s.src.startsWith('ge-foundry/fx/')) s.stop();
+      globalThis.__sdGmLateJoin?.uninstall(); delete globalThis.__sdGmLateJoin;
       await globalThis.__sdCues?.delete(); delete globalThis.__sdCues;
       return 1;
     })()`)

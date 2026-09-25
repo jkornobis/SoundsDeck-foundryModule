@@ -158,7 +158,6 @@
       "blue": "Bleu",
       "violet": "Violet"
     },
-    "Fold": "Replier ou déplier cette banque",
     "Private": {
       "Button": "Envoyer {name} aux seuls joueurs choisis",
       "Tooltip": "Seuls les joueurs choisis l'entendent, une fois ; vous l'entendez doucement",
@@ -183,6 +182,12 @@
         "violet": "Violet",
         "custom": "Personnalisée"
       }
+    },
+    "Settings": "Paramètres",
+    "Tabs": {
+      "Label": "Banques affichées sur le tableau",
+      "Tick": "Afficher {name} avec les autres",
+      "Solo": "Afficher cette banque seule ; recliquer pour toutes les afficher"
     }
   }
 }

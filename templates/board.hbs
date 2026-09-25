@@ -3,11 +3,19 @@
   <search class="sd-filter">
     <input type="search" name="filter" placeholder="{{localize 'SOUNDS_DECK.Filter'}}" aria-label="{{localize 'SOUNDS_DECK.Filter'}}" autocomplete="off">
   </search>
+  <div class="sd-tabs" role="group" aria-label="{{localize 'SOUNDS_DECK.Tabs.Label'}}">
+    {{#each tabs}}
+    <div class="sd-tab{{#if shown}} is-shown{{/if}}" data-playlist-id="{{id}}">
+      <input type="checkbox" data-action="bankTick" {{#if shown}}checked{{/if}} aria-label="{{localize 'SOUNDS_DECK.Tabs.Tick' name=name}}" data-tooltip="{{localize 'SOUNDS_DECK.Tabs.Tick' name=name}}">
+      <button type="button" data-action="bankSolo" aria-pressed="{{#if shown}}true{{else}}false{{/if}}" data-tooltip="{{localize 'SOUNDS_DECK.Tabs.Solo'}}">{{name}}</button>
+    </div>
+    {{/each}}
+  </div>
   {{/if}}
   {{#each banks}}
-  <fieldset class="sd-bank sd-press-{{press}}" data-playlist-id="{{id}}" data-folded="{{#if folded}}true{{else}}false{{/if}}" {{#unless press}}disabled{{/unless}}>
-    <legend><button type="button" class="sd-fold" data-action="fold" aria-expanded="{{#if folded}}false{{else}}true{{/if}}" data-tooltip="{{localize 'SOUNDS_DECK.Fold'}}">{{name}}</button></legend>
-    <div class="sd-pads"{{#if folded}} hidden{{/if}}>
+  <fieldset class="sd-bank sd-press-{{press}}" data-playlist-id="{{id}}" data-shown="{{#if shown}}true{{else}}false{{/if}}" {{#unless shown}}hidden{{/unless}} {{#unless press}}disabled{{/unless}}>
+    <legend>{{name}}</legend>
+    <div class="sd-pads">
       {{#each pads}}
       <div class="sd-pad-cell sd-card{{#if playing}} is-playing{{/if}}{{#if colour}} sd-colour sd-colour-{{colour}}{{/if}}" data-pad-name="{{name}}">
         <button type="button" class="sd-pad" data-action="pad" data-sound-id="{{id}}" {{#if pressed}}aria-pressed="{{pressed}}"{{/if}} aria-label="{{label}}" data-tooltip="{{label}}{{#if description}}<br>{{description}}{{/if}}" {{#if description}}aria-description="{{description}}"{{/if}}><span class="sd-clamp">{{#if icon}}<span class="sd-pad-icon" aria-hidden="true">{{icon}}</span> {{/if}}{{label}}</span></button>

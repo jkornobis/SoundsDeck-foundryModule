@@ -12,6 +12,7 @@ import { SoundsDeckApp } from './deck-app.mjs';
 import { applyDuck, installDucking } from './ducking.mjs';
 import { installHotbar } from './hotbar.mjs';
 import { registerKeys } from './keys.mjs';
+import { installLateJoin } from './late-join.mjs';
 import { installLookFields } from './look.mjs';
 import { previewing, previewSound, stopPreview, togglePreview } from './preview.mjs';
 import { sendPrivately } from './private.mjs';
@@ -34,8 +35,9 @@ export function onInit() {
     type: String,
     default: 'comfortable',
   });
-  // The banks this seat folded (theme 9): one GM's screen, not the table's, so client scope.
-  game.settings.register(MODULE_ID, 'folded', {
+  // The banks this seat hid with the board's tabs (2026-09-25, replacing theme 9's folding): one GM's screen, not the
+  // table's, so client scope. Stored as the HIDDEN ones, so a bank created later shows by itself.
+  game.settings.register(MODULE_ID, 'hiddenBanks', {
     scope: 'client',
     config: false,
     type: Array,
@@ -160,6 +162,10 @@ export function onReady() {
   // Trimmed tracks (theme 7): every client plays its own copy, so every client trims it.
   const trim = installTrim(foundry.audio.Sound);
   if (!trim.installed) console.info(`${MODULE_ID} | trim not installed: ${trim.reason}`);
+  // Late joiners (0.7, note 2): every client marks the starts it makes, and catches up what started before it
+  // joined; every client loads a bed's next track. Installed after the trim, so it wraps the trimmed play.
+  const lateJoin = installLateJoin({ Sound: foundry.audio.Sound, Playlist: foundry.documents.Playlist });
+  if (!lateJoin.installed) console.info(`${MODULE_ID} | late joiners not installed: ${lateJoin.reason}`);
   // A pad's colour and icon, in its sound's settings (theme 9).
   const look = installLookFields();
   // A pad dragged onto the hotbar becomes a button (theme 6) - the gamemaster's, as the deck is.
@@ -174,6 +180,7 @@ export function onReady() {
     actions,
     hotbar,
     trim,
+    lateJoin,
     look,
     sceneFix,
     sceneMood,
