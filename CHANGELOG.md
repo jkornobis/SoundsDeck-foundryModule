@@ -3,7 +3,7 @@
 Versions follow semver **without pre-release labels** - Foundry's `isNewerVersion` does not understand them
 ([Package Best Practices Checklist](https://foundryvtt.wiki/en/development/guides/package-best-practices)).
 
-## 0.6.4 - unreleased
+## 0.6.4 - 2026-09-25
 
 - **Late joiners hear where the table is** (0.7 program, note 2): a player who joins or reloads while a bed, a room
   loop or an event plays hears it from where everyone else is, not from the start of the track. One-shots, over in
