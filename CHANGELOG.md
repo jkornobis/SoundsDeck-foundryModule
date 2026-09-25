@@ -5,6 +5,10 @@ Versions follow semver **without pre-release labels** - Foundry's `isNewerVersio
 
 ## 0.6.6 - unreleased
 
+- **Sounds on game events** (next program, note 2), for Delta Green: *Plays on* in a bank sound's settings - critical
+  success, critical failure, Sanity loss, a weapon's damage or Lethality roll. Everyone hears it; a whispered or blind
+  roll plays nothing; several pads on one event are a random pick; a weapon can have its own pad by name.
+
 - **Combat music** (next program, note 1): choose a combat mood with ⚔ on a mood card. A fight's first round brings it;
   ending the fight brings back what played before, the music resuming where it left off, with the deck's crossfade.
   The ⚔ in the Moods header and Shift+F start or end it by hand; a *Follow the tracker* switch turns the automatic

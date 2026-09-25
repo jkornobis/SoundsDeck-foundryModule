@@ -122,6 +122,10 @@ deck**, on by default; turn it off to see both on the pads. The filter searches 
 - **Combat music.** Choose a *combat mood* with ⚔ on a mood card. When a fight's first round begins, it plays; when the
   fight ends, what played before comes back, the music resuming where it left off. The ⚔ in the Moods header (or
   Shift+F) starts or ends it by hand, and its *Follow the tracker* switch turns the automatic part off.
+- **Sounds on game events** (Delta Green). In a bank sound's settings, *Plays on*: a critical success, a critical
+  failure, a Sanity loss, or a weapon's damage or Lethality roll - the pad then plays by itself on that roll, for
+  everyone, never on a roll the players cannot see. Several pads on one event: a random pick. A weapon can have its own
+  pad by name (*Only for weapons named*).
 - **Pick a track.** The ▸ beside a bed's name lists its tracks, numbered in the playlist's own order; a click plays one.
 - **Late joiners hear where the table is.** A player who joins or reloads mid-scene hears the music, loops and events
   where everyone else is, not from the start; and each bed's next track is loaded as soon as the current one starts.

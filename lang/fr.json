@@ -211,6 +211,17 @@
       "Use": "Utiliser cette ambiance pour les combats",
       "IsCombat": "C'est l'ambiance de combat - cliquer pour la retirer",
       "Auto": "Suivre le combat"
+    },
+    "Events": {
+      "Label": "Joue sur",
+      "Weapons": "Seulement pour les armes nommées",
+      "Hint": "Ce pad joue tout seul sur ce jet de Delta Green, pour tout le monde - jamais sur un jet que les joueurs ne voient pas. Plusieurs pads sur un même évènement : un tirage au hasard. Pour une arme, nommez les armes concernées (séparées par des virgules), ou laissez vide pour toutes.",
+      "On": {
+        "critSuccess": "Réussite critique",
+        "critFailure": "Échec critique",
+        "sanityLoss": "Perte de SAN",
+        "weapon": "Jet de dégâts ou de Létalité d'une arme"
+      }
     }
   }
 }

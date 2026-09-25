@@ -11,6 +11,7 @@ import { endCombatMusic, installCombatMusic, startCombatMusic, toggleCombatMusic
 import { installCrossfade } from './crossfade.mjs';
 import { SoundsDeckApp } from './deck-app.mjs';
 import { applyDuck, installDucking } from './ducking.mjs';
+import { installGameEvents } from './events.mjs';
 import { installHotbar } from './hotbar.mjs';
 import { registerKeys } from './keys.mjs';
 import { installLateJoin } from './late-join.mjs';
@@ -202,6 +203,8 @@ export function onReady() {
   // A pad dragged onto the hotbar becomes a button (theme 6) - the gamemaster's, as the deck is.
   const hotbar = game.user.isGM ? installHotbar() : null;
   // Combat music follows the tracker in the gamemaster's page (it acts only when that page is the active GM's).
+  // Game-event sounds (next program, note 2): the "Plays on" field for the gamemaster; only the active GM's page plays.
+  const events = game.user.isGM ? installGameEvents() : null;
   const combat = game.user.isGM
     ? { ...installCombatMusic(), start: startCombatMusic, end: endCombatMusic, toggle: toggleCombatMusic }
     : null;
@@ -224,6 +227,7 @@ export function onReady() {
     actions,
     hotbar,
     combat,
+    events,
     trim,
     lateJoin,
     look,

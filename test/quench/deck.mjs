@@ -1468,6 +1468,72 @@ export function registerDeck(quench) {
         });
       });
 
+      describe('game-event sounds', function () {
+        this.timeout(40000);
+        const E = () => S.api.events;
+        const shots = () => S.sandbox.shots;
+        const [crit, generic, glock] = [0, 1, 2].map((i) => () => shots().sounds.contents[i]);
+        const R = (name) => CONFIG.Dice.rolls.find((r) => r.name === name);
+        const agent = () => game.actors.find((a) => a.type === 'agent');
+        const weapon = () =>
+          game.items.find((i) => i.type === 'weapon') ??
+          game.actors.contents.flatMap((a) => a.items.contents).find((i) => i.type === 'weapon');
+        /** A roll as it comes back from a chat message, built in this page only - nothing is posted. */
+        const percentile = async (total) => {
+          const r = new (R('DGPercentileRoll'))('1d100', {}, { rollType: 'skill', key: 'firearms', actor: agent() });
+          await r.evaluate();
+          r.terms[0].results[0].result = total;
+          r._total = total;
+          return foundry.dice.Roll.fromData(r.toJSON());
+        };
+        const damage = () =>
+          foundry.dice.Roll.fromData(
+            new (R('DGDamageRoll'))('1d6', {}, { rollType: 'damage', item: weapon(), actor: weapon().actor }).toJSON(),
+          );
+
+        before(function () {
+          if (!R('DGPercentileRoll') || !agent() || !weapon()) this.skip(); // Delta Green's rolls, an agent and a weapon
+        });
+        after(async () => {
+          for (const s of shots().sounds.contents) await s.unsetFlag(ID, 'event');
+          await shots().stopAll();
+        });
+
+        it('a bank sound\'s settings offer "Plays on" under its colour and icon, and saving stores it', async () => {
+          const sheet = crit().sheet;
+          await sheet.render({ force: true });
+          await until(() => sheet.element?.querySelector('[name="flags.sounds-deck.event.on"]'));
+          const select = sheet.element.querySelector('[name="flags.sounds-deck.event.on"]');
+          assert.exists(select, 'no Plays on field');
+          const look = sheet.element.querySelector('[name="flags.sounds-deck.look.colour"]').closest('.form-group');
+          assert.strictEqual(look.nextElementSibling, select.closest('.form-group'), 'not right under the look');
+          select.value = 'critSuccess';
+          await sheet.submit();
+          await until(() => crit().getFlag(ID, 'event')?.on === 'critSuccess');
+          assert.strictEqual(crit().getFlag(ID, 'event').on, 'critSuccess');
+          await sheet.close();
+        });
+
+        it('a critical success plays its pad; a plain roll and a whispered critical play nothing', async () => {
+          assert.deepEqual(await E().handle({ rolls: [await percentile(45)] }), []);
+          assert.deepEqual(await E().handle({ rolls: [await percentile(11)], whisper: ['gm'] }), []);
+          assert.deepEqual(await E().handle({ rolls: [await percentile(11)] }), [crit().id]);
+          await until(() => crit().playing);
+          assert.isTrue(crit().playing, 'the pad did not play');
+          await shots().stopAll();
+          await until(() => !crit().playing);
+        });
+
+        it("a weapon's own pad answers it; another weapon plays the pad for any weapon", async () => {
+          await generic().setFlag(ID, 'event', { on: 'weapon', weapons: '' });
+          await glock().setFlag(ID, 'event', { on: 'weapon', weapons: `${weapon().name}, Glock 17` });
+          assert.deepEqual(await E().handle({ rolls: [damage()] }), [glock().id]);
+          await glock().setFlag(ID, 'event', { on: 'weapon', weapons: 'Glock 17' });
+          assert.deepEqual(await E().handle({ rolls: [damage()] }), [generic().id]);
+          await shots().stopAll();
+        });
+      });
+
       describe('the look (theming)', function () {
         this.timeout(20000);
         const clips = () => S.app.element.querySelectorAll('.sd-ripple-clip').length;
@@ -1518,6 +1584,10 @@ export function registerDeck(quench) {
           const sheet = game.settings.sheet;
           await until(() => sheet.rendered);
           assert.strictEqual(sheet.tabGroups.categories, ID);
+          // Measured 2026-09-25 (issue #72): Foundry's settings window runs its search filter a moment after it opens
+          // (SettingsConfig#_onSearchFilter, debounced); closed within that moment, the filter finds no window and
+          // throws - Foundry's race, which Mocha then blamed on this test. So the window is left open past it.
+          await wait(800);
           await sheet.close();
         });
 
