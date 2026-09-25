@@ -15,6 +15,7 @@ import { previewing, previewSound, stopPreview, togglePreview } from './preview.
 import { installSceneBedFix } from './scene-bed-fix.mjs';
 import { installSceneMood } from './scene-mood.mjs';
 import { installSilentStartFix } from './silent-start-fix.mjs';
+import { installTrim } from './trim.mjs';
 
 export const MODULE_ID = 'sounds-deck';
 
@@ -120,11 +121,27 @@ export function onReady() {
   if (!crossfade.installed) console.info(`${MODULE_ID} | crossfade not installed: ${crossfade.reason}`);
   // The GM's-ear preview (note 3), reachable from a macro as well as from the pads' headphones.
   const preview = { previewing, sound: previewSound, stop: stopPreview, toggle: togglePreview };
+  // Trimmed tracks (theme 7): every client plays its own copy, so every client trims it.
+  const trim = installTrim(foundry.audio.Sound);
+  if (!trim.installed) console.info(`${MODULE_ID} | trim not installed: ${trim.reason}`);
   // A pad dragged onto the hotbar becomes a button (theme 6) - the gamemaster's, as the deck is.
   const hotbar = game.user.isGM ? installHotbar() : null;
   // What a key, a knob or a hotbar macro reaches: the same actions the deck's own buttons call.
   const actions = { playBedNumber, recallMoodAt, stopEverything, nudge, muteToggle, toggleDeck };
-  return { open: openDeck, press, keys, actions, hotbar, sceneFix, sceneMood, ducking, silentFix, preview, crossfade };
+  return {
+    open: openDeck,
+    press,
+    keys,
+    actions,
+    hotbar,
+    trim,
+    sceneFix,
+    sceneMood,
+    ducking,
+    silentFix,
+    preview,
+    crossfade,
+  };
 }
 
 let deck = null;

@@ -98,6 +98,7 @@ const out = await cdp.ev(`(async () => {
     inst?.silentFix?.uninstall?.();
     inst?.crossfade?.uninstall?.();
     inst?.hotbar?.uninstall?.();
+    inst?.trim?.uninstall?.();
     for (const app of foundry.applications.instances.values()) if (app.id === 'sounds-deck') await app.close();
   }
   if (!installed || P.fromSrc) {
@@ -144,6 +145,7 @@ const out = await cdp.ev(`(async () => {
     harness.api.silentFix?.uninstall?.();
     harness.api.crossfade?.uninstall?.();
     harness.api.hotbar?.uninstall?.();
+    harness.api.trim?.uninstall?.();
     Hooks.off('renderPlaylistDirectory', harness.hookId);
     harness.style.remove();
     delete globalThis.__soundsDeckHarness;
@@ -152,6 +154,7 @@ const out = await cdp.ev(`(async () => {
     leftAsFound = {
       methodRestored: String(Playlists.prototype._onChangeScene).includes('playlistSound: priorPlaylistSoundId'),
       onStartRestored: String(foundry.documents.PlaylistSound.prototype._onStart).includes('return this.sound.stop()'),
+      playRestored: String(foundry.audio.Sound.prototype.play).includes('#queuePlay'),
       fadeRestored: String(Object.getOwnPropertyDescriptor(foundry.documents.PlaylistSound.prototype, 'fadeDuration').get).includes('soundDuration'),
       sandboxGone: !game.playlists.some((p) => p.name.includes('__sd')),
       playing: game.playlists.filter((p) => p.playing).map((p) => p.name),
