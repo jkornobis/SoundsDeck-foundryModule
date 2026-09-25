@@ -88,6 +88,18 @@
 }
 .sounds-deck.is-vertical .sounds-deck-left {
   flex: 0 0 auto;
+  /* The Composer, 2026-09-25, after the UX/UI QA pass: stacked, the left column pushed the pads below the fold and
+     stretched the sliders 1400 px wide. Vertical now sets Now playing, Moods and Music side by side, each scrolling
+     on its own, with the pads right under them. */
+  display: grid;
+  grid-template-columns: repeat(3, minmax(15rem, 1fr));
+  align-items: start;
+  gap: 0.75rem;
+}
+.sounds-deck.is-vertical .sounds-deck-left > * {
+  min-width: 0;
+  max-height: 20rem;
+  overflow-y: auto;
 }
 .sounds-deck .sounds-deck-left .sounds-deck-beds {
   grid-template-columns: 1fr;
