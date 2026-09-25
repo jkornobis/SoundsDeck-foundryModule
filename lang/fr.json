@@ -76,6 +76,10 @@
     "MoodDeleteConfirm": "Supprimer l'ambiance « {name} » ? Rien de ce qui joue n'est arrêté.",
     "MoodEmpty": "Rien à enregistrer : lancez d'abord une musique, une boucle ou un effet au hasard.",
     "MoodMissing": "{count} élément(s) de cette ambiance n'existent plus et ont été ignorés.",
+    "SceneMood": {
+      "Label": "Ambiance enregistrée (Sounds Deck)",
+      "Hint": "Une ambiance enregistrée que cette scène rappelle à son ouverture : sa musique, ses boucles et ses effets au hasard, exactement comme sa carte. Elle remplace la playlist de la scène ci-dessus."
+    },
     "MoodNone": "Aucune ambiance. Réglez musique, boucles et effets au hasard, puis enregistrez-les ici.",
     "MoodSummary": "{loops} boucle(s) · {random} au hasard",
     "MoodNoBed": "Sans musique",

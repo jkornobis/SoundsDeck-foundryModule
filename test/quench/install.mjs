@@ -39,6 +39,7 @@ export function registerInstall(quench) {
           assert.isFunction(mod.api?.preview?.toggle, 'preview not published');
           assert.isTrue(mod.api?.crossfade?.installed, mod.api?.crossfade?.reason ?? 'crossfade not installed');
           if (game.user.isGM) assert.exists(mod.api?.sceneFix, 'scene fix not attempted');
+          if (game.user.isGM) assert.isTrue(mod.api?.sceneMood?.installed, 'scene moods not installed');
         });
 
         it('both templates are served from modules/sounds-deck/', async () => {

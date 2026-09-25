@@ -10,6 +10,7 @@ import { SoundsDeckApp } from './deck-app.mjs';
 import { applyDuck, installDucking } from './ducking.mjs';
 import { previewing, previewSound, stopPreview, togglePreview } from './preview.mjs';
 import { installSceneBedFix } from './scene-bed-fix.mjs';
+import { installSceneMood } from './scene-mood.mjs';
 import { installSilentStartFix } from './silent-start-fix.mjs';
 
 export const MODULE_ID = 'sounds-deck';
@@ -98,6 +99,8 @@ export function onReady() {
     ? installSceneBedFix(foundry.documents.collections.Playlists, game.scenes.active ?? null)
     : null;
   if (sceneFix && !sceneFix.installed) console.info(`${MODULE_ID} | scene fix not installed: ${sceneFix.reason}`);
+  // A scene that brings a mood (note 5) - on the same client, and wrapped around whichever handover is there.
+  const sceneMood = game.user.isGM ? installSceneMood(foundry.documents.collections.Playlists, sceneFix) : null;
   // Every client ducks its own copy of the bed - players included, since each browser plays its own audio.
   const ducking = installDucking();
   // Every client again: each browser starts its own copy of a sound, and can leave it silent on its own timing (#37).
@@ -108,7 +111,7 @@ export function onReady() {
   if (!crossfade.installed) console.info(`${MODULE_ID} | crossfade not installed: ${crossfade.reason}`);
   // The GM's-ear preview (note 3), reachable from a macro as well as from the pads' headphones.
   const preview = { previewing, sound: previewSound, stop: stopPreview, toggle: togglePreview };
-  return { open: openDeck, sceneFix, ducking, silentFix, preview, crossfade };
+  return { open: openDeck, sceneFix, sceneMood, ducking, silentFix, preview, crossfade };
 }
 
 let deck = null;

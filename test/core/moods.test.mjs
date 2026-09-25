@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 import { MODES } from '../../src/core/classify.mjs';
-import { captureMood, isEmptyMood, moodIsOn, moodPlan } from '../../src/core/moods.mjs';
+import { captureMood, isEmptyMood, moodIsOn, moodPlan, sceneMood } from '../../src/core/moods.mjs';
 
 const snd = (id, playing = false, volume = 0.5) => ({ id, name: id, playing, volume });
 const world = ({ board = false, wrong = false, rain = false, wind = false, windVol = 0.5, cue = false } = {}) => [
@@ -107,4 +107,14 @@ describe('moodIsOn - lit when a recall would change nothing', () => {
     assert.ok(moodIsOn(mood, world({ board: true, wind: true, windVol: 0.3, cue: true }), [shot])));
   it('a mood whose bed was deleted is never on', () =>
     assert.ok(!moodIsOn({ ...mood, bed: 'gone', loops: [], random: [] }, world(), [])));
+});
+
+describe('sceneMood - the mood a scene brings back', () => {
+  const moods = [{ id: 'm1', name: 'Rain', bed: null, loops: [], random: [] }];
+  it('the mood whose id the scene stores', () => assert.equal(sceneMood('m1', moods)?.name, 'Rain'));
+  it('a mood deleted since is no mood - the scene plays its own playlist', () =>
+    assert.equal(sceneMood('gone', moods), null));
+  it('no flag, an empty one, or anything but an id, is no mood', () => {
+    for (const flag of [undefined, null, '', 42, {}]) assert.equal(sceneMood(flag, moods), null);
+  });
 });
