@@ -167,6 +167,22 @@
       "Send": "Send",
       "NoPlayers": "No player is connected.",
       "Sent": "Heard only by {name}"
+    },
+    "Accent": {
+      "Name": "Accent colour",
+      "Hint": "The colour of everything lit on the deck: a playing card, a pressed pad, progress lines, the ripple. On this computer only.",
+      "CustomName": "Custom accent colour",
+      "CustomHint": "Used when the accent colour is set to Custom.",
+      "Choice": {
+        "foundry": "Foundry's own",
+        "red": "Red",
+        "orange": "Orange",
+        "yellow": "Yellow",
+        "green": "Green",
+        "blue": "Blue",
+        "violet": "Violet",
+        "custom": "Custom"
+      }
     }
   }
 }

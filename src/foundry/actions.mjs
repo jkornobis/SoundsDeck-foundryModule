@@ -14,6 +14,9 @@ import { snapshot } from './snapshot.mjs';
 
 const MODULE_ID = 'sounds-deck';
 
+/** Tell an open deck which card was pressed, so a key, a knob or the hotbar ripples it like a click (theming). */
+const pressed = (kind, id) => Hooks.callAll('soundsDeckPress', { kind, id });
+
 /** One press into this seat's log - only when the seat switched the log on. */
 export async function logPress(kind, name, bank) {
   if (!game.settings.get(MODULE_ID, 'journal')) return;
@@ -27,6 +30,7 @@ export async function logPress(kind, name, bank) {
 
 /** A bed: the new one first, the others once it is heard - one crossfade, never a hole while it loads (note 4). */
 export async function playBed(playlist) {
+  pressed('bed', playlist.id);
   const others = bedsToStop(bedCards(snapshot(game.playlists.contents)), playlist.id);
   await logPress('bed', playlist.name);
   await switchBed(playlist, others);
@@ -46,6 +50,7 @@ export async function pressPad(playlist, sound) {
   const bank = bankViews(snapshot([playlist]))[0];
   // A bank whose mode gives no press is drawn disabled, and does nothing if reached anyway.
   if (!bank?.press) return undefined;
+  pressed('pad', sound.id);
   await logPress(bank.press, sound.name, playlist.name);
   // Every pad: a press plays, the next press stops (the Composer, after first use - decision 0005). A one-shot is a
   // PlaylistSound in a Soundboard Only playlist like the others, so its stop reaches every player, not only this one.
@@ -70,6 +75,7 @@ export async function stopEverything() {
 export async function recallMoodAt(n) {
   const mood = game.settings.get(MODULE_ID, 'moods')[n - 1];
   if (!mood) return false;
+  pressed('mood', mood.id);
   await logPress('mood', mood.name);
   const missing = await recallMood(mood);
   if (missing) ui.notifications.warn(game.i18n.format('SOUNDS_DECK.MoodMissing', { count: missing }));

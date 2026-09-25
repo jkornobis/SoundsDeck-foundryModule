@@ -167,6 +167,22 @@
       "Send": "Envoyer",
       "NoPlayers": "Aucun joueur n'est connecté.",
       "Sent": "Entendu seulement par {name}"
+    },
+    "Accent": {
+      "Name": "Couleur d'accent",
+      "Hint": "La couleur de tout ce qui s'allume sur le deck : une carte qui joue, un pad pressé, les barres de progression, l'onde. Sur cet ordinateur seulement.",
+      "CustomName": "Couleur d'accent personnalisée",
+      "CustomHint": "Utilisée quand la couleur d'accent est sur Personnalisée.",
+      "Choice": {
+        "foundry": "Celle de Foundry",
+        "red": "Rouge",
+        "orange": "Orange",
+        "yellow": "Jaune",
+        "green": "Vert",
+        "blue": "Bleu",
+        "violet": "Violet",
+        "custom": "Personnalisée"
+      }
     }
   }
 }

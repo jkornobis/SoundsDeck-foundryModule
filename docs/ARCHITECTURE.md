@@ -10,6 +10,7 @@ src/
     scene-bed.mjs   bed of the scene left + bed of the scene entered -> none | keep | start | stop | switch
     beds.mjs        playlist snapshots -> the bed cards to draw, and which beds a start must stop
     moods.mjs       a saved mix: capture what plays, and the plan that brings it back (what to stop, start, set, arm)
+    theme.mjs       the accent a seat chose, the text colour readable on it, and where a ripple starts
   sounds-deck.mjs   THE SHELL's entry point: wiring only
   foundry/          the rest of the shell
     setup.mjs       what happens at init and ready, as functions the live proof can call too
@@ -26,6 +27,7 @@ src/
     private.mjs     a pad sent to chosen players only, over Foundry's own playAudio event, and quietly to the GM
     scene-mood.mjs  a scene's Mood field, and its recall when the scene opens, wrapped around the scene handover
     preview.mjs     the GM's-ear preview: a pad played in this browser only
+    theme.mjs       the accent on the window, and the ripple, drawn on the window so a re-render cannot cut it
 tools/
   cdp.mjs           the connection to the gamemaster session, and the one-key audio unlock
   live-proof.mjs    --show: a screenshot of the deck, without installing it (its checks moved to Quench)
@@ -59,7 +61,8 @@ future Foundry release cannot silently turn every toggle into a one-shot.
 | lint + format | Biome 2.5.14, pinned | `npm run check` | style, likely bugs, and the purity of `src/core` |
 | unit | `node --test` | `npm run check` | every rule in the core, with the real world's playlist names as fixtures - 100% of its lines and branches (`node --test --experimental-test-coverage --test-coverage-include='src/**' "test/**/*.test.mjs"`) |
 | manifest | `tools/check-manifest.mjs` | `npm run check` | id; a version without a label and newer than the last tag; a changelog heading for it; compatibility; every file the manifest names exists; every language has the same keys |
-| the deck | Quench batch `sounds-deck.deck` (`test/quench/deck.mjs`) | `node tools/quench-run.mjs deck`, world quiet | the window, every button, ducking, the scene fix and its fail-safe, walked in the real world - 66 tests |
+| the deck | Quench batch `sounds-deck.deck` (`test/quench/deck.mjs`) | `node tools/quench-run.mjs deck`, world quiet | the window, every button, ducking, the scene fix and its fail-safe, walked in the real world - 69 tests |
+| the look | `tools/live-proof.mjs --show x.png [--lit] [--accent red\|#hex]` | by hand, nobody connected | a screenshot of the working copy for the Composer to judge; a look is his call, not a test's |
 | shell coverage | `tools/quench-run.mjs --src --coverage` | by hand, world quiet | which lines of `src/foundry` the live batches ran, from Chrome's own counts - see *What the tests do not reach* |
 | player side | `tools/player-proof.mjs` | by hand, world quiet | what a player's browser does: the bed ducked 10 dB under a GM's event, and back; a private sound heard by the seat alone, quietly by the GM - 8 checks |
 | Foundry's behaviour | Quench batch `sounds-deck.foundry-facts` (`test/quench/`) | `node tools/quench-run.mjs`, or Quench's own window | the facts the design relies on - polyphony, loop toggle, fade on stop, player rights, window size - 8 tests, red if a Foundry release changes one |

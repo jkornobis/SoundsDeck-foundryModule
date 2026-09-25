@@ -5,6 +5,7 @@
 import { MODES } from '../core/classify.mjs';
 import { CROSSFADE_DEFAULT_S } from '../core/crossfade.mjs';
 import { LEVELS_DEFAULT } from '../core/cues.mjs';
+import { ACCENT_CHOICES } from '../core/theme.mjs';
 import { muteToggle, nudge, playBedNumber, press, recallMoodAt, stopEverything } from './actions.mjs';
 import { installCrossfade } from './crossfade.mjs';
 import { SoundsDeckApp } from './deck-app.mjs';
@@ -42,6 +43,29 @@ export function onInit() {
     onChange: () => {
       for (const app of foundry.applications.instances.values()) if (app.id === MODULE_ID) app.render();
     },
+  });
+  // The deck's accent (theming, 2026-09-25): one GM's screen, so client scope. Foundry's own, a pad colour, or custom.
+  const rerenderDeck = () => {
+    for (const app of foundry.applications.instances.values()) if (app.id === MODULE_ID) app.render();
+  };
+  game.settings.register(MODULE_ID, 'accent', {
+    scope: 'client',
+    config: true,
+    type: String,
+    choices: Object.fromEntries(ACCENT_CHOICES.map((c) => [c, `SOUNDS_DECK.Accent.Choice.${c || 'foundry'}`])),
+    default: '',
+    name: 'SOUNDS_DECK.Accent.Name',
+    hint: 'SOUNDS_DECK.Accent.Hint',
+    onChange: rerenderDeck,
+  });
+  game.settings.register(MODULE_ID, 'accentCustom', {
+    scope: 'client',
+    config: true,
+    type: new foundry.data.fields.ColorField({ nullable: false, initial: '#e0a040' }),
+    default: '#e0a040',
+    name: 'SOUNDS_DECK.Accent.CustomName',
+    hint: 'SOUNDS_DECK.Accent.CustomHint',
+    onChange: rerenderDeck,
   });
   // Sources stay in Foundry's own playlist panel: a trailing "(…)" in a sound's name, and its description, are not
   // shown on the deck. A table decision, so world scope; on by default (the Composer, 2026-09-24).

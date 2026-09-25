@@ -3,6 +3,8 @@
  * Photograph the deck inside a RUNNING world without installing it.
  *
  *   node tools/live-proof.mjs --show x.png    open the deck (with sandbox banks) and photograph it
+ *     --accent red|#e0a040                    with that accent (theming: the Composer judges the look from these)
+ *     --lit                                   with a pad and a loop playing, so the accent shows on lit cards
  *
  * ⚠️ ITS 36 CHECKS MOVED TO QUENCH (Auditorium on v0.4, note 7): test/quench/deck.mjs, run with tools/quench-run.mjs.
  * They were page code inside a template string that Biome could not read; three runs broke on it in one day. What is
@@ -113,11 +115,28 @@ const cdp = await connect();
 
 // --show FILE.png
 const SHOW = process.argv.includes('--show') ? process.argv[process.argv.indexOf('--show') + 1] : null;
+const arg = (name) => (process.argv.includes(name) ? process.argv[process.argv.indexOf(name) + 1] : null);
+const ACCENT = arg('--accent');
+const LIT = process.argv.includes('--lit');
 if (SHOW) {
   const opened = await cdp.ev(`(async () => {
     if (game.users.some((u) => u.active && u.id !== game.user.id)) return JSON.stringify({ refused: 'someone is connected' });
     ${LOAD}
-    globalThis.__sdCleanup = cleanup;
+    const accentSeat = { accent: game.settings.get('sounds-deck', 'accent'), custom: game.settings.get('sounds-deck', 'accentCustom') };
+    const accent = ${JSON.stringify(ACCENT)};
+    if (accent?.startsWith('#')) {
+      await game.settings.set('sounds-deck', 'accentCustom', accent);
+      await game.settings.set('sounds-deck', 'accent', 'custom');
+    } else if (accent) await game.settings.set('sounds-deck', 'accent', accent);
+    globalThis.__sdCleanup = async () => {
+      await game.settings.set('sounds-deck', 'accent', accentSeat.accent);
+      await game.settings.set('sounds-deck', 'accentCustom', accentSeat.custom);
+      await cleanup();
+    };
+    if (${LIT}) {
+      await sandbox[0].playSound(sandbox[0].sounds.contents[0]);
+      await sandbox[1].playSound(sandbox[1].sounds.contents[0]);
+    }
     const app = setup.openDeck();
     for (let i = 0; i < 30 && !app.rendered; i++) await new Promise((r) => setTimeout(r, 200));
     await new Promise((r) => setTimeout(r, 800));

@@ -53,7 +53,7 @@
   line-height: 1.1;
 }
 .sounds-deck .sd-pad.is-playing {
-  outline: 2px solid var(--color-warm-2, var(--color-border-highlight, currentColor));
+  outline: 2px solid var(--sd-accent);
 }
 .sounds-deck .sd-pad.is-fired {
   filter: brightness(1.6);
@@ -117,7 +117,7 @@
   overflow: hidden;
 }
 .sounds-deck .sd-card.is-playing {
-  outline: 2px solid var(--color-warm-2, var(--color-border-highlight, currentColor));
+  outline: 2px solid var(--sd-accent);
 }
 .sounds-deck .sd-card-body {
   flex: 1 1 auto;
@@ -211,12 +211,12 @@
   white-space: nowrap;
 }
 .sounds-deck .sd-card-actions .sd-preview.is-previewing {
-  background: var(--color-border-highlight, currentColor);
-  color: var(--color-dark-1, #111);
+  background: var(--sd-accent);
+  color: var(--sd-accent-ink);
 }
 .sounds-deck .sd-card-actions .sd-random.is-armed {
-  background: var(--color-warm-2, var(--color-border-highlight, currentColor));
-  color: var(--color-dark-1, #111);
+  background: var(--sd-accent);
+  color: var(--sd-accent-ink);
 }
 /* Compact must outrank the card rule above it (the first 0.5 run caught compact pads at full height). */
 .sounds-deck.is-compact .sd-pads .sd-pad-cell .sd-pad {
@@ -274,7 +274,7 @@
 }
 /* Pressed but not heard yet (theme 8): outlined, and pulsing unless the system asks for less motion. */
 .sounds-deck .is-loading {
-  outline: 2px dashed var(--color-warm-2, var(--color-border-highlight, currentColor));
+  outline: 2px dashed var(--sd-accent);
   outline-offset: -2px;
 }
 @keyframes sd-loading {
@@ -310,7 +310,7 @@
 .sounds-deck .sd-bed-progress-fill {
   height: 100%;
   width: 0;
-  background: var(--color-warm-2, var(--color-border-highlight, currentColor));
+  background: var(--sd-accent);
 }
 /* A pad's colour (theme 9): six colours from Foundry's own theme, drawn as a stripe and a light tint behind the name -
    the text colour is untouched, so a coloured pad reads as well as any other in the light and the dark theme. */
@@ -352,10 +352,122 @@
   content: "▸ ";
 }
 .sounds-deck .sd-fold:focus-visible {
-  outline: 2px solid var(--color-warm-2, currentColor);
+  outline: 2px solid var(--sd-accent);
 }
 /* The player list of a private sound (0.7, note 1): one tick per line. */
 .sounds-deck-private .sd-private-player {
   display: block;
   padding: 0.15rem 0;
+}
+
+/* ---- Theming (the Composer, 2026-09-25) -------------------------------------------------------------------------
+   ONE ACCENT for everything lit. Foundry's own by default; the six pad colours map to the same theme colours the pads
+   use; a custom colour arrives as an inline --sd-accent with the text colour computed for it (core/theme.mjs). */
+.sounds-deck {
+  --sd-accent: var(--color-warm-2, var(--color-border-highlight, currentColor));
+  --sd-accent-ink: var(--color-dark-1, #111);
+  --sd-glass-tint: rgb(255 255 255 / 6%);
+  --sd-glass-edge: rgb(255 255 255 / 14%);
+  --sd-glass-shadow: 0 4px 14px rgb(0 0 0 / 28%);
+}
+.sounds-deck[data-accent="red"] {
+  --sd-accent: var(--color-level-error, #9e4545);
+  --sd-accent-ink: #fff;
+}
+.sounds-deck[data-accent="orange"] {
+  --sd-accent: color-mix(in srgb, var(--color-level-error, #9e4545), var(--color-level-warning, #b89704));
+}
+.sounds-deck[data-accent="yellow"] {
+  --sd-accent: var(--color-level-warning, #b89704);
+}
+.sounds-deck[data-accent="green"] {
+  --sd-accent: var(--color-level-success, #719f50);
+}
+.sounds-deck[data-accent="blue"] {
+  --sd-accent: var(--color-level-info, #799fcb);
+}
+.sounds-deck[data-accent="violet"] {
+  --sd-accent: color-mix(in srgb, var(--color-cool-3, #53476b), white 30%);
+}
+/* Sliders and ticks take the accent too: Foundry draws its own slider thumb from these two variables. */
+.sounds-deck input[type="range"] {
+  --range-thumb-background-color: var(--sd-accent);
+  --range-thumb-border-color: var(--sd-accent);
+}
+.sounds-deck input[type="checkbox"] {
+  accent-color: var(--sd-accent);
+}
+
+/* FROSTED GLASS: the window is Foundry's own background made translucent and blurred over the scene behind it, so it
+   follows the light and the dark theme; cards are a lighter pane with a thin bright top edge. No card blurs on its
+   own - the window already does, and a blur per card is what makes glass heavy. */
+.theme-light .sounds-deck,
+.sounds-deck.theme-light {
+  --sd-glass-tint: rgb(255 255 255 / 45%);
+  --sd-glass-edge: rgb(255 255 255 / 75%);
+  --sd-glass-shadow: 0 3px 10px rgb(0 0 0 / 12%);
+}
+@supports (backdrop-filter: blur(1px)) {
+  .application.sounds-deck {
+    background: color-mix(in srgb, var(--background, #0b0a13) 62%, transparent);
+    backdrop-filter: blur(16px) saturate(140%);
+  }
+}
+.sounds-deck .sd-card,
+.sounds-deck .sd-bank,
+.sounds-deck .sd-now {
+  background: var(--sd-glass-tint);
+  border-color: color-mix(in srgb, var(--color-border, #36303b) 70%, transparent);
+  box-shadow:
+    inset 0 1px 0 var(--sd-glass-edge),
+    var(--sd-glass-shadow);
+}
+/* A lit card glows a little in its accent, as well as its outline. */
+.sounds-deck .sd-card.is-playing {
+  box-shadow:
+    inset 0 1px 0 var(--sd-glass-edge),
+    0 0 12px color-mix(in srgb, var(--sd-accent) 45%, transparent);
+}
+.sounds-deck .sd-pads .sd-pad-cell .sd-pad {
+  background: transparent;
+}
+.sounds-deck .sd-card:hover {
+  --sd-glass-tint: rgb(255 255 255 / 10%);
+}
+.theme-light .sounds-deck .sd-card:hover,
+.sounds-deck.theme-light .sd-card:hover {
+  --sd-glass-tint: rgb(255 255 255 / 60%);
+}
+/* Anyone who asks the system for less transparency gets the solid window back. */
+@media (prefers-reduced-transparency: reduce) {
+  .application.sounds-deck {
+    background: var(--background, #0b0a13);
+    backdrop-filter: none;
+  }
+}
+
+/* THE RIPPLE: drawn on the window, over the card it belongs to (src/foundry/theme.mjs), never when motion is reduced. */
+.sounds-deck .sd-ripple-clip {
+  position: absolute;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 5;
+}
+.sounds-deck .sd-ripple {
+  position: absolute;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--sd-accent) 38%, transparent);
+  transform: scale(0);
+  animation: sd-ripple 550ms ease-out forwards;
+}
+@keyframes sd-ripple {
+  to {
+    transform: scale(1);
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sounds-deck .sd-ripple-clip {
+    display: none;
+  }
 }

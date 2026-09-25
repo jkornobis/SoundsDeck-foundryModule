@@ -5,6 +5,13 @@ Versions follow semver **without pre-release labels** - Foundry's `isNewerVersio
 
 ## 0.6.3 - unreleased
 
+- **A new look.** The deck is frosted glass over the scene, and follows Foundry's light and dark themes. Cards are
+  lighter panes with a bright top edge, and a playing card glows in the accent colour. **Accent colour**, in the
+  module settings, on this computer only: Foundry's own, one of the six pad colours, or any colour you pick; text on
+  it stays readable. Pressing a pad, a bed or a mood sends a **ripple** from where you clicked. A key, a Stream Deck
+  button or the hotbar ripples from the card's centre. No ripple when the system asks for less motion, and a solid
+  window when it asks for less transparency.
+
 - **Quality pass**, nothing you can hear: the event transport's old stop handler, unused since 0.5, is removed; a
   trimmed sound whose end cannot be scheduled now says so in the console instead of failing in silence. New tests
   cover the core's last untested branches, a preview replaced while it loads or ending by itself, the press-log
