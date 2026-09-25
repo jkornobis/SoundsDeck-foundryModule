@@ -29,7 +29,8 @@ src/
 tools/
   cdp.mjs           the connection to the gamemaster session, and the one-key audio unlock
   live-proof.mjs    --show: a screenshot of the deck, without installing it (its checks moved to Quench)
-  quench-run.mjs    runs the Quench batches in the live world and prints the results
+  quench-run.mjs    runs the Quench batches in the live world and prints the results; --coverage, how much of src/ ran
+  coverage.mjs      Chrome's block counts turned into line coverage, for the code only the live world can run
   player-proof.mjs  ducking measured in a PLAYER's browser: a second, isolated session joins as the test seat
   check-manifest.mjs  the manifest rules of `npm run check`
   build-release.mjs   dist/module.json + dist/module.zip for one tag, addresses pinned to it
@@ -56,11 +57,26 @@ future Foundry release cannot silently turn every toggle into a one-shot.
 | Level | Tool | Runs | Proves |
 |---|---|---|---|
 | lint + format | Biome 2.5.14, pinned | `npm run check` | style, likely bugs, and the purity of `src/core` |
-| unit | `node --test` | `npm run check` | every rule in the core, with the real world's playlist names as fixtures |
+| unit | `node --test` | `npm run check` | every rule in the core, with the real world's playlist names as fixtures - 100% of its lines and branches (`node --test --experimental-test-coverage --test-coverage-include='src/**' "test/**/*.test.mjs"`) |
 | manifest | `tools/check-manifest.mjs` | `npm run check` | id; a version without a label and newer than the last tag; a changelog heading for it; compatibility; every file the manifest names exists; every language has the same keys |
-| the deck | Quench batch `sounds-deck.deck` (`test/quench/deck.mjs`) | `node tools/quench-run.mjs deck`, world quiet | the window, every button, ducking, the scene fix and its fail-safe, walked in the real world - 20 tests |
-| player side | `tools/player-proof.mjs` | by hand, world quiet | what a player's browser does: the bed ducked 10 dB under a GM's event, and back |
+| the deck | Quench batch `sounds-deck.deck` (`test/quench/deck.mjs`) | `node tools/quench-run.mjs deck`, world quiet | the window, every button, ducking, the scene fix and its fail-safe, walked in the real world - 66 tests |
+| shell coverage | `tools/quench-run.mjs --src --coverage` | by hand, world quiet | which lines of `src/foundry` the live batches ran, from Chrome's own counts - see *What the tests do not reach* |
+| player side | `tools/player-proof.mjs` | by hand, world quiet | what a player's browser does: the bed ducked 10 dB under a GM's event, and back; a private sound heard by the seat alone, quietly by the GM - 8 checks |
 | Foundry's behaviour | Quench batch `sounds-deck.foundry-facts` (`test/quench/`) | `node tools/quench-run.mjs`, or Quench's own window | the facts the design relies on - polyphony, loop toggle, fade on stop, player rights, window size - 8 tests, red if a Foundry release changes one |
+
+### What the tests do not reach
+
+Measured 2026-09-25 with `tools/quench-run.mjs --src --coverage`, every batch: 83 tests, **93% of the lines of
+`src/foundry`** (1213 of 1301). The unit tests cover `src/core` whole. What the live batches leave, and why:
+
+| Lines | Why no batch runs them | Covered instead by |
+|---|---|---|
+| `keys.mjs` - registering the shortcuts | Foundry accepts shortcuts only during init; the harness loads the working copy after it | the install batch: every shortcut, F13-F24 included, registered by the installed release |
+| `private.mjs` sending, and the 👤 dialog in `deck-app.mjs` | they need a connected player, and the batches refuse to run with one | `tools/player-proof.mjs` sends through `private.mjs` to the test seat. **The dialog itself - ticking a player and pressing Send - is tested nowhere** |
+| `setup.mjs` - Shift+D, and making the sidebar button | reached by the shortcut and the sidebar render of the installed release | the sidebar test checks the button is there |
+| `trim.mjs` - ending a streamed file at its trim | it needs a file over 10 minutes, which the sandbox does not have | nothing yet |
+| `ducking.mjs` - ducking a sound that is still loading | a timing window the tests do not aim at | nothing yet |
+| every `catch` that keeps Foundry's own behaviour after a fault | they run only when something breaks | the scene fix's fail-safe has its own test; the others are read, not run |
 
 ## Definition of done
 

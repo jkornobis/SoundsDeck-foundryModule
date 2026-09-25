@@ -39,6 +39,11 @@ describe('captureMood - the parts that describe a place', () => {
     assert.deepEqual(m.loops, []);
     assert.ok(isEmptyMood(m));
   });
+  it('a loop with no usable volume is captured at 0.5', () => {
+    const now = world({ wind: true });
+    now[2].sounds[1].volume = undefined;
+    assert.deepEqual(captureMood(now, [], label).loops, [{ playlistId: 'loops', soundId: 'wind', volume: 0.5 }]);
+  });
   it('ignores an armed reference that is not a one-shot', () => {
     assert.deepEqual(captureMood(world(), [{ playlistId: 'cues', soundId: 'siren' }], label).random, []);
   });
@@ -68,6 +73,12 @@ describe('moodPlan - from what plays now to the mood', () => {
     const now = world({ board: true, rain: true, wind: true, windVol: 0.9 });
     const p = moodPlan({ ...mood, loops: [{ playlistId: 'loops', soundId: 'wind', volume: 0.3 }] }, now, [shot]);
     assert.deepEqual(p.stopLoops, [{ playlistId: 'loops', soundId: 'rain' }]);
+    assert.deepEqual(p.setVolumes, [{ playlistId: 'loops', soundId: 'wind', volume: 0.3 }]);
+  });
+  it('a playing loop with no volume counts as silent, so the mood sets its level', () => {
+    const now = world({ board: true, wind: true });
+    now[2].sounds[1].volume = undefined;
+    const p = moodPlan({ ...mood, loops: [{ playlistId: 'loops', soundId: 'wind', volume: 0.3 }] }, now, [shot]);
     assert.deepEqual(p.setVolumes, [{ playlistId: 'loops', soundId: 'wind', volume: 0.3 }]);
   });
   it('an armed one-shot the mood does not name is disarmed', () => {
