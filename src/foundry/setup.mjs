@@ -5,9 +5,12 @@
 import { MODES } from '../core/classify.mjs';
 import { CROSSFADE_DEFAULT_S } from '../core/crossfade.mjs';
 import { LEVELS_DEFAULT } from '../core/cues.mjs';
+import { muteToggle, nudge, playBedNumber, press, recallMoodAt, stopEverything } from './actions.mjs';
 import { installCrossfade } from './crossfade.mjs';
 import { SoundsDeckApp } from './deck-app.mjs';
 import { applyDuck, installDucking } from './ducking.mjs';
+import { installHotbar } from './hotbar.mjs';
+import { registerKeys } from './keys.mjs';
 import { previewing, previewSound, stopPreview, togglePreview } from './preview.mjs';
 import { installSceneBedFix } from './scene-bed-fix.mjs';
 import { installSceneMood } from './scene-mood.mjs';
@@ -85,7 +88,13 @@ export function onInit() {
   // would silently do the wrong thing - so the mismatch is loud, at start-up, before anything plays.
   const drift = Object.entries(MODES).filter(([k, v]) => CONST.PLAYLIST_MODES[k] !== v);
   if (drift.length) console.error(`${MODULE_ID} | PLAYLIST_MODES drifted from the core's copy:`, drift);
+  // Keyboard shortcuts and the Stream Deck + knobs (theme 6) - Foundry takes bindings in init only.
+  keys = registerKeys({ toggleDeck });
+  if (!keys.registered) console.info(`${MODULE_ID} | shortcuts not registered: ${keys.reason}`);
 }
+
+/** Whether this page registered the shortcuts, and why not if it did not. */
+let keys = { registered: false, reason: 'init has not run' };
 
 /**
  * ready: documents exist. Only the gamemaster's client installs the scene fix - Foundry's own method runs only
@@ -111,7 +120,11 @@ export function onReady() {
   if (!crossfade.installed) console.info(`${MODULE_ID} | crossfade not installed: ${crossfade.reason}`);
   // The GM's-ear preview (note 3), reachable from a macro as well as from the pads' headphones.
   const preview = { previewing, sound: previewSound, stop: stopPreview, toggle: togglePreview };
-  return { open: openDeck, sceneFix, sceneMood, ducking, silentFix, preview, crossfade };
+  // A pad dragged onto the hotbar becomes a button (theme 6) - the gamemaster's, as the deck is.
+  const hotbar = game.user.isGM ? installHotbar() : null;
+  // What a key, a knob or a hotbar macro reaches: the same actions the deck's own buttons call.
+  const actions = { playBedNumber, recallMoodAt, stopEverything, nudge, muteToggle, toggleDeck };
+  return { open: openDeck, press, keys, actions, hotbar, sceneFix, sceneMood, ducking, silentFix, preview, crossfade };
 }
 
 let deck = null;
@@ -119,6 +132,12 @@ export function openDeck() {
   deck ??= new SoundsDeckApp();
   deck.render({ force: true });
   return deck;
+}
+
+/** Shift+D: open the deck, or close it when it is open. */
+export function toggleDeck() {
+  if (deck?.rendered) return deck.close();
+  return openDeck();
 }
 
 /** A button in the playlists sidebar header - the deck is reached from where the playlists already are. */

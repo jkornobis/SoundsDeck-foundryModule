@@ -90,6 +90,51 @@
       "toggle": "Loops",
       "cue": "Events",
       "oneshot": "Effects"
-    }
+    },
+    "Keys": {
+      "Open": "Open or close the deck",
+      "StopAll": "Stop everything",
+      "Bed": {
+        "1": "Play bed 1",
+        "2": "Play bed 2",
+        "3": "Play bed 3",
+        "4": "Play bed 4",
+        "5": "Play bed 5",
+        "6": "Play bed 6",
+        "7": "Play bed 7",
+        "8": "Play bed 8"
+      },
+      "Mood": {
+        "1": "Recall mood 1",
+        "2": "Recall mood 2",
+        "3": "Recall mood 3",
+        "4": "Recall mood 4",
+        "5": "Recall mood 5",
+        "6": "Recall mood 6",
+        "7": "Recall mood 7",
+        "8": "Recall mood 8",
+        "9": "Recall mood 9"
+      },
+      "Down": {
+        "bed": "Music level down (Stream Deck + knob 1, turn left)",
+        "toggle": "Loops level down (Stream Deck + knob 2, turn left)",
+        "cue": "Events level down (Stream Deck + knob 3, turn left)",
+        "oneshot": "Effects level down (Stream Deck + knob 4, turn left)"
+      },
+      "Up": {
+        "bed": "Music level up (knob 1, turn right)",
+        "toggle": "Loops level up (knob 2, turn right)",
+        "cue": "Events level up (knob 3, turn right)",
+        "oneshot": "Effects level up (knob 4, turn right)"
+      },
+      "Mute": {
+        "bed": "Music mute, and back (knob 1, press)",
+        "toggle": "Loops mute, and back (knob 2, press)",
+        "cue": "Events mute, and back (knob 3, press)",
+        "oneshot": "Effects mute, and back (knob 4, press)"
+      }
+    },
+    "PadGone": "This pad no longer exists in the world.",
+    "Muted": "Muted - press its knob again to bring it back"
   }
 }

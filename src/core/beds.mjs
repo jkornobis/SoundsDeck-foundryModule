@@ -44,3 +44,13 @@ export function bedsToStop(cards, startingId) {
 function leadingNumber(name) {
   return Number.parseInt(name, 10);
 }
+
+/**
+ * The bed a number key reaches (0.6, theme 6): the card whose name starts with that number - "5 · Wrong" for 5.
+ * @param {BedCard[]} cards
+ * @param {number} n
+ * @returns {BedCard | null}
+ */
+export function bedNumbered(cards, n) {
+  return cards.find((c) => leadingNumber(c.name) === n) ?? null;
+}

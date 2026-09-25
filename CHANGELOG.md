@@ -5,6 +5,11 @@ Versions follow semver **without pre-release labels** - Foundry's `isNewerVersio
 
 ## 0.6.1 - unreleased
 
+- **Keyboard shortcuts, the Stream Deck + knobs, and pads on the hotbar** (theme 6). Shift+D opens or closes the
+  deck, Shift+X stops everything, Shift+1…8 plays the bed with that number, Ctrl+Shift+1…9 recalls the mood at that
+  place. The four knobs of a Stream Deck + drive the four levels on F13-F24: turn for ±5% on the slider, press to mute
+  that layer for everyone and press again to bring it back. A pad dragged onto Foundry's hotbar becomes a button that
+  presses it. Every shortcut can be rebound in Configure Controls.
 - **A scene brings back a mood** (note 5): a *Mood* field in a scene's settings, under its playlist. When the scene
   opens, the mood is recalled exactly as its card does (music, loops, random effects), its bed crossing over from the
   one playing. The mood wins over the scene's own playlist. A scene with no mood behaves as before.
