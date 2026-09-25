@@ -1427,7 +1427,11 @@ export function registerDeck(quench) {
 
         it("the ⋮ menu's Settings opens Foundry's settings on the deck's section", async () => {
           assert.exists(S.app._getHeaderControls().find((c) => c.action === 'settings'));
-          await S.app.options.actions.settings.call(S.app);
+          try {
+            await S.app.options.actions.settings.call(S.app);
+          } catch (error) {
+            assert.fail(`the Settings entry threw: ${String(error?.stack).split('\n').slice(0, 6).join(' | ')}`);
+          }
           const sheet = game.settings.sheet;
           await until(() => sheet.rendered);
           assert.strictEqual(sheet.tabGroups.categories, ID);

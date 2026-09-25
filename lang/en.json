@@ -200,6 +200,7 @@
       "Tick": "Show {name} with the others",
       "Solo": "Show this bank alone; click again to show them all"
     },
-    "TrackList": "Tracks of {name}"
+    "TrackList": "Tracks of {name}",
+    "BoardTitle": "Sounds Pad"
   }
 }

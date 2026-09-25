@@ -130,7 +130,7 @@
   flex-direction: column;
   justify-content: center;
   gap: 0.15rem;
-  padding: 0.2rem;
+  padding: 0.25rem 0.45rem 0.25rem 0.3rem; /* second pass: the buttons sat against the card's right edge */
   border-left: 1px solid var(--color-border, currentColor);
 }
 .sounds-deck .sd-card-actions button {
@@ -339,22 +339,27 @@
 .sounds-deck .sd-pad-icon {
   font-size: 1.1em;
 }
-/* The board's tabs (2026-09-25): a name that shows its bank alone, and a tick that adds it. A shown tab is lit in the
-   accent; the strip wraps rather than scrolls, so every bank stays one click away. */
+/* The board's tabs (the Composer, 2026-09-25, second pass: "proper tabs, more square rounded like card, not
+   overlapping search filter"): tabs with a card's corners on top, sitting on one rule that runs the board's width. */
 .sounds-deck .sd-tabs {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.35rem;
-  margin: 0 0 0.6rem;
+  gap: 0.25rem;
+  margin: 0.6rem 0 0.9rem;
+  padding: 0 0.25rem;
+  border-bottom: 2px solid var(--sd-accent);
 }
 .sounds-deck .sd-tab {
   display: flex;
   align-items: center;
-  gap: 0.1rem;
-  padding: 0 0.15rem 0 0.35rem;
-  border: 1px solid color-mix(in srgb, var(--color-border, #36303b) 70%, transparent);
-  border-radius: 999px;
+  gap: 0.15rem;
+  margin-bottom: -2px;
+  padding: 0.15rem 0.2rem 0.15rem 0.45rem;
+  border: 1px solid color-mix(in srgb, var(--color-border, #36303b) 80%, transparent);
+  border-bottom: 2px solid var(--sd-accent);
+  border-radius: 6px 6px 0 0;
   background: var(--sd-glass-tint);
+  opacity: 0.75;
 }
 .sounds-deck .sd-tab input {
   margin: 0;
@@ -363,13 +368,52 @@
   width: auto;
   border: none;
   background: transparent;
-  padding: 0 0.5rem 0 0.15rem;
+  padding: 0 0.5rem 0 0.2rem;
   white-space: nowrap;
 }
 .sounds-deck .sd-tab.is-shown {
+  opacity: 1;
   border-color: var(--sd-accent);
-  box-shadow: 0 0 8px color-mix(in srgb, var(--sd-accent) 35%, transparent);
+  border-bottom-color: transparent;
+  background: color-mix(in srgb, var(--sd-accent) 16%, var(--sd-glass-tint));
 }
+
+/* A bank is a title and its pads (second pass: "a simple title with accent border bottom as separator"): the
+   fieldset keeps disabling a Shuffle bank's pads, but draws no box. Floated full width, a legend takes a rule. */
+.sounds-deck .sd-bank {
+  border: none;
+  border-radius: 0;
+  padding: 0;
+  margin: 0 0 1.1rem;
+  min-width: 0;
+}
+.sounds-deck .sd-bank-title {
+  float: left;
+  width: 100%;
+  padding: 0 0.1rem 0.2rem;
+  margin: 0 0 0.45rem;
+  border-bottom: 1px solid var(--sd-accent);
+  font-weight: bold;
+}
+.sounds-deck .sd-bank-title + * {
+  clear: both;
+}
+
+/* Section titles (second pass: "missing titles on each part of the tool"): Moods, Music and Sounds Pad, one size. */
+.sounds-deck .sd-section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin: 0 0 0.35rem;
+}
+.sounds-deck .sd-section-title {
+  margin: 0;
+  border: none;
+  font-size: var(--font-size-18, 1.15rem);
+  font-weight: bold;
+}
+
 /* A bed's track list (2026-09-25): a ▾ beside its name opens its tracks, numbered as Ctrl+Alt+1...9 reach them. */
 .sounds-deck .sd-bed-head {
   display: flex;
@@ -499,7 +543,6 @@
   }
 }
 .sounds-deck .sd-card,
-.sounds-deck .sd-bank,
 .sounds-deck .sd-now {
   background: var(--sd-glass-tint);
   border-color: color-mix(in srgb, var(--color-border, #36303b) 70%, transparent);
