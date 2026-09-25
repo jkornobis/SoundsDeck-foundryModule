@@ -85,6 +85,7 @@ export function registerDeck(quench) {
           journalEntries: game.settings.get(ID, 'journalEntries'),
           moods: game.settings.get(ID, 'moods'),
           crossfade: game.settings.get(ID, 'crossfade'),
+          folded: game.settings.get(ID, 'folded'),
           levels: game.settings.get(ID, 'levels'),
         };
         const folder = game.folders.find((f) => f.type === 'Playlist' && f.name === 'GE-Foundry');
@@ -132,6 +133,7 @@ export function registerDeck(quench) {
         await game.settings.set(ID, 'journalEntries', S.seat.journalEntries);
         await game.settings.set(ID, 'moods', S.seat.moods);
         await game.settings.set(ID, 'crossfade', S.seat.crossfade);
+        await game.settings.set(ID, 'folded', S.seat.folded);
         await game.settings.set(ID, 'levels', S.seat.levels);
         if (S.activeBefore && !S.activeBefore.active) await S.activeBefore.activate();
       });
@@ -1047,6 +1049,69 @@ export function registerDeck(quench) {
           assert.notStrictEqual(read(), first, 'the time did not move');
           assert.isAbove(Number.parseFloat(bedCard().querySelector('.sd-bed-progress-fill').style.width), 0);
           await bureau().stopAll();
+        });
+      });
+
+      describe('organising the board (theme 9)', function () {
+        this.timeout(30000);
+        const pad = () => S.sandbox.shots.sounds.contents[0];
+        const cell = () => bank(S.sandbox.shots).querySelectorAll('.sd-pad-cell')[0];
+
+        it("a bank sound's settings offer a colour from six and an icon; a bed track's settings offer neither", async () => {
+          const bedSheet = S.board.sounds.contents[0].sheet;
+          await bedSheet.render({ force: true });
+          await until(() => bedSheet.element?.querySelector('[name="fade"]'));
+          assert.notExists(
+            bedSheet.element.querySelector('[name="flags.sounds-deck.look.colour"]'),
+            'a bed track got pad fields',
+          );
+          await bedSheet.close();
+          const sheet = pad().sheet;
+          await sheet.render({ force: true });
+          await until(() => sheet.element?.querySelector('[name="flags.sounds-deck.look.colour"]'));
+          const colour = sheet.element.querySelector('[name="flags.sounds-deck.look.colour"]');
+          const icon = sheet.element.querySelector('[name="flags.sounds-deck.look.icon"]');
+          assert.deepEqual(
+            [...colour.options].map((o) => o.value),
+            ['', 'red', 'orange', 'yellow', 'green', 'blue', 'violet'],
+          );
+          colour.value = 'red';
+          icon.value = '🔫';
+          await sheet.submit();
+          await until(() => pad().getFlag(ID, 'look')?.colour === 'red');
+          assert.deepEqual(pad().getFlag(ID, 'look'), { colour: 'red', icon: '🔫' });
+          await sheet.close();
+        });
+
+        it('the pad shows its colour and its icon, and still says only its name to a screen reader', async () => {
+          await until(() => cell()?.classList.contains('sd-colour-red'));
+          assert.isTrue(cell().classList.contains('sd-colour-red'));
+          assert.strictEqual(cell().querySelector('.sd-pad-icon')?.textContent, '🔫');
+          assert.strictEqual(cell().querySelector('.sd-pad-icon')?.getAttribute('aria-hidden'), 'true');
+          assert.notInclude(cell().querySelector('.sd-pad').getAttribute('aria-label'), '🔫');
+          await pad().unsetFlag(ID, 'look');
+        });
+
+        it('a bank folds and unfolds from its title, on this seat; a search still finds pads inside it', async () => {
+          const { cues } = S.sandbox;
+          const pads = () => bank(cues)?.querySelector('.sd-pads');
+          const title = () => bank(cues)?.querySelector('.sd-fold');
+          title().click();
+          await until(() => pads()?.hidden);
+          assert.isTrue(pads().hidden, 'the bank did not fold');
+          assert.strictEqual(title().getAttribute('aria-expanded'), 'false');
+          assert.include(game.settings.get(ID, 'folded'), cues.id);
+          const box = S.app.element.querySelector('.sd-filter input');
+          box.value = 'cues 2';
+          box.dispatchEvent(new Event('input'));
+          assert.isFalse(pads().hidden, 'a search did not look inside the folded bank');
+          box.value = '';
+          box.dispatchEvent(new Event('input'));
+          assert.isTrue(pads().hidden, 'clearing the search did not fold it again');
+          title().click();
+          await until(() => pads() && !pads().hidden);
+          assert.isFalse(pads().hidden, 'the bank did not unfold');
+          assert.notInclude(game.settings.get(ID, 'folded'), cues.id);
         });
       });
 

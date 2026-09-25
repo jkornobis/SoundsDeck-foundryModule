@@ -6,6 +6,7 @@
  * drawn disabled rather than guessed at.
  */
 import { classify } from './classify.mjs';
+import { padLook } from './look.mjs';
 
 /**
  * @typedef {import('./beds.mjs').PlaylistSnap} PlaylistSnap
@@ -36,6 +37,8 @@ export function bankViews(playlists) {
         ducks: c.press === 'cue' ? s.duck !== false : null,
         // Only a one-shot can be armed to fire at random moments.
         randomizable: c.press === 'oneshot',
+        // Its colour and icon, if the sound's settings give it any (theme 9).
+        ...padLook(s.look),
       })),
     }))
     .sort((a, b) => a.name.localeCompare(b.name));

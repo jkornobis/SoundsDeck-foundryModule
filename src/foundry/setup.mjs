@@ -11,6 +11,7 @@ import { SoundsDeckApp } from './deck-app.mjs';
 import { applyDuck, installDucking } from './ducking.mjs';
 import { installHotbar } from './hotbar.mjs';
 import { registerKeys } from './keys.mjs';
+import { installLookFields } from './look.mjs';
 import { previewing, previewSound, stopPreview, togglePreview } from './preview.mjs';
 import { installSceneBedFix } from './scene-bed-fix.mjs';
 import { installSceneMood } from './scene-mood.mjs';
@@ -30,6 +31,16 @@ export function onInit() {
     config: false,
     type: String,
     default: 'comfortable',
+  });
+  // The banks this seat folded (theme 9): one GM's screen, not the table's, so client scope.
+  game.settings.register(MODULE_ID, 'folded', {
+    scope: 'client',
+    config: false,
+    type: Array,
+    default: [],
+    onChange: () => {
+      for (const app of foundry.applications.instances.values()) if (app.id === MODULE_ID) app.render();
+    },
   });
   // Sources stay in Foundry's own playlist panel: a trailing "(…)" in a sound's name, and its description, are not
   // shown on the deck. A table decision, so world scope; on by default (the Composer, 2026-09-24).
@@ -124,6 +135,8 @@ export function onReady() {
   // Trimmed tracks (theme 7): every client plays its own copy, so every client trims it.
   const trim = installTrim(foundry.audio.Sound);
   if (!trim.installed) console.info(`${MODULE_ID} | trim not installed: ${trim.reason}`);
+  // A pad's colour and icon, in its sound's settings (theme 9).
+  const look = installLookFields();
   // A pad dragged onto the hotbar becomes a button (theme 6) - the gamemaster's, as the deck is.
   const hotbar = game.user.isGM ? installHotbar() : null;
   // What a key, a knob or a hotbar macro reaches: the same actions the deck's own buttons call.
@@ -135,6 +148,7 @@ export function onReady() {
     actions,
     hotbar,
     trim,
+    look,
     sceneFix,
     sceneMood,
     ducking,

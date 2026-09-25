@@ -312,3 +312,45 @@
   width: 0;
   background: var(--color-warm-2, var(--color-border-highlight, currentColor));
 }
+/* A pad's colour (theme 9): six colours from Foundry's own theme, drawn as a stripe and a light tint behind the name -
+   the text colour is untouched, so a coloured pad reads as well as any other in the light and the dark theme. */
+.sounds-deck .sd-colour-red {
+  --sd-colour: var(--color-level-error, #9e4545);
+}
+.sounds-deck .sd-colour-orange {
+  --sd-colour: color-mix(in srgb, var(--color-level-error, #9e4545), var(--color-level-warning, #b89704));
+}
+.sounds-deck .sd-colour-yellow {
+  --sd-colour: var(--color-level-warning, #b89704);
+}
+.sounds-deck .sd-colour-green {
+  --sd-colour: var(--color-level-success, #719f50);
+}
+.sounds-deck .sd-colour-blue {
+  --sd-colour: var(--color-level-info, #799fcb);
+}
+.sounds-deck .sd-colour-violet {
+  --sd-colour: color-mix(in srgb, var(--color-cool-3, #53476b), white 30%);
+}
+.sounds-deck .sd-pad-cell.sd-colour {
+  border-left: 6px solid var(--sd-colour);
+  background: color-mix(in srgb, var(--sd-colour) 18%, transparent);
+}
+.sounds-deck .sd-pad-icon {
+  font-size: 1.1em;
+}
+/* A bank's title folds it (theme 9): a plain-looking button, with a chevron that turns. */
+.sounds-deck .sd-fold {
+  all: unset;
+  cursor: pointer;
+  font-weight: bold;
+}
+.sounds-deck .sd-fold::before {
+  content: "▾ ";
+}
+.sounds-deck .sd-fold[aria-expanded="false"]::before {
+  content: "▸ ";
+}
+.sounds-deck .sd-fold:focus-visible {
+  outline: 2px solid var(--color-warm-2, currentColor);
+}
