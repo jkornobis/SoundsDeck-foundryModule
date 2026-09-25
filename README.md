@@ -19,7 +19,7 @@ one window - with nothing stored anywhere but in the playlists you already have.
 In Foundry: **Setup → Add-on Modules → Install Module**, and paste the manifest of the version you want:
 
 ```
-https://github.com/jkornobis/SoundsDeck-foundryModule/releases/download/v0.6.5/module.json
+https://github.com/jkornobis/SoundsDeck-foundryModule/releases/download/v0.6.6/module.json
 ```
 
 Each release has its own fixed address, so a world changes version only when you install a new one. Enable the module
