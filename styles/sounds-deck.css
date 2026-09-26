@@ -717,3 +717,27 @@
   border: none !important;
   margin: 0 0 1.1rem !important;
 }
+
+/* Vertical faders for the four layer levels (his choice, 2026-09-26, from a mock-up): side by side like a mixing desk,
+   the name under each. A vertical range input is still the browser's own range input (turned by writing-mode), so it
+   keeps its keyboard control. The per-sound volumes in Now playing stay horizontal, on their rows. */
+.sounds-deck .sd-levels {
+  grid-template-columns: repeat(4, 1fr);
+  justify-items: center;
+  gap: 0.2rem;
+}
+.sounds-deck .sd-level-row {
+  flex-direction: column-reverse;
+  align-items: center;
+  gap: 0.3rem;
+  text-align: center;
+}
+.sounds-deck .sd-level-row input.sd-level {
+  writing-mode: vertical-lr;
+  direction: rtl;
+  width: 1.6rem;
+  height: 7rem;
+}
+.sounds-deck.is-compact .sd-level-row input.sd-level {
+  height: 4.5rem;
+}

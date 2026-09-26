@@ -5,6 +5,11 @@ Versions follow semver **without pre-release labels** - Foundry's `isNewerVersio
 
 ## 0.6.7 - unreleased
 
+- **The four layer levels are vertical faders**, side by side like a mixing desk.
+- **Fixes from use:** the Save button no longer spills out of the Moods header; the tabs lose colour that said
+  nothing; the pads get more room; hovering lights the whole pad card and leaves its text alone; the box another
+  module drew around each bank is gone.
+
 ## 0.6.6 - 2026-09-25
 
 - **Variant pads** (next program, note 4): in a one-shot bank, *Gunshot 1*, *Gunshot 2*, *Gunshot 3* are one pad,
