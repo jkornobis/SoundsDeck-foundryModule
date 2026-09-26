@@ -3,7 +3,7 @@
 Versions follow semver **without pre-release labels** - Foundry's `isNewerVersion` does not understand them
 ([Package Best Practices Checklist](https://foundryvtt.wiki/en/development/guides/package-best-practices)).
 
-## 0.6.7 - unreleased
+## 0.6.7 - 2026-09-26
 
 - **The four layer levels are vertical faders**, side by side like a mixing desk.
 - **Fixes from use:** the Save button no longer spills out of the Moods header; the tabs lose colour that said
