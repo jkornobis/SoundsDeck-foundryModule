@@ -17,7 +17,6 @@ import { readFile } from 'node:fs/promises';
 import http from 'node:http';
 import os from 'node:os';
 import path from 'node:path';
-import { connect } from './cdp.mjs';
 
 const PORT = 9222;
 const PROFILE = path.join(os.homedir(), '.config', 'chrome-GE-Foundry');
@@ -69,6 +68,9 @@ export function mainChromePid(listing, profile) {
 
 /** Start Chrome if it is not running, and make sure a page is IN the world as the gamemaster. */
 export async function ensureGame() {
+  // Loaded here, not at the top: cdp.mjs needs the system's `ws` package, which GitHub's build machine does not have,
+  // and the unit test that imports this file for mainChromePid must load there (v0.6.7's release failed on it).
+  const { connect } = await import('./cdp.mjs');
   const url = process.env.FVTT_URL;
   if (!(await portOpen())) {
     if (!url) throw new Error('Chrome is not running and FVTT_URL is not set - nothing to start it on');
