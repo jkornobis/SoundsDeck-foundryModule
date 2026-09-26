@@ -674,3 +674,46 @@
   color: color-mix(in srgb, currentColor 82%, transparent);
   opacity: 1;
 }
+
+/* ---- The Composer's five points on 0.6.6 (2026-09-26) ------------------------------------------------------------
+   1. Save overflowed the Moods header (it needs 389 px of 250): the combat controls take their own line under it. */
+.sounds-deck .sd-moods .sd-section-head {
+  flex-wrap: wrap;
+}
+.sounds-deck .sd-moods .sd-section-head .sd-combat {
+  order: 3;
+  flex-basis: 100%;
+  margin-left: 0;
+}
+/* 2. The tabs carried colour that said nothing: a shown tab is now plain and full-strength, a hidden one dimmed. */
+.sounds-deck .sd-tabs {
+  border-bottom-color: color-mix(in srgb, var(--color-border, #36303b) 80%, transparent);
+}
+.sounds-deck .sd-tab,
+.sounds-deck .sd-tab.is-shown {
+  border-color: color-mix(in srgb, var(--color-border, #36303b) 80%, transparent);
+  border-bottom-color: transparent;
+  background: var(--sd-glass-tint);
+  box-shadow: none;
+}
+/* 3. More room for the pads. */
+.sounds-deck .sd-pads {
+  grid-template-columns: repeat(auto-fill, minmax(12rem, 15rem));
+  gap: 0.9rem;
+}
+/* 4. Hover was Foundry's button hover, on the label only, with its text colour. The whole card answers now, and the
+   label keeps its own colour. */
+.sounds-deck .sd-pads .sd-pad-cell .sd-pad:hover,
+.sounds-deck .sd-pads .sd-pad-cell .sd-pad:focus-visible {
+  background: transparent !important;
+  color: inherit !important;
+}
+.sounds-deck .sd-pads .sd-pad-cell:hover {
+  border-color: var(--sd-accent);
+}
+/* 5. A bank's box came from another module (Carolingian UI styles every fieldset, unlayered, so it outranks this
+   stylesheet's layer whatever the selector - read from the live page). !important is how a layered sheet wins that. */
+.sounds-deck .sd-bank {
+  border: none !important;
+  margin: 0 0 1.1rem !important;
+}
