@@ -32,6 +32,8 @@ src/
     late-join.mjs   marks each start, catches a late browser up, and loads a bed's next track as the current starts
 tools/
   cdp.mjs           the connection to the gamemaster session, and the one-key audio unlock
+  chrome.mjs        the automation browser's life: started and logged in when needed, closed at the end (--keep to
+                    chain runs); world address and account from FVTT_URL / FVTT_GM, never from this repository
   live-proof.mjs    --show: a screenshot of the deck, without installing it (its checks moved to Quench)
   quench-run.mjs    runs the Quench batches in the live world and prints the results; --coverage, how much of src/ ran
   coverage.mjs      Chrome's block counts turned into line coverage, for the code only the live world can run

@@ -25,6 +25,7 @@
 import { readdir, readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { connect, unlockAudio } from './cdp.mjs';
+import { ensureGame, finish } from './chrome.mjs';
 import { lineCoverage, spans } from './coverage.mjs';
 
 const ROOT = path.resolve(new URL('..', import.meta.url).pathname);
@@ -79,6 +80,8 @@ const payload = {
   coverage: COVERAGE,
 };
 
+// Chrome is started and logged in if it is not already (tools/chrome.mjs); it is closed at the end unless --keep.
+await ensureGame();
 const cdp = await connect();
 await cdp.ev(
   '(async () => { await quench?.app?.render(true); await new Promise((r) => setTimeout(r, 1000)); return 1; })()',
@@ -257,4 +260,5 @@ if (coverage.length) {
   }
 }
 cdp.close();
+await finish();
 process.exit(r.results?.every((t) => t.ok) ? 0 : 1);
