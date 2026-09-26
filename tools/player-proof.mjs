@@ -22,6 +22,7 @@ import { createRequire } from 'node:module';
 import os from 'node:os';
 import path from 'node:path';
 import { connect, unlockAudio } from './cdp.mjs';
+import { ensureGame, finish } from './chrome.mjs';
 
 const require = createRequire('/usr/share/nodejs/');
 const WebSocket = require('ws');
@@ -110,6 +111,8 @@ const bsend = (method, params = {}) =>
     browserWs.send(JSON.stringify({ id: n, method, params }));
   });
 
+// Chrome is started and logged in if it is not already (tools/chrome.mjs); it is closed at the end unless --keep.
+await ensureGame();
 const gm = await connect();
 // The gamemaster's own ear matters too since 0.7 (a private sound plays there quietly): a page reloaded by a test run
 // keeps its audio locked until a gesture, so it is unlocked like the player's.
@@ -124,6 +127,7 @@ const guard = JSON.parse(
 );
 if (!guard.gm || guard.others.length || guard.playing.length) {
   console.log('REFUSED', JSON.stringify(guard));
+  await finish();
   process.exit(2);
 }
 
@@ -376,4 +380,5 @@ for (const c of R.checks)
 console.log(
   `${R.checks.filter((c) => c.ok).length} / ${R.checks.length} | left as found: ${JSON.stringify(R.leftAsFound)}`,
 );
+await finish();
 process.exit(R.checks.every((c) => c.ok) ? 0 : 1);

@@ -26,6 +26,7 @@
 import { readdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { connect } from './cdp.mjs';
+import { ensureGame, finish } from './chrome.mjs';
 
 const ROOT = path.resolve(new URL('..', import.meta.url).pathname);
 // Every src/ file except the entry point, found rather than listed: a hand-kept list went stale twice.
@@ -111,6 +112,8 @@ const LOAD = `
   };
 `;
 
+// Chrome is started and logged in if it is not already (tools/chrome.mjs); it is closed at the end unless --keep.
+await ensureGame();
 const cdp = await connect();
 
 // --show FILE.png
@@ -156,6 +159,7 @@ if (SHOW) {
     `(async () => { await globalThis.__sdApp?.close(); await globalThis.__sdCleanup?.(); delete globalThis.__sdApp; delete globalThis.__sdCleanup; return 1; })()`,
   );
   cdp.close();
+  await finish();
   process.exit(0);
 }
 
