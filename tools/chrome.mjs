@@ -77,7 +77,12 @@ export async function ensureGame() {
       'google-chrome-stable',
       [
         '--headless=new',
-        '--disable-gpu',
+        // On the tower's graphics card (GE-Tower measured it, jkosvr-tower#80, 2026-09-26: a heavy WebGL page at 106 %
+        // CPU on the GPU against 518 % drawn in software). --disable-gpu drew Foundry's canvas on the CPU.
+        '--enable-gpu',
+        '--ignore-gpu-blocklist',
+        '--use-gl=angle',
+        '--use-angle=gl-egl',
         '--no-sandbox',
         `--remote-debugging-port=${PORT}`,
         '--window-size=1600,1000',
