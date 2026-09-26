@@ -94,6 +94,10 @@ export function registerDeck(quench) {
           combatReturn: game.settings.get(ID, 'combatReturn'),
           accentCustom: game.settings.get(ID, 'accentCustom'),
         };
+        // The walk assumes the default window: side by side, comfortable. A seat left vertical or compact (2026-09-26:
+        // two layout tests failed on it) is put back to that here, and to what it was in after().
+        await game.settings.set(ID, 'layout', 'horizontal');
+        await game.settings.set(ID, 'density', 'comfortable');
         const folder = game.folders.find((f) => f.type === 'Playlist' && f.name === 'GE-Foundry');
         const fx = game.playlists.contents
           .flatMap((p) => p.sounds.contents)
@@ -1656,9 +1660,20 @@ export function registerDeck(quench) {
           await S.api.actions.stopEverything();
           await until(() => !game.playlists.some((p) => p.playing));
           await until(() => clips() === 0, 3000);
-          assert.isTrue(await S.api.actions.playBedNumber(5), 'bed 5 was not pressed');
-          await wait(50);
-          assert.strictEqual(clips(), 1, 'a key press drew no ripple');
+          // Counted AS DRAWN (issue #72): playBedNumber resolves only after the server confirms the bed, and a slow
+          // answer outlasted the 550 ms ripple - counting what was still on screen afterwards once found none.
+          const drawn = [];
+          const watcher = new MutationObserver((changes) => {
+            for (const c of changes)
+              for (const n of c.addedNodes) if (n.classList?.contains('sd-ripple-clip')) drawn.push(n);
+          });
+          watcher.observe(S.app.element, { childList: true });
+          try {
+            assert.isTrue(await S.api.actions.playBedNumber(5), 'bed 5 was not pressed');
+          } finally {
+            watcher.disconnect();
+          }
+          assert.lengthOf(drawn, 1, 'a key press drew no ripple, or two');
           await S.wrong.stopAll();
           await shots.stopAll();
           await until(() => !snd.playing && !S.wrong.playing);
