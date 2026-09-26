@@ -3,7 +3,7 @@
 Versions follow semver **without pre-release labels** - Foundry's `isNewerVersion` does not understand them
 ([Package Best Practices Checklist](https://foundryvtt.wiki/en/development/guides/package-best-practices)).
 
-## 0.6.8 - unreleased
+## 0.6.8 - 2026-09-26
 
 - The same as 0.6.7, which was tagged but never published: its build failed on GitHub (a test loaded a
   library the build machine does not have). Fixed in the test tooling only; nothing changes at the table.
