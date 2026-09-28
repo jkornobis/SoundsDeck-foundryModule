@@ -19,9 +19,11 @@ import { deckName } from '../../src/core/names.mjs';
 import { installSceneMood } from '../../src/foundry/scene-mood.mjs';
 
 const ID = 'sounds-deck';
-// The world's boards were renamed into French on 2026-09-28 (knowledge repo, #181): Opening Dashboard, Investigation
-// Desk and Shotgun Board became Accueil, Bureau d'enquête and Tableau Shotgun.
-const DOORWAY = 'Accueil';
+// The world's boards were renamed into French on 2026-09-28 (knowledge repo, #181): Investigation Desk and Shotgun
+// Board became Bureau d'enquête and Tableau Shotgun. The doorway - a scene with no music - is no longer a world scene:
+// the same day the world's Accueil carried music of its own, and the scene walk failed on a premise the world no
+// longer held ("Wrong stopped at the doorway"). The walk now makes its own quiet scene, S.quiet, and deletes it after,
+// so how anyone sets up a scene cannot decide these tests.
 const BOARD_SCENES = ['Bureau d’enquête', 'Tableau Shotgun'];
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 const until = async (fn, ms = 8000) => {
@@ -67,7 +69,7 @@ export function registerDeck(quench) {
         // This batch walks the world it was written in. Anywhere else it skips - and says what it looked for.
         const missing = [
           ...['8 · The Board', '5 · Wrong'].filter((n) => !game.playlists.getName(n)),
-          ...[DOORWAY, ...BOARD_SCENES].filter((n) => !game.scenes.getName(n)),
+          ...BOARD_SCENES.filter((n) => !game.scenes.getName(n)),
         ];
         if (missing.length) {
           console.info(`sounds-deck | deck batch skipped: this world has no ${missing.join(', ')}`);
@@ -126,6 +128,12 @@ export function registerDeck(quench) {
           shuffle: await make('🎲 __sd shuffle', M.SHUFFLE),
           cues: await make('🎞️ __sd cues', M.SEQUENTIAL),
         };
+        const scenes = game.folders.find((f) => f.type === 'Scene' && f.name === 'GE-Foundry');
+        S.quiet = await CONFIG.Scene.documentClass.create({
+          name: '__sd quiet doorway',
+          folder: scenes?.id ?? null,
+          navigation: false,
+        });
         S.board = game.playlists.getName('8 · The Board');
         S.wrong = game.playlists.getName('5 · Wrong');
         S.shots = [];
@@ -136,8 +144,15 @@ export function registerDeck(quench) {
         if (!S.sandbox) return;
         for (const s of S.shots) s.stop?.();
         await S.app?.close();
+        // The scene the seat was on comes back FIRST: a scene with its own music starts it on activation (the world's
+        // Accueil did, 2026-09-28), so the stop below has to come after it, or the world is left playing.
+        if (S.activeBefore && !S.activeBefore.active) {
+          await S.activeBefore.activate();
+          await wait(2500);
+        }
         for (const p of game.playlists.filter((x) => x.playing)) await p.stopAll();
         for (const p of Object.values(S.sandbox)) await p.delete();
+        await S.quiet?.delete();
         await game.settings.set(ID, 'layout', S.seat.layout);
         await game.settings.set(ID, 'geometry', S.seat.geometry);
         await game.settings.set(ID, 'density', S.seat.density);
@@ -153,7 +168,6 @@ export function registerDeck(quench) {
         await game.settings.set(ID, 'combatAuto', S.seat.combatAuto);
         await game.settings.set(ID, 'combatReturn', S.seat.combatReturn);
         await game.settings.set(ID, 'accentCustom', S.seat.accentCustom);
-        if (S.activeBefore && !S.activeBefore.active) await S.activeBefore.activate();
       });
 
       const card = (name) =>
@@ -476,20 +490,20 @@ export function registerDeck(quench) {
 
       describe('scene changes', function () {
         this.timeout(40000);
-        const activate = async (name) => {
-          await game.scenes.getName(name).activate();
+        const activate = async (scene) => {
+          await (typeof scene === 'string' ? game.scenes.getName(scene) : scene).activate();
           await wait(2500);
         };
         const track = () => S.board.sounds.find((s) => s.playing)?.name ?? null;
 
         it('board -> board keeps the same track, board -> doorway stops it', async () => {
-          await activate(DOORWAY);
+          await activate(S.quiet);
           await activate(BOARD_SCENES[0]);
           const first = track();
           await activate(BOARD_SCENES[1]);
           assert.isTrue(S.board.playing);
           assert.strictEqual(track(), first);
-          await activate(DOORWAY);
+          await activate(S.quiet);
           assert.isFalse(S.board.playing);
         });
 
@@ -498,11 +512,11 @@ export function registerDeck(quench) {
           await until(() => S.board.playing, 8000);
           click('5 · Wrong', 'play');
           await until(() => S.wrong.playing && !S.board.playing, 20000);
-          await activate(DOORWAY);
+          await activate(S.quiet);
           assert.isTrue(S.wrong.playing, 'Wrong stopped at the doorway');
           await activate(BOARD_SCENES[0]);
           assert.isTrue(S.board.playing && !S.wrong.playing);
-          await activate(DOORWAY);
+          await activate(S.quiet);
           assert.isFalse(S.board.playing || S.wrong.playing);
         });
 
@@ -838,8 +852,8 @@ export function registerDeck(quench) {
         const MOOD_SCENE = BOARD_SCENES[1]; // it carries 8 · The Board as its own playlist - the mood must win over it
         const scene = () => game.scenes.getName(MOOD_SCENE);
         const loop = () => S.sandbox.loops.sounds.contents[0];
-        const activate = async (name) => {
-          await game.scenes.getName(name).activate();
+        const activate = async (scene) => {
+          await (typeof scene === 'string' ? game.scenes.getName(scene) : scene).activate();
           await wait(1500);
         };
         let mood = null;
@@ -901,7 +915,7 @@ export function registerDeck(quench) {
           await activate(BOARD_SCENES[0]);
           await until(() => S.board.playing && !S.wrong.playing, 20000);
           assert.isTrue(S.board.playing && !S.wrong.playing);
-          await activate(DOORWAY);
+          await activate(S.quiet);
         });
 
         it('on a Foundry that fixes its own scene handover, the mood bed is shown to it as the scene playlist', async () => {
