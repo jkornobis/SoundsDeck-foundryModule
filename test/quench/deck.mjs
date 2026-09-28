@@ -19,8 +19,10 @@ import { deckName } from '../../src/core/names.mjs';
 import { installSceneMood } from '../../src/foundry/scene-mood.mjs';
 
 const ID = 'sounds-deck';
-const DOORWAY = 'Opening Dashboard';
-const BOARD_SCENES = ['Investigation Desk', 'Shotgun Board'];
+// The world's boards were renamed into French on 2026-09-28 (knowledge repo, #181): Opening Dashboard, Investigation
+// Desk and Shotgun Board became Accueil, Bureau d'enquête and Tableau Shotgun.
+const DOORWAY = 'Accueil';
+const BOARD_SCENES = ['Bureau d’enquête', 'Tableau Shotgun'];
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 const until = async (fn, ms = 8000) => {
   for (let t = 0; t < ms; t += 200) {
