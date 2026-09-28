@@ -720,24 +720,204 @@
 
 /* Vertical faders for the four layer levels (his choice, 2026-09-26, from a mock-up): side by side like a mixing desk,
    the name under each. A vertical range input is still the browser's own range input (turned by writing-mode), so it
-   keeps its keyboard control. The per-sound volumes in Now playing stay horizontal, on their rows. */
+   keeps its keyboard control.
+
+   CONSOLE FADERS (his asks, 2026-09-28: "Add vertical dash to volumes picker" and "can you make them more skeumorphic
+   to the real sound console one ?", with a reference picture; of the two caps mocked up on #90 he picked A). The
+   input's own track is hidden and its thumb is the cap: short, bevelled at both ends, ridged, with the accent as its
+   line. An input has no pseudo-elements of its own, so the slot and the scale are drawn behind it on the row's: the
+   slot on ::before, the ticks on ::after, the numbers on the name's ::after. All three are measured from the cap's
+   travel (the fader's height less the cap's), so each tick sits where the cap's centre stops. */
+.sounds-deck .sd-now {
+  --sd-slot-rim: 0 0 0 1px rgb(255 255 255 / 14%), 0 0 0 2px rgb(0 0 0 / 55%);
+  --sd-knob:
+    radial-gradient(circle, transparent 0 60%, rgb(0 0 0 / 22%) 64%, transparent 68%),
+    conic-gradient(
+      #e6e6e6,
+      #8c8c8c 12%,
+      #f3f3f3 25%,
+      #7b7b7b 37%,
+      #ebebeb 50%,
+      #878787 62%,
+      #f1f1f1 75%,
+      #808080 87%,
+      #e6e6e6
+    );
+}
+.theme-light .sounds-deck .sd-now,
+.sounds-deck.theme-light .sd-now {
+  --sd-slot-rim: 0 0 0 1px rgb(255 255 255 / 85%), 0 0 0 2px rgb(0 0 0 / 18%);
+}
 .sounds-deck .sd-levels {
   grid-template-columns: repeat(4, 1fr);
   justify-items: center;
   gap: 0.2rem;
 }
 .sounds-deck .sd-level-row {
+  --fader-h: 7rem;
+  --cap-w: 2.1rem;
+  --cap-h: 1.1rem;
+  --travel: calc(var(--fader-h) - var(--cap-h));
+  --tick-off: 0.55rem;
+  --tick-len: 0.3rem;
+  --tick: rgb(255 255 255 / 26%);
+  --tick-major: rgb(255 255 255 / 48%);
+  --scale-ink: rgb(255 255 255 / 55%);
+  --sd-cap:
+    linear-gradient(
+      to bottom,
+      transparent calc(50% - 1px),
+      var(--sd-accent) calc(50% - 1px) calc(50% + 1px),
+      transparent calc(50% + 1px)
+    )
+    center / 64% 100% no-repeat,
+    repeating-linear-gradient(to bottom, rgb(255 255 255 / 13%) 0 1px, rgb(0 0 0 / 40%) 1px 2px, transparent 2px 3px)
+    center / 64% 100% no-repeat,
+    linear-gradient(to right, #707070 0, #454545 18%, transparent 18% 82%, #2e2e2e 82%, #5a5a5a 100%),
+    linear-gradient(to bottom, #4d4d4d 0%, #2b2b2b 48%, #1a1a1a 52%, #353535 100%);
+  --sd-cap-shadow: 0 3px 5px rgb(0 0 0 / 65%), inset 0 1px 0 rgb(255 255 255 / 28%), inset 0 -1px 0 rgb(0 0 0 / 75%);
+  position: relative;
   flex-direction: column-reverse;
   align-items: center;
   gap: 0.3rem;
   text-align: center;
 }
+.theme-light .sounds-deck .sd-level-row,
+.sounds-deck.theme-light .sd-level-row {
+  --tick: rgb(0 0 0 / 28%);
+  --tick-major: rgb(0 0 0 / 50%);
+  --scale-ink: rgb(0 0 0 / 62%);
+}
+.sounds-deck.is-compact .sd-level-row {
+  --fader-h: 4.5rem;
+}
+/* the slot: a dark groove with a thin lit rim */
+.sounds-deck .sd-level-row::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: calc(var(--cap-h) / 2 - 4px);
+  width: 6px;
+  height: calc(var(--travel) + 8px);
+  transform: translateX(-50%);
+  border-radius: 3px;
+  background: #030303;
+  box-shadow:
+    inset 0 2px 3px rgb(0 0 0 / 95%),
+    var(--sd-slot-rim);
+  pointer-events: none;
+}
+/* the ticks: a short one every tenth on both sides, a long one every fifth on the right, as in the reference */
+.sounds-deck .sd-level-row::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: calc(var(--cap-h) / 2);
+  width: calc(2 * (var(--tick-off) + var(--tick-len) + 0.15rem));
+  height: var(--travel);
+  transform: translateX(-50%);
+  background:
+    repeating-linear-gradient(to bottom, var(--tick-major) 0 1px, transparent 1px 20%) right top /
+    calc(var(--tick-len) + 0.15rem) 100% no-repeat,
+    linear-gradient(var(--tick-major), var(--tick-major)) right bottom / calc(var(--tick-len) + 0.15rem) 1px no-repeat,
+    repeating-linear-gradient(to bottom, var(--tick) 0 1px, transparent 1px 10%) right top / var(--tick-len) 100%
+    no-repeat,
+    repeating-linear-gradient(to bottom, var(--tick) 0 1px, transparent 1px 10%) left top / var(--tick-len) 100%
+    no-repeat,
+    linear-gradient(var(--tick), var(--tick)) left bottom / var(--tick-len) 1px no-repeat;
+  pointer-events: none;
+}
+/* the numbers, 0 to 100, beside the long ticks; decorative, so they carry no text for a screen reader */
+.sounds-deck .sd-level-row > span::after {
+  content: "100\A 80\A 60\A 40\A 20\A 0" / "";
+  white-space: pre;
+  position: absolute;
+  left: calc(50% + var(--tick-off) + var(--tick-len) + 0.3rem);
+  top: calc(var(--cap-h) / 2 - var(--travel) / 10);
+  line-height: calc(var(--travel) / 5);
+  font-size: 0.5rem;
+  color: var(--scale-ink);
+  text-align: left;
+  font-variant-numeric: tabular-nums;
+  pointer-events: none;
+}
+/* compact: the scale keeps its ticks and drops the numbers, which would crowd a shorter fader */
+.sounds-deck.is-compact .sd-level-row > span::after {
+  content: none;
+}
 .sounds-deck .sd-level-row input.sd-level {
   writing-mode: vertical-lr;
   direction: rtl;
-  width: 1.6rem;
-  height: 7rem;
+  position: relative;
+  z-index: 1;
+  width: var(--cap-w);
+  height: var(--fader-h);
 }
-.sounds-deck.is-compact .sd-level-row input.sd-level {
-  height: 4.5rem;
+.sounds-deck .sd-level-row input.sd-level::-webkit-slider-runnable-track {
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+}
+.sounds-deck .sd-level-row input.sd-level::-moz-range-track {
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+}
+.sounds-deck .sd-level-row input.sd-level::-webkit-slider-thumb {
+  width: var(--cap-w);
+  height: var(--cap-h);
+  margin: 0;
+  border: 0;
+  border-radius: 2px;
+  background: var(--sd-cap);
+  box-shadow: var(--sd-cap-shadow);
+}
+.sounds-deck .sd-level-row input.sd-level::-moz-range-thumb {
+  width: var(--cap-w);
+  height: var(--cap-h);
+  border: 0;
+  border-radius: 2px;
+  background: var(--sd-cap);
+  box-shadow: var(--sd-cap-shadow);
+}
+
+/* The per-sound volume in Now playing: the reference's horizontal slider, a dark slot and a brushed-metal knob. */
+.sounds-deck input.sd-volume::-webkit-slider-runnable-track {
+  height: 6px;
+  border: 0;
+  border-radius: 3px;
+  background: #030303;
+  box-shadow:
+    inset 0 2px 3px rgb(0 0 0 / 95%),
+    var(--sd-slot-rim);
+}
+.sounds-deck input.sd-volume::-moz-range-track {
+  height: 6px;
+  border: 0;
+  border-radius: 3px;
+  background: #030303;
+  box-shadow:
+    inset 0 2px 3px rgb(0 0 0 / 95%),
+    var(--sd-slot-rim);
+}
+.sounds-deck input.sd-volume::-webkit-slider-thumb {
+  width: 16px;
+  height: 16px;
+  margin-top: -5px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--sd-knob);
+  box-shadow:
+    0 2px 3px rgb(0 0 0 / 75%),
+    inset 0 0 0 1px rgb(0 0 0 / 35%);
+}
+.sounds-deck input.sd-volume::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--sd-knob);
+  box-shadow:
+    0 2px 3px rgb(0 0 0 / 75%),
+    inset 0 0 0 1px rgb(0 0 0 / 35%);
 }
