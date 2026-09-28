@@ -3,11 +3,12 @@
 Versions follow semver **without pre-release labels** - Foundry's `isNewerVersion` does not understand them
 ([Package Best Practices Checklist](https://foundryvtt.wiki/en/development/guides/package-best-practices)).
 
-## 0.6.9 - unreleased
+## 0.6.9 - 2026-09-28
 
 - **Console faders:** the four level faders look like a mixing desk's, after the Composer's reference picture: a
   dark slot, a 0–100 scale, and a short ridged cap carrying the accent as its line. The per-sound volume in *Now playing*
   gets a dark slot and a metal knob.
+- The live tests make their own quiet scene, so the music a world gives one of its scenes cannot decide them.
 - **Random triggering fires more often:** the 🎲 now fires every 1.5–5 s, instead of 10–45 s. A sound with its own
   interval (the `random` flag) keeps it.
 
