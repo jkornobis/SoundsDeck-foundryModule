@@ -42,8 +42,9 @@ async function list(dir) {
 const FILES = (await list('src')).filter((f) => f !== 'src/sounds-deck.mjs');
 const TEMPLATES = { TEMPLATE_BEDS: 'templates/beds.hbs', TEMPLATE_BOARD: 'templates/board.hbs' };
 // The scenes the Delta Green world binds to 8 · The Board, and its quiet doorway (knowledge repo, scene-beds.mjs).
-const DOORWAY = 'Opening Dashboard';
-const BOARD_SCENES = ['Investigation Desk', 'Shotgun Board'];
+// Renamed into French in the world on 2026-09-28 (knowledge repo, #181).
+const DOORWAY = 'Accueil';
+const BOARD_SCENES = ['Bureau d’enquête', 'Tableau Shotgun'];
 
 // Each relative import becomes a placeholder the page swaps for the blob URL of the file it names.
 async function modules() {
