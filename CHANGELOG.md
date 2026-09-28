@@ -5,6 +5,9 @@ Versions follow semver **without pre-release labels** - Foundry's `isNewerVersio
 
 ## 0.6.9 - unreleased
 
+- **Random triggering fires more often:** the 🎲 now fires every 1.5–5 s, instead of 10–45 s. A sound with its own
+  interval (the `random` flag) keeps it.
+
 ## 0.6.8 - 2026-09-26
 
 - The same as 0.6.7, which was tagged but never published: its build failed on GitHub (a test loaded a

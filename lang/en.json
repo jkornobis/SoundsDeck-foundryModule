@@ -51,7 +51,7 @@
     "Volume": "Volume",
     "Random": "Fire {name} at random moments",
     "RandomOn": "Firing at random moments - click to stop",
-    "RandomOff": "Fire this at random moments (every 10–45 s)",
+    "RandomOff": "Fire this at random moments (every 1.5–5 s)",
     "RandomArmed": "at random",
     "Preview": "Hear {name} in your ear only",
     "PreviewOn": "In your ear only - click to stop",
