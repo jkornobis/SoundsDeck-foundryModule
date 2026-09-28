@@ -5,6 +5,9 @@ Versions follow semver **without pre-release labels** - Foundry's `isNewerVersio
 
 ## 0.6.9 - unreleased
 
+- **Console faders:** the four level faders look like a mixing desk's, after the Composer's reference picture: a
+  dark slot, a 0–100 scale, and a short ridged cap carrying the accent as its line. The per-sound volume in *Now playing*
+  gets a dark slot and a metal knob.
 - **Random triggering fires more often:** the 🎲 now fires every 1.5–5 s, instead of 10–45 s. A sound with its own
   interval (the `random` flag) keeps it.
 
