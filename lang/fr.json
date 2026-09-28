@@ -51,7 +51,7 @@
     "Volume": "Volume",
     "Random": "Déclencher {name} au hasard",
     "RandomOn": "Se déclenche au hasard - cliquer pour arrêter",
-    "RandomOff": "Déclencher au hasard (toutes les 10 à 45 s)",
+    "RandomOff": "Déclencher au hasard (toutes les 1,5 à 5 s)",
     "RandomArmed": "au hasard",
     "Preview": "Écouter {name} pour vous seul",
     "PreviewOn": "Pour vous seul - cliquer pour arrêter",

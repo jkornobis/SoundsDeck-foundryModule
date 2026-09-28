@@ -7,8 +7,12 @@
  * data the GM can tune; without it, the default below.
  */
 
-/** Seconds between two random shots when a sound says nothing: often enough to be noticed, rare enough to unsettle. */
-export const RANDOM_DEFAULT = Object.freeze({ min: 10, max: 45 });
+/**
+ * Seconds between two random shots when a sound says nothing. The Composer's value, 2026-09-28: "reduce random time
+ * between to effect trigger to 1,5-5seconds" - it was 10-45 s. A sound still playing when its turn comes is skipped
+ * (foundry/random.mjs), so a long sound never overlaps itself.
+ */
+export const RANDOM_DEFAULT = Object.freeze({ min: 1.5, max: 5 });
 
 /** A usable { min, max } in seconds from whatever a flag holds: at least 1 s, and max never below min. */
 export function randomInterval(flag) {

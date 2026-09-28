@@ -148,7 +148,7 @@ deck**, on by default; turn it off to see both on the pads. The filter searches 
   is heard, over the *Crossfade between beds* setting (4 s by default; 0 cuts straight across).
 - **Preview in your ear.** The 🎧 on a pad plays it in your browser only, at the level the table would hear, before
   you play it for everyone. Another pad replaces it, the same one again stops it, and it stops by itself after 20 s.
-- **Random triggering.** The 🎲 on a one-shot's pad fires it at random moments (every 10–45 s) until you switch it off.
+- **Random triggering.** The 🎲 on a one-shot's pad fires it at random moments (every 1.5–5 s) until you switch it off.
   Set your own interval per sound with the flag `flags["sounds-deck"].random = { min, max }` (seconds).
 - **Where a sound comes from** stays in the playlist sidebar by default (see above); with *Hide sources on the deck*
   off, hovering a pad shows the sound's description.
