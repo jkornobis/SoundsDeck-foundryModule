@@ -3,6 +3,8 @@
 Versions follow semver **without pre-release labels** - Foundry's `isNewerVersion` does not understand them
 ([Package Best Practices Checklist](https://foundryvtt.wiki/en/development/guides/package-best-practices)).
 
+## 0.6.10 - unreleased
+
 ## 0.6.9 - 2026-09-28
 
 - **Console faders:** the four level faders look like a mixing desk's, after the Composer's reference picture: a
